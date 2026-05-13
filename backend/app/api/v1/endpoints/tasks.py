@@ -1,3 +1,4 @@
+from datetime import date, datetime, time, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -7,7 +8,7 @@ from app.api.deps import get_current_user
 from app.crud import subjects as subject_crud
 from app.crud import tasks as task_crud
 from app.db.session import get_db
-from app.models.task import TaskStatus
+from app.models.task import TaskPriority, TaskStatus, TaskType
 from app.models.user import User
 from app.schemas.task import TaskCreate, TaskRead, TaskStatusUpdate, TaskUpdate
 
@@ -23,10 +24,32 @@ def ensure_subject_exists(db: Session, subject_id: int, user_id: int) -> None:
 def list_tasks(
     status_filter: Annotated[TaskStatus | None, Query(alias="status")] = None,
     subject_id: int | None = None,
+    priority: TaskPriority | None = None,
+    task_type: Annotated[TaskType | None, Query(alias="type")] = None,
+    deadline_before: date | None = None,
+    deadline_after: date | None = None,
+    search: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return task_crud.list_tasks(db, current_user.id, status=status_filter, subject_id=subject_id)
+    deadline_before_dt = (
+        datetime.combine(deadline_before, time.max, tzinfo=timezone.utc) if deadline_before else None
+    )
+    deadline_after_dt = (
+        datetime.combine(deadline_after, time.min, tzinfo=timezone.utc) if deadline_after else None
+    )
+
+    return task_crud.list_tasks(
+        db,
+        current_user.id,
+        status=status_filter,
+        subject_id=subject_id,
+        priority=priority,
+        task_type=task_type,
+        deadline_before=deadline_before_dt,
+        deadline_after=deadline_after_dt,
+        search=search,
+    )
 
 
 @router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)

@@ -53,6 +53,14 @@ def crisis_score(task: Task, now: datetime) -> int:
     elif task.priority == TaskPriority.HIGH:
         score += 30
 
+    if task.estimated_hours is not None:
+        if task.estimated_hours >= 8:
+            score += 25
+        elif task.estimated_hours >= 4:
+            score += 15
+        elif task.estimated_hours >= 2:
+            score += 5
+
     if task.type == TaskType.COURSEWORK:
         score += 35
     elif task.type == TaskType.LAB:

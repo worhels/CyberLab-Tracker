@@ -6,6 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field
 class SubjectBase(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     color: str = Field(default="#4f46e5", min_length=1, max_length=32)
+    teacher: str | None = Field(default=None, max_length=255)
+    semester: str | None = Field(default=None, max_length=80)
+    description: str | None = None
 
 
 class SubjectCreate(SubjectBase):
@@ -15,6 +18,9 @@ class SubjectCreate(SubjectBase):
 class SubjectUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     color: str | None = Field(default=None, min_length=1, max_length=32)
+    teacher: str | None = Field(default=None, max_length=255)
+    semester: str | None = Field(default=None, max_length=80)
+    description: str | None = None
 
 
 class SubjectRead(SubjectBase):
