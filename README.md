@@ -1,6 +1,6 @@
 # CyberLab Tracker
 
-Backend MVP for tracking study subjects, tasks, deadlines, statuses, and crisis priority.
+Full-stack MVP for tracking study subjects, tasks, deadlines, statuses, and crisis priority.
 
 ## Stack
 
@@ -10,6 +10,12 @@ Backend MVP for tracking study subjects, tasks, deadlines, statuses, and crisis 
 - Alembic
 - JWT auth with `python-jose`
 - Password hashing with `passlib[bcrypt]`
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- Axios
+- React Router
 
 ## Local Backend Run
 
@@ -28,6 +34,22 @@ Swagger:
 
 - http://localhost:8000/docs
 - http://localhost:8000/health
+
+## Local Frontend Run
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend:
+
+- http://localhost:5173
+
+The frontend API client uses:
+
+- `http://localhost:8000/api/v1`
 
 ## Docker Run
 
