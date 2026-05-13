@@ -19,5 +19,5 @@ API base URL:
 
 Demo credentials after backend seed:
 
-- `demo@cyberlab.local`
+- `demo@cyberlab.dev`
 - `password123`

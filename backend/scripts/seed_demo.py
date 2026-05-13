@@ -9,7 +9,8 @@ from app.models.subject import Subject
 from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.models.user import User
 
-DEMO_EMAIL = "demo@cyberlab.local"
+OLD_DEMO_EMAIL = "demo@cyberlab.local"
+DEMO_EMAIL = "demo@cyberlab.dev"
 DEMO_PASSWORD = "password123"
 
 SUBJECTS = [
@@ -111,9 +112,26 @@ def demo_tasks(now: datetime) -> list[dict]:
     ]
 
 
+def migrate_old_demo_user(db: Session) -> None:
+    old_user = db.scalar(select(User).where(User.email == OLD_DEMO_EMAIL))
+    new_user = db.scalar(select(User).where(User.email == DEMO_EMAIL))
+
+    if old_user is not None and new_user is None:
+        old_user.email = DEMO_EMAIL
+        db.add(old_user)
+        db.commit()
+
+
 def get_or_create_demo_user(db: Session) -> User:
+    migrate_old_demo_user(db)
+
     user = db.scalar(select(User).where(User.email == DEMO_EMAIL))
     if user is not None:
+        user.hashed_password = get_password_hash(DEMO_PASSWORD)
+        user.full_name = "CyberLab Demo"
+        db.add(user)
+        db.commit()
+        db.refresh(user)
         return user
 
     user = User(

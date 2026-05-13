@@ -69,7 +69,7 @@ Docker services:
 
 After running the seed script:
 
-- Email: `demo@cyberlab.local`
+- Email: `demo@cyberlab.dev`
 - Password: `password123`
 
 ## API v1

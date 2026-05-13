@@ -8,7 +8,7 @@ import { getErrorMessage } from '../utils/errors'
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth()
   const location = useLocation()
-  const [email, setEmail] = useState('demo@cyberlab.local')
+  const [email, setEmail] = useState('demo@cyberlab.dev')
   const [password, setPassword] = useState('password123')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
