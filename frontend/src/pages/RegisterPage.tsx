@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { UserPlus } from 'lucide-react'
+import { AuthShell } from '../components/auth/AuthShell'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/errors'
 
@@ -29,31 +29,39 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center px-4 py-10">
-      <form onSubmit={onSubmit} className="card w-full max-w-md p-6">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg border border-emerald-400/30 bg-emerald-400/10 text-emerald-200">
-            <UserPlus size={22} />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-slate-50">Create account</h1>
-            <p className="text-sm text-slate-400">CyberLab Tracker</p>
-          </div>
+    <AuthShell mode="register">
+      <form onSubmit={onSubmit} className="auth-card">
+        <div className="auth-card-heading">
+          <p className="auth-brand">CyberLab Tracker</p>
+          <h1>Create account</h1>
+          <p>Start tracking your academic workload.</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="auth-fields">
           <label className="block">
-            <span className="label">Full name</span>
-            <input className="field mt-1" value={fullName} onChange={(event) => setFullName(event.target.value)} />
-          </label>
-          <label className="block">
-            <span className="label">Email</span>
-            <input className="field mt-1" value={email} onChange={(event) => setEmail(event.target.value)} />
-          </label>
-          <label className="block">
-            <span className="label">Password</span>
+            <span className="auth-label">Username</span>
             <input
-              className="field mt-1"
+              autoComplete="name"
+              className="auth-field"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="auth-label">Email</span>
+            <input
+              autoComplete="email"
+              className="auth-field"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="auth-label">Password</span>
+            <input
+              autoComplete="new-password"
+              className="auth-field"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -61,19 +69,19 @@ export function RegisterPage() {
           </label>
         </div>
 
-        {error ? <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
+        {error ? <p className="auth-error">{error}</p> : null}
 
-        <button className="btn-primary mt-6 w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Creating...' : 'Register'}
+        <button className="auth-submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating...' : 'Create account'}
         </button>
 
-        <p className="mt-5 text-center text-sm text-slate-400">
+        <p className="auth-switch">
           Already have an account?{' '}
-          <Link className="font-semibold text-cyan-300 hover:text-cyan-200" to="/login">
-            Login
+          <Link className="auth-text-link" to="/login">
+            Sign in
           </Link>
         </p>
       </form>
-    </div>
+    </AuthShell>
   )
 }

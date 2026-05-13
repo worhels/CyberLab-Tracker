@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
-import { ShieldCheck } from 'lucide-react'
+import { AuthShell } from '../components/auth/AuthShell'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/errors'
 
@@ -31,28 +31,37 @@ export function LoginPage() {
     }
   }
 
+  const useDemoAccount = () => {
+    setEmail('demo@cyberlab.dev')
+    setPassword('password123')
+    setError('')
+  }
+
   return (
-    <div className="grid min-h-screen place-items-center px-4 py-10">
-      <form onSubmit={onSubmit} className="card w-full max-w-md p-6">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg border border-cyan-400/30 bg-cyan-400/10 text-cyan-200">
-            <ShieldCheck size={22} />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-slate-50">CyberLab Tracker</h1>
-            <p className="text-sm text-slate-400">Sign in</p>
-          </div>
+    <AuthShell mode="login">
+      <form onSubmit={onSubmit} className="auth-card">
+        <div className="auth-card-heading">
+          <p className="auth-brand">CyberLab Tracker</p>
+          <h1>Welcome back</h1>
+          <p>Sign in to continue.</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="auth-fields">
           <label className="block">
-            <span className="label">Email</span>
-            <input className="field mt-1" value={email} onChange={(event) => setEmail(event.target.value)} />
+            <span className="auth-label">Email</span>
+            <input
+              autoComplete="email"
+              className="auth-field"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
           </label>
           <label className="block">
-            <span className="label">Password</span>
+            <span className="auth-label">Password</span>
             <input
-              className="field mt-1"
+              autoComplete="current-password"
+              className="auth-field"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -60,19 +69,20 @@ export function LoginPage() {
           </label>
         </div>
 
-        {error ? <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
+        {error ? <p className="auth-error">{error}</p> : null}
 
-        <button className="btn-primary mt-6 w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Signing in...' : 'Login'}
+        <button className="auth-submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
         </button>
 
-        <p className="mt-5 text-center text-sm text-slate-400">
-          No account?{' '}
-          <Link className="font-semibold text-cyan-300 hover:text-cyan-200" to="/register">
-            Register
-          </Link>
-        </p>
+        <button className="auth-secondary-action" type="button" onClick={useDemoAccount}>
+          Demo account
+        </button>
+
+        <Link className="auth-inline-link" to="/register">
+          Create account
+        </Link>
       </form>
-    </div>
+    </AuthShell>
   )
 }
