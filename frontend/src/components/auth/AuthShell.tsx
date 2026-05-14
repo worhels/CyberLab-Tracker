@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { AcademicGravityMap } from './AcademicGravityMap'
+import { BlackHoleTaskCore } from './BlackHoleTaskCore'
 
 export type AuthMode = 'login' | 'register'
 
@@ -31,7 +31,7 @@ export function AuthShell({ children, mode }: AuthShellProps) {
   return (
     <main className={`auth-shell auth-shell--${mode}`}>
       <section className="auth-visual" aria-hidden="true">
-        {canShowScene ? <AcademicGravityMap mode={mode} /> : <div className="auth-visual-fallback" />}
+        {canShowScene ? <BlackHoleTaskCore mode={mode} /> : <div className="auth-visual-fallback" />}
       </section>
       <section className="auth-panel">{children}</section>
     </main>
