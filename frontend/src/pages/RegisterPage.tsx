@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { AuthShell } from '../components/auth/AuthShell'
+import { GenerativeMeshVisual } from '../components/auth/GenerativeMeshVisual'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/errors'
 
@@ -29,7 +30,7 @@ export function RegisterPage() {
   }
 
   return (
-    <AuthShell mode="register">
+    <AuthShell mode="register" visual={<GenerativeMeshVisual mode="register" />}>
       <form onSubmit={onSubmit} className="auth-card">
         <div className="auth-card-heading">
           <p className="auth-brand">CyberLab Tracker</p>
