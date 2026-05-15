@@ -20,6 +20,19 @@ interface QualityProfile {
   particleCount: number
 }
 
+interface SculptPoint {
+  x: number
+  y: number
+  z: number
+}
+
+const CAVITY = {
+  x: -0.08,
+  y: 0.38,
+  rx: 0.2,
+  ry: 0.17,
+}
+
 const FULLSCREEN_VERTEX = `
 varying vec2 vUv;
 
@@ -271,40 +284,87 @@ function getQualityProfile(reducedMotion: boolean): QualityProfile {
 }
 
 function shapeCenterX(t: number, mode: AuthMode) {
-  const registerBias = mode === 'register' ? -0.025 : 0
-  const upperLean = bell(t, 0.2, 0.18) * 0.16
-  const waistPull = bell(t, 0.55, 0.16) * -0.08
-  const lowerLean = bell(t, 0.82, 0.18) * 0.1
-  return -0.42 + registerBias + upperLean + waistPull + lowerLean + Math.sin(t * Math.PI * 2.15 + 0.35) * 0.045 + Math.sin(t * Math.PI * 6.2 + 1.4) * 0.018
+  const registerBias = mode === 'register' ? -0.018 : 0
+  const upperLean = bell(t, 0.16, 0.16) * 0.17
+  const cavityPull = bell(t, 0.34, 0.18) * 0.06
+  const neckPull = bell(t, 0.58, 0.14) * -0.09
+  const lowerLean = bell(t, 0.82, 0.18) * 0.06
+
+  return -0.42 + registerBias + upperLean + cavityPull + neckPull + lowerLean + Math.sin(t * Math.PI * 2.25 + 0.5) * 0.026 + Math.sin(t * Math.PI * 6.4 + 1.2) * 0.012
 }
 
 function shapeRadiusX(t: number) {
   return (
     0.035 +
-    bell(t, 0.13, 0.13) * 0.24 +
-    bell(t, 0.32, 0.19) * 0.31 +
-    bell(t, 0.53, 0.13) * 0.085 +
-    bell(t, 0.72, 0.17) * 0.24 +
-    bell(t, 0.91, 0.1) * 0.31
+    bell(t, 0.08, 0.1) * 0.12 +
+    bell(t, 0.19, 0.13) * 0.24 +
+    bell(t, 0.34, 0.17) * 0.25 +
+    bell(t, 0.58, 0.11) * 0.055 +
+    bell(t, 0.74, 0.16) * 0.18 +
+    bell(t, 0.94, 0.12) * 0.32
   )
 }
 
 function shapeRadiusY(t: number) {
-  return 0.014 + bell(t, 0.36, 0.26) * 0.048 + bell(t, 0.76, 0.2) * 0.074
+  return 0.012 + bell(t, 0.28, 0.22) * 0.045 + bell(t, 0.73, 0.2) * 0.07 + bell(t, 0.94, 0.1) * 0.04
 }
 
 function shapeY(t: number) {
-  return 0.96 - t * 1.92
+  return 1.1 - t * 2.2
+}
+
+function densityAt(t: number) {
+  return 0.2 + bell(t, 0.34, 0.21) * 0.66 + bell(t, 0.72, 0.16) * 0.54 + bell(t, 0.94, 0.1) * 0.18
+}
+
+function lowerBreakup(t: number) {
+  return smoothstep(0.7, 1, t)
+}
+
+function cavityAmount(x: number, y: number) {
+  const warp = Math.sin(y * 8.2) * 0.035
+  const dx = (x - CAVITY.x - warp) / CAVITY.rx
+  const dy = (y - CAVITY.y) / CAVITY.ry
+  const value = dx * dx + dy * dy
+  return 1 - smoothstep(0.62, 1.25, value)
+}
+
+function smoothstep(edge0: number, edge1: number, value: number) {
+  const x = clamp((value - edge0) / (edge1 - edge0), 0, 1)
+  return x * x * (3 - 2 * x)
+}
+
+function sectionPoint(t: number, angle: number, radial: number, phase: number, mode: AuthMode): SculptPoint {
+  const center = shapeCenterX(t, mode)
+  const radiusX = shapeRadiusX(t)
+  const radiusY = shapeRadiusY(t)
+  const breakup = lowerBreakup(t)
+  const twist = t * Math.PI * 2.45 + phase * 0.22
+  const asym = 1 + Math.sin(angle * 2.0 + t * 7.4) * 0.08
+  const x =
+    center +
+    Math.cos(angle + twist * 0.16) * radiusX * radial * asym +
+    Math.sin(t * Math.PI * 4.7 + phase) * 0.018 +
+    breakup * Math.sin(angle * 3.0 + phase) * 0.045
+  const y =
+    shapeY(t) +
+    Math.sin(angle) * radiusY * radial +
+    Math.sin(t * Math.PI * 6.0 + phase) * 0.009 +
+    breakup * (radial - 0.5) * 0.085
+  const z = Math.sin(angle + phase * 0.2) * 0.22 * radial + Math.cos(t * Math.PI * 2.0 + phase) * 0.1
+
+  return { x, y, z }
 }
 
 function pointOnSculpture(t: number, lane: number, phase: number, mode: AuthMode) {
-  const radiusX = shapeRadiusX(t)
+  const radiusX = shapeRadiusX(t) * (0.82 + Math.sin(t * Math.PI * 2.0 + phase) * 0.08)
   const center = shapeCenterX(t, mode)
-  const twist = Math.sin(t * Math.PI * 2.7 + phase * 0.35) * 0.14
+  const twist = Math.sin(t * Math.PI * 2.3 + phase * 0.35) * 0.18
+  const waist = 1 - bell(t, 0.58, 0.13) * 0.34
   const x =
     center +
-    (lane + twist) * radiusX +
-    Math.sin(t * Math.PI * 3.4 + phase) * radiusX * 0.12 +
+    (lane * waist + twist) * radiusX +
+    Math.sin(t * Math.PI * 3.4 + phase) * radiusX * 0.1 +
     Math.sin(t * Math.PI * 11.0 + phase * 0.4) * 0.012
   const y = shapeY(t) + Math.cos(t * Math.PI * 5.2 + phase) * shapeRadiusY(t)
   const z = Math.sin(t * Math.PI * 2.0 + phase) * 0.28 + lane * 0.08
@@ -314,99 +374,166 @@ function pointOnSculpture(t: number, lane: number, phase: number, mode: AuthMode
 
 function pickVerticalT(random: () => number) {
   const bucket = random()
-  if (bucket < 0.34) return clamp(0.32 + (random() - 0.5) * 0.36, 0.02, 0.98)
-  if (bucket < 0.74) return clamp(0.7 + (random() - 0.5) * 0.34, 0.02, 0.98)
-  if (bucket < 0.88) return clamp(0.16 + (random() - 0.5) * 0.24, 0.02, 0.98)
+  if (bucket < 0.44) return clamp(0.32 + (random() - 0.5) * 0.32, 0.02, 0.98)
+  if (bucket < 0.76) return clamp(0.73 + (random() - 0.5) * 0.32, 0.02, 0.98)
+  if (bucket < 0.89) return clamp(0.16 + (random() - 0.5) * 0.22, 0.02, 0.98)
   return random()
 }
 
 function createParticleGeometry(mode: AuthMode, profile: QualityProfile) {
   const random = createRandom(mode === 'login' ? 11037 : 22891)
-  const positions = new Float32Array(profile.particleCount * 3)
-  const meta = new Float32Array(profile.particleCount * 4)
-  const tone = new Float32Array(profile.particleCount)
+  const positions: number[] = []
+  const meta: number[] = []
+  const tone: number[] = []
 
-  for (let index = 0; index < profile.particleCount; index += 1) {
+  const pushParticle = (point: SculptPoint, size: number, alpha: number, phase: number, speed: number, toneValue: number) => {
+    positions.push(point.x, point.y, point.z)
+    meta.push(size, alpha, phase, speed)
+    tone.push(toneValue)
+  }
+
+  let guard = 0
+  const coreTarget = Math.floor(profile.particleCount * 0.62)
+  while (tone.length < coreTarget && guard < profile.particleCount * 6) {
+    guard += 1
     const t = pickVerticalT(random)
     const angle = random() * Math.PI * 2
-    const radial = random() > 0.42 ? 0.72 + random() * 0.3 : Math.pow(random(), 0.8) * 0.76
-    const center = shapeCenterX(t, mode)
-    const radiusX = shapeRadiusX(t)
-    const radiusY = shapeRadiusY(t)
-    const i3 = index * 3
-    const i4 = index * 4
+    const radial = Math.pow(random(), 0.54) * (0.88 + lowerBreakup(t) * 0.28)
+    const phase = random() * Math.PI * 2
+    const point = sectionPoint(t, angle, radial, phase, mode)
+    const cavity = cavityAmount(point.x, point.y)
+    if (random() < cavity * 0.92) continue
 
-    positions[i3] =
-      center +
-      Math.cos(angle) * radiusX * radial +
-      Math.sin(t * 23.0 + random() * 3.0) * 0.014 +
-      (random() - 0.5) * 0.025
-    positions[i3 + 1] = shapeY(t) + Math.sin(angle) * radiusY * radial + Math.sin(t * 13.0 + random() * 4.0) * 0.012
-    positions[i3 + 2] = (random() - 0.5) * 0.58 + radial * 0.18
+    const alpha = clamp(0.18 + densityAt(t) * 0.56 + (radial > 0.72 ? 0.1 : 0) - cavity * 0.35 + random() * 0.12, 0.08, 0.9)
+    const size = 1.05 + random() * 1.9 + (random() > 0.965 ? random() * 3.2 : 0)
+    const highlight = random() > 0.94 ? 0.28 : 0
+    pushParticle(point, size, alpha + highlight, phase, 0.2 + random() * 0.7, clamp(0.34 + random() * 0.55 + highlight, 0, 1))
+  }
 
-    const surfaceAlpha = radial > 0.7 ? 0.09 : 0
-    const coreAlpha = 0.11 + surfaceAlpha + bell(t, 0.42, 0.31) * 0.24 + bell(t, 0.76, 0.2) * 0.35
-    const sparkle = random() > 0.92 ? 0.18 + random() * 0.22 : 0
-    const largeDot = random() > 0.962
-    meta[i4] = largeDot ? 4.1 + random() * 3.0 : 1.25 + random() * 2.15
-    meta[i4 + 1] = clamp(coreAlpha + sparkle + random() * 0.12, 0.08, 0.88)
-    meta[i4 + 2] = random() * Math.PI * 2
-    meta[i4 + 3] = 0.18 + random() * 0.9
-    tone[index] = clamp(0.28 + random() * 0.7 + sparkle * 0.9, 0, 1)
+  const dustTarget = tone.length + Math.floor(profile.particleCount * 0.18)
+  while (tone.length < dustTarget) {
+    const t = random()
+    const angle = random() * Math.PI * 2
+    const radial = 0.9 + random() * (0.65 + lowerBreakup(t) * 0.6)
+    const phase = random() * Math.PI * 2
+    const point = sectionPoint(t, angle, radial, phase, mode)
+    const cavity = cavityAmount(point.x, point.y)
+    if (random() < cavity * 0.7) continue
+    point.x += (random() - 0.5) * 0.09
+    point.y += (random() - 0.5) * 0.08
+    point.z += (random() - 0.5) * 0.2
+    pushParticle(point, 0.8 + random() * 1.2, 0.035 + random() * 0.14, phase, 0.09 + random() * 0.32, 0.26 + random() * 0.42)
+  }
+
+  const lowerNodeTarget = tone.length + Math.floor(profile.particleCount * 0.12)
+  while (tone.length < lowerNodeTarget) {
+    const t = clamp(0.7 + random() * 0.29, 0.02, 0.99)
+    const angle = random() * Math.PI * 2
+    const radial = 0.55 + random() * 0.86
+    const phase = random() * Math.PI * 2
+    const point = sectionPoint(t, angle, radial, phase, mode)
+    if (random() < cavityAmount(point.x, point.y)) continue
+    point.x += (random() - 0.5) * 0.08
+    point.y += random() * 0.12
+    pushParticle(point, 2.2 + random() * 5.2, 0.18 + random() * 0.48, phase, 0.08 + random() * 0.26, 0.42 + random() * 0.55)
+  }
+
+  while (tone.length < profile.particleCount) {
+    const t = clamp(0.18 + random() * 0.78, 0.02, 0.99)
+    const phase = random() * Math.PI * 2
+    const point = sectionPoint(t, random() * Math.PI * 2, 0.2 + random() * 0.78, phase, mode)
+    if (random() < cavityAmount(point.x, point.y) * 0.85) continue
+    pushParticle(point, 1.25 + random() * 2.4, 0.28 + random() * 0.5, phase, 0.18 + random() * 0.64, 0.78 + random() * 0.22)
   }
 
   const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-  geometry.setAttribute('aMeta', new THREE.BufferAttribute(meta, 4))
-  geometry.setAttribute('aTone', new THREE.BufferAttribute(tone, 1))
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
+  geometry.setAttribute('aMeta', new THREE.BufferAttribute(new Float32Array(meta), 4))
+  geometry.setAttribute('aTone', new THREE.BufferAttribute(new Float32Array(tone), 1))
   geometry.computeBoundingSphere()
   return geometry
 }
 
 function createFlowLineGeometry(mode: AuthMode, profile: QualityProfile) {
   const random = createRandom(mode === 'login' ? 39197 : 57163)
-  const vertexCount = profile.lineCount * profile.curveSegments * 2
-  const positions = new Float32Array(vertexCount * 3)
-  const meta = new Float32Array(vertexCount * 4)
-  let cursor = 0
-  let metaCursor = 0
+  const positions: number[] = []
+  const meta: number[] = []
 
-  for (let line = 0; line < profile.lineCount; line += 1) {
-    const lane = (line / Math.max(1, profile.lineCount - 1) - 0.5) * 2.35 + (random() - 0.5) * 0.16
+  const pushSegment = (a: SculptPoint, b: SculptPoint, alpha: number, phase: number, speed: number, lane: number) => {
+    positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
+    meta.push(alpha, phase, speed, lane, alpha, phase, speed, lane)
+  }
+
+  const verticalCount = Math.floor(profile.lineCount * 0.58)
+  for (let line = 0; line < verticalCount; line += 1) {
+    const lane = (line / Math.max(1, verticalCount - 1) - 0.5) * 1.62 + (random() - 0.5) * 0.1
     const phase = random() * Math.PI * 2
-    const speed = 0.08 + random() * 0.34
-    const alpha = 0.018 + random() * 0.086 + (Math.abs(lane) < 0.42 ? 0.038 : 0)
+    const speed = 0.06 + random() * 0.22
+    const alpha = 0.01 + random() * 0.052 + (Math.abs(lane) < 0.34 ? 0.02 : 0)
     let previous = pointOnSculpture(0, lane, phase, mode)
 
     for (let step = 1; step <= profile.curveSegments; step += 1) {
       const t = step / profile.curveSegments
       const current = pointOnSculpture(t, lane, phase, mode)
-      const fadeTopBottom = bell(t, 0.48, 0.46)
-      const localAlpha = alpha * (0.52 + fadeTopBottom * 0.72)
-
-      positions[cursor] = previous.x
-      positions[cursor + 1] = previous.y
-      positions[cursor + 2] = previous.z
-      positions[cursor + 3] = current.x
-      positions[cursor + 4] = current.y
-      positions[cursor + 5] = current.z
-      cursor += 6
-
-      for (let copy = 0; copy < 2; copy += 1) {
-        meta[metaCursor] = localAlpha
-        meta[metaCursor + 1] = phase
-        meta[metaCursor + 2] = speed
-        meta[metaCursor + 3] = lane
-        metaCursor += 4
-      }
+      const fadeTopBottom = bell(t, 0.47, 0.5)
+      const cavityFade = 1 - cavityAmount(current.x, current.y) * 0.86
+      const localAlpha = alpha * (0.36 + fadeTopBottom * 0.78) * cavityFade
+      pushSegment(previous, current, localAlpha, phase, speed, lane)
 
       previous = current
     }
   }
 
+  const upperCount = Math.floor(profile.lineCount * 0.2)
+  for (let line = 0; line < upperCount; line += 1) {
+    const phase = random() * Math.PI * 2
+    const lane = (random() - 0.5) * 0.9
+    const loopScale = 0.86 + random() * 0.34
+    const yLift = 0.02 + random() * 0.18
+    const alpha = 0.018 + random() * 0.072
+    const speed = 0.05 + random() * 0.17
+    let previous: SculptPoint | null = null
+
+    for (let step = 0; step <= profile.curveSegments; step += 1) {
+      const s = step / profile.curveSegments
+      const arc = Math.PI * (0.08 + s * 0.92)
+      const x = -0.45 + Math.cos(arc + phase * 0.04) * 0.34 * loopScale + lane * 0.035 + Math.sin(s * Math.PI * 5 + phase) * 0.018
+      const y = 0.64 + Math.sin(arc) * 0.43 + yLift + Math.sin(s * Math.PI * 2 + phase) * 0.026
+      const z = Math.cos(arc + phase) * 0.23
+      const current = { x, y, z }
+      if (previous) {
+        const localAlpha = alpha * (0.42 + bell(s, 0.5, 0.37) * 0.78)
+        pushSegment(previous, current, localAlpha, phase, speed, lane)
+      }
+      previous = current
+    }
+  }
+
+  const cavityCount = Math.floor(profile.lineCount * 0.12)
+  for (let line = 0; line < cavityCount; line += 1) {
+    const phase = random() * Math.PI * 2
+    const ring = 0.78 + random() * 0.48
+    const alpha = 0.018 + random() * 0.05
+    const speed = 0.04 + random() * 0.14
+    let previous: SculptPoint | null = null
+    const segments = Math.max(36, Math.floor(profile.curveSegments * 0.72))
+
+    for (let step = 0; step <= segments; step += 1) {
+      const a = (step / segments) * Math.PI * 2
+      const x = CAVITY.x + Math.cos(a) * CAVITY.rx * ring + Math.sin(a * 3 + phase) * 0.018
+      const y = CAVITY.y + Math.sin(a) * CAVITY.ry * ring + Math.cos(a * 2 + phase) * 0.014
+      const z = Math.sin(a + phase) * 0.22
+      const current = { x, y, z }
+      if (previous) {
+        pushSegment(previous, current, alpha * (0.56 + Math.sin(a + phase) * 0.18), phase, speed, 0)
+      }
+      previous = current
+    }
+  }
+
   const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-  geometry.setAttribute('aLineMeta', new THREE.BufferAttribute(meta, 4))
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
+  geometry.setAttribute('aLineMeta', new THREE.BufferAttribute(new Float32Array(meta), 4))
   geometry.computeBoundingSphere()
   return geometry
 }
@@ -420,13 +547,15 @@ function createNetworkGeometry(mode: AuthMode, profile: QualityProfile) {
   let metaCursor = 0
 
   for (let edge = 0; edge < profile.edgeCount; edge += 1) {
-    const t = clamp(0.35 + random() * 0.58, 0.02, 0.98)
+    const lowerBias = random() < 0.72
+    const t = lowerBias ? clamp(0.68 + random() * 0.3, 0.02, 0.99) : clamp(0.28 + random() * 0.5, 0.02, 0.98)
     const phase = random() * Math.PI * 2
-    const laneA = (random() - 0.5) * 1.42
-    const laneB = laneA + (random() - 0.5) * 0.24
+    const laneA = (random() - 0.5) * (lowerBias ? 1.9 : 1.08)
+    const laneB = laneA + (random() - 0.5) * (lowerBias ? 0.46 : 0.22)
     const a = pointOnSculpture(t + (random() - 0.5) * 0.018, laneA, phase, mode)
     const b = pointOnSculpture(t + (random() - 0.5) * 0.038, laneB, phase + random() * 0.4, mode)
-    const alpha = (0.015 + random() * 0.055) * (bell(t, 0.69, 0.27) + 0.42)
+    if (random() < (cavityAmount(a.x, a.y) + cavityAmount(b.x, b.y)) * 0.5) continue
+    const alpha = (0.018 + random() * 0.072) * (bell(t, 0.78, 0.22) * 1.35 + bell(t, 0.42, 0.18) * 0.34 + 0.24)
     const speed = 0.06 + random() * 0.18
 
     positions[cursor] = a.x
