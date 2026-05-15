@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { AuthShell } from '../components/auth/AuthShell'
-import { GenerativeMeshVisual } from '../components/auth/GenerativeMeshVisual'
+import { AuthVisualBackground } from '../components/auth/AuthVisualBackground'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/errors'
 
@@ -39,7 +39,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthShell mode="login" visual={<GenerativeMeshVisual mode="login" />}>
+    <AuthShell mode="login" visual={<AuthVisualBackground mode="login" />}>
       <form onSubmit={onSubmit} className="auth-card">
         <div className="auth-card-heading">
           <p className="auth-brand">CyberLab Tracker</p>

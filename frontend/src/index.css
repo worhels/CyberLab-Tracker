@@ -55,14 +55,10 @@ textarea {
 @layer components {
   .auth-shell {
     position: relative;
-    display: grid;
     min-height: 100vh;
     overflow: hidden;
-    grid-template-columns: minmax(0, 58fr) minmax(390px, 42fr);
     color: #f2f0ea;
-    background:
-      radial-gradient(circle at 21% 44%, rgba(242, 240, 234, 0.13), transparent 34rem),
-      linear-gradient(90deg, #151411 0%, #0b0a07 58%, #050403 100%);
+    background: #0b0a07;
     isolation: isolate;
   }
 
@@ -72,7 +68,7 @@ textarea {
     z-index: 5;
     pointer-events: none;
     content: "";
-    opacity: 0.12;
+    opacity: 0.08;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
   }
@@ -84,79 +80,114 @@ textarea {
     pointer-events: none;
     content: "";
     background:
-      radial-gradient(ellipse at center, transparent 38%, rgba(0, 0, 0, 0.34) 100%),
-      linear-gradient(90deg, rgba(245, 245, 245, 0.03), transparent 31%, transparent 62%, rgba(0, 0, 0, 0.58));
+      radial-gradient(ellipse at 42% 48%, transparent 42%, rgba(0, 0, 0, 0.24) 100%),
+      linear-gradient(90deg, rgba(242, 240, 234, 0.025), transparent 34%, rgba(5, 5, 4, 0.52) 74%, rgba(5, 5, 4, 0.86));
   }
 
   .auth-visual {
-    position: relative;
-    height: 100vh;
-    min-height: 100vh;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     overflow: hidden;
     background: #0b0a07;
   }
 
-  .generative-mesh-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-  }
-
-  .auth-visual::before {
+  .auth-visual-bg,
+  .auth-reference-layer,
+  .auth-left-haze,
+  .auth-right-fade,
+  .auth-bottom-vignette,
+  .auth-film-grain,
+  .auth-visual-fx-canvas {
     position: absolute;
     inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    content: "";
-    background:
-      linear-gradient(90deg, rgba(242, 240, 234, 0.08), transparent 36%, rgba(11, 10, 7, 0.54) 92%),
-      linear-gradient(180deg, rgba(242, 240, 234, 0.04), transparent 20%, transparent 78%, rgba(0, 0, 0, 0.72));
+    width: 100%;
+    height: 100%;
   }
 
-  .auth-visual::after {
-    position: absolute;
-    inset: auto 0 0;
-    z-index: 3;
-    height: 44%;
+  .auth-visual-bg {
+    overflow: hidden;
     pointer-events: none;
-    content: "";
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.82), transparent);
+  }
+
+  .auth-reference-layer {
+    z-index: 0;
+    opacity: 0.98;
+    background-image: url("/assets/auth-mesh-reference.jpg");
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: clamp(860px, 64vw, 1180px) 100vh;
+    filter: grayscale(0.08) contrast(1.03) brightness(0.98);
+    transform: translate3d(0, 0, 0);
+    transform-origin: left center;
+  }
+
+  .auth-left-haze {
+    z-index: 1;
+    background:
+      radial-gradient(ellipse at 8% 42%, rgba(242, 240, 234, 0.26), transparent 42%),
+      linear-gradient(90deg, rgba(242, 240, 234, 0.12) 0%, rgba(141, 138, 132, 0.08) 24%, transparent 52%);
+    mix-blend-mode: screen;
+  }
+
+  .auth-right-fade {
+    z-index: 2;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(5, 5, 4, 0.08) 38%,
+      rgba(5, 5, 4, 0.3) 48%,
+      rgba(5, 5, 4, 0.92) 68%,
+      #050504 100%
+    );
+  }
+
+  .auth-bottom-vignette {
+    z-index: 3;
+    background:
+      linear-gradient(180deg, rgba(5, 5, 4, 0.24) 0%, transparent 12%, transparent 78%, rgba(5, 5, 4, 0.52) 100%),
+      radial-gradient(ellipse at 42% 82%, transparent 22%, rgba(5, 5, 4, 0.28) 100%);
+  }
+
+  .auth-film-grain {
+    z-index: 4;
+    opacity: 0.11;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.36'/%3E%3C/svg%3E");
+  }
+
+  .auth-visual-fx-canvas {
+    z-index: 5;
+    display: block;
   }
 
   .auth-visual-fallback {
-    width: 100%;
-    height: 100%;
-    background:
-      radial-gradient(circle at 34% 42%, rgba(242, 240, 234, 0.18), transparent 18rem),
-      linear-gradient(90deg, #151411, #0b0a07 68%, #020201);
+    position: absolute;
+    inset: 0;
+    background: #0b0a07;
   }
 
   .auth-panel {
     position: relative;
-    z-index: 4;
-    display: grid;
-    min-width: 0;
+    z-index: 8;
+    display: flex;
     min-height: 100vh;
-    place-items: center;
-    padding: clamp(1.5rem, 5vw, 5rem);
-    border-left: 1px solid rgba(255, 255, 255, 0.065);
-    background:
-      radial-gradient(circle at 0% 24%, rgba(242, 240, 234, 0.04), transparent 19rem),
-      linear-gradient(90deg, rgba(11, 10, 7, 0.4), rgba(11, 10, 7, 0.86) 32%, rgba(11, 10, 7, 0.98));
+    align-items: center;
+    justify-content: flex-end;
+    padding: clamp(1.5rem, 4vw, 4rem) clamp(6rem, 12vw, 16rem) clamp(1.5rem, 4vw, 4rem) 1.5rem;
   }
 
   .auth-card {
     width: 100%;
-    max-width: min(440px, calc(100vw - 2.3rem));
+    max-width: min(420px, calc(100vw - 2.3rem));
     padding: clamp(1.75rem, 3.8vw, 2.35rem);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     background:
-      linear-gradient(180deg, rgba(37, 36, 33, 0.74), rgba(21, 20, 17, 0.72)),
+      linear-gradient(180deg, rgba(37, 36, 33, 0.66), rgba(21, 20, 17, 0.72)),
       rgba(21, 20, 17, 0.72);
     box-shadow:
-      0 34px 96px rgba(0, 0, 0, 0.56),
+      0 34px 96px rgba(0, 0, 0, 0.62),
       0 0 0 1px rgba(0, 0, 0, 0.18),
       inset 0 1px 0 rgba(242, 240, 234, 0.05);
     backdrop-filter: blur(18px);
@@ -319,27 +350,32 @@ textarea {
       linear-gradient(135deg, #0b0a07 0%, #151411 100%);
   }
 
-  .auth-shell {
-    display: grid;
-    grid-template-columns: 1fr;
+  .auth-reference-layer {
+    opacity: 0.52;
+    background-position: 43% center;
+    background-size: auto 112vh;
+    filter: grayscale(0.12) contrast(1.02) brightness(0.66);
   }
 
-  .auth-visual {
-    position: absolute;
-    inset: 0;
-    min-height: 100%;
-    opacity: 0.58;
+  .auth-left-haze {
+    opacity: 0.35;
+  }
+
+  .auth-right-fade {
+    background: rgba(5, 5, 4, 0.62);
+  }
+
+  .auth-bottom-vignette {
+    background:
+      linear-gradient(180deg, rgba(5, 5, 4, 0.42) 0%, transparent 18%, transparent 66%, rgba(5, 5, 4, 0.76) 100%),
+      radial-gradient(ellipse at 50% 46%, transparent 10%, rgba(5, 5, 4, 0.48) 100%);
   }
 
   .auth-panel {
-    z-index: 8;
+    align-items: center;
+    justify-content: center;
     padding: 1.15rem;
-    border-left: 0;
-    justify-items: center;
     overflow: hidden;
-    background:
-      radial-gradient(ellipse at 50% 24%, rgba(242, 240, 234, 0.08), transparent 16rem),
-      linear-gradient(180deg, rgba(11, 10, 7, 0.52), rgba(11, 10, 7, 0.92));
   }
 
   .auth-card {
