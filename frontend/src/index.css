@@ -80,8 +80,8 @@ textarea {
     pointer-events: none;
     content: "";
     background:
-      radial-gradient(ellipse at 42% 48%, transparent 42%, rgba(0, 0, 0, 0.24) 100%),
-      linear-gradient(90deg, rgba(242, 240, 234, 0.025), transparent 34%, rgba(5, 5, 4, 0.52) 74%, rgba(5, 5, 4, 0.86));
+      radial-gradient(ellipse at 40% 47%, transparent 40%, rgba(0, 0, 0, 0.3) 100%),
+      linear-gradient(90deg, rgba(242, 240, 234, 0.022), transparent 31%, rgba(5, 5, 4, 0.46) 63%, rgba(5, 5, 4, 0.91) 80%);
   }
 
   .auth-visual {
@@ -106,8 +106,8 @@ textarea {
     overflow: hidden;
     pointer-events: none;
     background:
-      radial-gradient(ellipse at 8% 44%, rgba(242, 240, 234, 0.2), transparent 42%),
-      linear-gradient(90deg, #151411 0%, #0b0a07 57%, #050504 100%);
+      radial-gradient(ellipse at 10% 43%, rgba(242, 240, 234, 0.15), transparent 45%),
+      linear-gradient(90deg, #151411 0%, #0b0a07 54%, #050504 100%);
   }
 
   .auth-generative-canvas {
@@ -118,7 +118,7 @@ textarea {
 
   .auth-generative-grain {
     z-index: 4;
-    opacity: 0.12;
+    opacity: 0.105;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.36'/%3E%3C/svg%3E");
   }
@@ -126,8 +126,8 @@ textarea {
   .auth-generative-vignette {
     z-index: 5;
     background:
-      radial-gradient(ellipse at 38% 50%, transparent 34%, rgba(0, 0, 0, 0.28) 82%, rgba(0, 0, 0, 0.5) 100%),
-      linear-gradient(90deg, rgba(242, 240, 234, 0.05), transparent 22%, transparent 50%, rgba(5, 5, 4, 0.46) 74%, rgba(5, 5, 4, 0.92)),
+      radial-gradient(ellipse at 37% 49%, transparent 33%, rgba(0, 0, 0, 0.3) 82%, rgba(0, 0, 0, 0.52) 100%),
+      linear-gradient(90deg, rgba(242, 240, 234, 0.04), transparent 21%, transparent 48%, rgba(5, 5, 4, 0.54) 70%, rgba(5, 5, 4, 0.95)),
       linear-gradient(180deg, rgba(5, 5, 4, 0.3) 0%, transparent 16%, transparent 76%, rgba(5, 5, 4, 0.62) 100%);
   }
 
@@ -154,9 +154,9 @@ textarea {
 
   .auth-micro-type--right {
     top: 41%;
-    left: min(52vw, 47rem);
+    left: min(49vw, 44rem);
     width: min(18vw, 14rem);
-    opacity: 0.56;
+    opacity: 0.5;
     text-align: right;
   }
 
