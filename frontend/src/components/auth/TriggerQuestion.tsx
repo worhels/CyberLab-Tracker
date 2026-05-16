@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
 
+const QUESTION_ROTATION_MS = 20_000
+const QUESTION_FADE_MS = 900
+const FIRST_APPEAR_DELAY_MS = 700
+
 const QUESTIONS = [
   // Идентичность и самообман
   'Ты вообще свою жизнь строишь — или всё ещё пытаешься доказать кому-то из прошлого, что ты не проиграл?',
@@ -255,11 +259,21 @@ const QUESTIONS = [
 
 ]
 
+export const TRIGGER_QUESTION_COUNT = QUESTIONS.length
+export const TRIGGER_QUESTION_PRESSURE = '100%'
+export const TRIGGER_QUESTION_META = `${TRIGGER_QUESTION_COUNT} questions / psychological pressure ${TRIGGER_QUESTION_PRESSURE}`
+
 function getRandomIndex(exclude: number): number {
-  let next = Math.floor(Math.random() * QUESTIONS.length)
-  if (QUESTIONS.length > 1 && next === exclude) {
-    next = (next + 1) % QUESTIONS.length
+  if (QUESTIONS.length <= 1) {
+    return 0
   }
+
+  let next = Math.floor(Math.random() * QUESTIONS.length)
+
+  while (next === exclude) {
+    next = Math.floor(Math.random() * QUESTIONS.length)
+  }
+
   return next
 }
 
@@ -268,26 +282,34 @@ export function TriggerQuestion() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const showTimer = setTimeout(() => setVisible(true), 600)
-    return () => clearTimeout(showTimer)
-  }, [])
+    let fadeTimer: number | undefined
+    const showTimer = window.setTimeout(() => setVisible(true), FIRST_APPEAR_DELAY_MS)
 
-  useEffect(() => {
-    const cycle = setInterval(() => {
+    const cycleTimer = window.setInterval(() => {
       setVisible(false)
-      setTimeout(() => {
+
+      fadeTimer = window.setTimeout(() => {
         setIndex((prev) => getRandomIndex(prev))
         setVisible(true)
-      }, 700)
-    }, 9000)
-    return () => clearInterval(cycle)
+      }, QUESTION_FADE_MS)
+    }, QUESTION_ROTATION_MS)
+
+    return () => {
+      window.clearTimeout(showTimer)
+      window.clearInterval(cycleTimer)
+
+      if (fadeTimer !== undefined) {
+        window.clearTimeout(fadeTimer)
+      }
+    }
   }, [])
 
   return (
-    <div className="trigger-question-wrap">
+    <aside className="trigger-question-wrap" aria-live="polite" aria-label="Random psychological trigger question">
+      <span className="trigger-question-meta">{TRIGGER_QUESTION_META}</span>
       <p className={`trigger-question${visible ? ' trigger-question--visible' : ''}`}>
         {QUESTIONS[index]}
       </p>
-    </div>
+    </aside>
   )
 }
