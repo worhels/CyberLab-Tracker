@@ -101,11 +101,11 @@ interface LowerNodeBuild {
 const MASK_WIDTH = 64
 const MASK_HEIGHT = 96
 const RIGHT_RESERVE = 0.72
-const SCULPTURE_SHIFT_X = -0.18
+const SCULPTURE_SHIFT_X = -0.28
 
 const SPINE_POINTS: Array<[number, number, number]> = [
-  [0.60, -0.18, 0.08],
-  [0.59, -0.08, 0.06],
+  [0.60, -0.22, 0.08],
+  [0.59, -0.10, 0.06],
   [0.58, 0.02, 0.05],
   [0.55, 0.09, 0.02],
   [0.49, 0.18, -0.03],
@@ -115,8 +115,8 @@ const SPINE_POINTS: Array<[number, number, number]> = [
   [0.49, 0.74, 0.03],
   [0.54, 0.88, 0.07],
   [0.58, 0.98, 0.1],
-  [0.60, 1.08, 0.12],
-  [0.61, 1.18, 0.13],
+  [0.60, 1.10, 0.12],
+  [0.61, 1.22, 0.13],
 ]
 
 const QUALITY_PRESETS: Record<QualityTier, Omit<QualityProfile, 'tier'>> = {
@@ -204,7 +204,7 @@ void main() {
   float lower = texture2D(uMaskTex1, uv).r;
   float dust = texture2D(uMaskTex1, uv).g;
   float ribbon = texture2D(uMaskTex2, uv).r * uRibbonBoost;
-
+  float rightReserve = smoothstep(0.62, 0.9, uv.x);
 
   vec3 base = mix(vec3(0.070, 0.070, 0.074), vec3(0.012, 0.012, 0.013), smoothstep(0.4, 0.9, uv.x));
   base += vec3(0.58, 0.58, 0.60) * leftHaze * (0.19 + uLeftLightBias * 0.16);
@@ -213,7 +213,7 @@ void main() {
   base += vec3(0.22, 0.22, 0.24) * core * 0.08;
   base += vec3(0.16, 0.16, 0.17) * lower * 0.05;
   base += vec3(0.65, 0.65, 0.67) * dust * 0.025;
-
+  base *= 1.0 - rightReserve * 0.84;
   base *= 1.0 - cavity * 0.18;
 
   float grain = hash(floor((uv + vec2(uTime * 0.003, -uTime * 0.0015)) * vec2(960.0, 540.0))) - 0.5;
@@ -310,7 +310,7 @@ void main() {
   }
 
   float cursorGlow = uCursorGlow * falloff;
-  gl_PointSize = max(0.2, size * groupScale * uDpr * (1.0 + cursorGlow * 0.85));
+  gl_PointSize = max(0.2, size * groupScale * uDpr * (1.0 + cursorGlow * 0.85)) * 0.55;
   gl_PointSize *= 1.0 + abs(mvPosition.z) * 0.03;
 
   float groupAlpha = alpha;
@@ -325,12 +325,6 @@ void main() {
     groupAlpha *= mix(0.6, 1.0, density);
   }
   groupAlpha *= (1.0 - cavity * 0.72);
-
-  // Smooth alpha fade toward right reserve zone — eliminates hard clip line
-  // Use base position x (pre-scale) in normalized 0..1 space
-  float screenX = base.x * 0.5 + 0.5;
-  float rightFade = 1.0 - smoothstep(0.50, 0.80, screenX);
-  groupAlpha *= rightFade;
 
   vec3 color = aColor.rgb;
   if (groupId > 0.5 && groupId < 1.5) {
@@ -483,11 +477,6 @@ void main() {
   float vig = smoothstep(1.12, 0.26, length(p * vec2(0.86, 1.0)));
   color *= mix(1.0 - uVignette, 1.0, vig);
 
-  // Right-edge fade applied AFTER bloom — kills any hard line artifact
-  float rightFade = 1.0 - smoothstep(0.42, 0.88, uv.x);
-  vec3 rightDark = vec3(0.012, 0.012, 0.013);
-  color = mix(rightDark, color, rightFade);
-
   gl_FragColor = vec4(color, 1.0);
 }
 `
@@ -522,7 +511,7 @@ function shiftNormalizedX(nx: number) {
 }
 
 function reserveWeight(nx: number) {
-  return smoothstep(RIGHT_RESERVE - 0.22, RIGHT_RESERVE + 0.06, nx)
+  return smoothstep(RIGHT_RESERVE - 0.12, RIGHT_RESERVE + 0.08, nx)
 }
 
 function createRandom(seed: number) {
@@ -1060,8 +1049,8 @@ function buildCurves(mode: AuthMode, profile: QualityProfile, spine: THREE.Catmu
       const cav = cavityMask(screen.x, screen.y)
       p.x -= cav * 0.09
       const reserve = reserveWeight(screen.x)
-      const drawChance = clamp(1 - cav * 0.56 - reserve * 1.28, 0, 1)
-      if (screen.x < RIGHT_RESERVE + 0.08 && random() < drawChance) {
+      const drawChance = clamp(1 - cav * 0.56 - reserve * 1.02, 0, 1)
+      if (screen.x < RIGHT_RESERVE + 0.14 && random() < drawChance) {
         pushSegment(vertical, prev, p)
       }
       prev = p
@@ -1084,7 +1073,7 @@ function buildCurves(mode: AuthMode, profile: QualityProfile, spine: THREE.Catmu
       p.y += 0.04 + Math.sin(u * Math.PI * 2 + phase) * 0.015
       const screen = toScreen(p)
       const reserve = reserveWeight(screen.x)
-      if (screen.x > RIGHT_RESERVE + 0.06 || random() < reserve * 1.1) continue
+      if (screen.x > RIGHT_RESERVE + 0.14 || random() < reserve * 0.94) continue
       const cav = cavityMask(screen.x, screen.y)
       p.x -= cav * 0.08
       points.push(p.x, p.y, p.z)
@@ -1131,7 +1120,7 @@ function buildCurves(mode: AuthMode, profile: QualityProfile, spine: THREE.Catmu
       p.x = centerX + (p.x - centerX) * 0.62
       const screen = toScreen(p)
       const reserve = reserveWeight(screen.x)
-      if (screen.x > RIGHT_RESERVE + 0.06 || random() < reserve * 1.08) continue
+      if (screen.x > RIGHT_RESERVE + 0.14 || random() < reserve * 0.92) continue
       const cav = cavityMask(screen.x, screen.y)
       p.x -= cav * 0.1
       if (prev && random() > cav * 0.7) {
@@ -1152,7 +1141,7 @@ function buildCurves(mode: AuthMode, profile: QualityProfile, spine: THREE.Catmu
       const a = Math.PI * (0.1 + u * 0.95)
       const nx = shiftNormalizedX(0.34 + Math.cos(a + phase * 0.2) * 0.28 * scale)
       const ny = 0.08 + yBias + Math.sin(a) * 0.2
-      if (nx > RIGHT_RESERVE + 0.1) continue
+      if (nx > RIGHT_RESERVE + 0.1 || ny < -0.03 || ny > 1.03) continue
       const p = toWorld(nx, ny, Math.sin(a + phase) * 0.08)
       if (prev) {
         pushSegment(atmosphere, prev, p)
@@ -1165,7 +1154,7 @@ function buildCurves(mode: AuthMode, profile: QualityProfile, spine: THREE.Catmu
   for (let i = 0; i < terminalCount; i += 1) {
     const phase = random() * Math.PI * 2
     const isTop = i % 2 === 0
-    const tAnchor = isTop ? clamp(0.01 + random() * 0.12, 0.01, 0.15) : clamp(0.85 + random() * 0.12, 0.82, 0.99)
+    const tAnchor = isTop ? clamp(0.03 + random() * 0.18, 0.01, 0.25) : clamp(0.78 + random() * 0.19, 0.74, 0.99)
     const phi = -1.1 + random() * 2.2
     const rho = 0.84 + random() * 0.32
     let prev = sampleShell(spine, tAnchor, phi, rho)
@@ -1176,7 +1165,7 @@ function buildCurves(mode: AuthMode, profile: QualityProfile, spine: THREE.Catmu
       const bend = Math.sin(u * Math.PI * 2 + phase) * 0.018
       const p = prev.clone()
       p.x += (isTop ? -1 : 1) * (0.01 + u * 0.04) + bend
-      p.y += isTop ? u * (0.48 + random() * 0.18) : -u * (0.48 + random() * 0.18)
+      p.y += isTop ? u * (0.52 + random() * 0.18) : -u * (0.52 + random() * 0.18)
       p.z += Math.sin(u * Math.PI + phase) * 0.02
       const screen = toScreen(p)
       if (screen.x < RIGHT_RESERVE + 0.08 || random() > reserveWeight(screen.x) * 1.1) {
@@ -1482,7 +1471,7 @@ function OrthoLock() {
   const { camera, size, invalidate } = useThree()
   useEffect(() => {
     const ortho = camera as THREE.OrthographicCamera
-    ortho.zoom = size.height * 0.5
+    ortho.zoom = size.height * 0.38
     ortho.updateProjectionMatrix()
     invalidate()
   }, [camera, invalidate, size.height])

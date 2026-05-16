@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { TriggerQuestion } from './TriggerQuestion'
 
 export type AuthMode = 'login' | 'register'
 
@@ -14,6 +15,7 @@ export function AuthShell({ children, mode, visual }: AuthShellProps) {
       <section className="auth-visual" aria-hidden="true">
         {visual ?? <div className="auth-visual-fallback" />}
       </section>
+      <TriggerQuestion />
       <section className="auth-panel">{children}</section>
     </main>
   )

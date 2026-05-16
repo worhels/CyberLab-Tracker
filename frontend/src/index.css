@@ -390,40 +390,27 @@ textarea {
 .trigger-question-wrap {
   position: absolute;
   top: clamp(1.1rem, 2.7vh, 2.35rem);
-  left: clamp(24rem, 36vw, 45rem);
-  right: clamp(17rem, 24vw, 32rem);
+  left: clamp(34rem, 56vw, 44rem);
+  right: clamp(0.75rem, 2vw, 2rem);
   z-index: 9;
   display: grid;
-  max-width: 54rem;
-  gap: 0.42rem;
-  justify-items: end;
+  max-width: none;
+  justify-items: start;
   pointer-events: none;
-}
-
-.trigger-question-meta {
-  color: rgba(242, 240, 234, 0.25);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: clamp(0.46rem, 0.52vw, 0.62rem);
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  line-height: 1;
-  text-align: right;
-  text-transform: uppercase;
-  text-shadow: 0 0 18px rgba(242, 240, 234, 0.14);
-  user-select: none;
+  transform: translateX(clamp(0.4rem, 0.75vw, 1rem));
 }
 
 .trigger-question {
-  max-width: min(58ch, 100%);
+  max-width: none;
   margin: 0;
   color: rgba(242, 240, 234, 0);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: clamp(0.58rem, 0.76vw, 0.76rem);
+  font-size: clamp(0.72rem, 0.88vw, 0.9rem);
   font-weight: 520;
   letter-spacing: 0.035em;
-  line-height: 1.65;
-  text-align: right;
-  text-wrap: balance;
+  line-height: 1.35;
+  text-align: left;
+  white-space: nowrap;
   text-transform: none;
   opacity: 0;
   filter: blur(2px);
@@ -447,30 +434,24 @@ textarea {
 
 @media (max-width: 1199px) {
   .trigger-question-wrap {
-    left: clamp(18rem, 32vw, 28rem);
-    right: clamp(14rem, 20vw, 23rem);
-  }
-
-  .trigger-question {
-    max-width: min(50ch, 100%);
+    left: clamp(26rem, 50vw, 34rem);
+    right: 0.75rem;
   }
 }
 
 @media (max-width: 899px) {
   .trigger-question-wrap {
     top: 1rem;
-    left: 1.15rem;
-    right: 1.15rem;
-    justify-items: center;
-  }
-
-  .trigger-question-meta,
-  .trigger-question {
-    text-align: center;
+    left: clamp(18rem, 44vw, 26rem);
+    right: 0.75rem;
+    justify-items: start;
   }
 
   .trigger-question {
-    max-width: 42ch;
-    font-size: 0.62rem;
+    text-align: left;
+  }
+
+  .trigger-question {
+    font-size: 0.72rem;
   }
 }
