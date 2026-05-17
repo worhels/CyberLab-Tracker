@@ -3,21 +3,21 @@ import type { ReactNode } from 'react'
 interface StatCardProps {
   label: string
   value: ReactNode
-  accent?: 'blue' | 'green' | 'red' | 'amber'
+  accent?: 'ivory' | 'success' | 'red' | 'amber'
 }
 
 const accents = {
-  blue: 'text-cyan-300',
-  green: 'text-emerald-300',
-  red: 'text-red-300',
-  amber: 'text-amber-300',
+  ivory: 'stat-card-value--ivory',
+  success: 'stat-card-value--success',
+  red: 'stat-card-value--red',
+  amber: 'stat-card-value--amber',
 }
 
-export function StatCard({ label, value, accent = 'blue' }: StatCardProps) {
+export function StatCard({ label, value, accent = 'ivory' }: StatCardProps) {
   return (
     <div className="card p-4">
-      <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-      <div className={`mt-3 text-3xl font-semibold ${accents[accent]}`}>{value}</div>
+      <p className="label">{label}</p>
+      <div className={`stat-card-value mt-3 text-3xl font-semibold ${accents[accent]}`}>{value}</div>
     </div>
   )
 }

@@ -142,13 +142,13 @@ export function TasksPage() {
     <section>
       <PageHeader title="Tasks" subtitle="Labs, coursework, reports, and deadlines." />
 
-      {error ? <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
+      {error ? <p className="app-error mb-4">{error}</p> : null}
 
       <div className="grid gap-6 2xl:grid-cols-[420px_1fr]">
         <form onSubmit={onSubmit} className="card h-fit p-5">
-          <h2 className="mb-4 text-lg font-semibold text-slate-50">Create task</h2>
-          <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-1">
-            <label className="block sm:col-span-2 2xl:col-span-1">
+          <h2 className="app-section-title mb-4">Create task</h2>
+          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-1">
+            <label className="block lg:col-span-2 2xl:col-span-1">
               <span className="label">Title</span>
               <input className="field mt-1" value={form.title} onChange={(event) => updateField('title', event.target.value)} required />
             </label>
@@ -203,7 +203,7 @@ export function TasksPage() {
               <span className="label">Estimated hours</span>
               <input className="field mt-1" min="0" type="number" value={form.estimated_hours} onChange={(event) => updateField('estimated_hours', event.target.value)} />
             </label>
-            <label className="block sm:col-span-2 2xl:col-span-1">
+            <label className="block lg:col-span-2 2xl:col-span-1">
               <span className="label">Description</span>
               <textarea className="field mt-1 min-h-24" value={form.description} onChange={(event) => updateField('description', event.target.value)} />
             </label>
@@ -215,7 +215,7 @@ export function TasksPage() {
               <span className="label">Moodle URL</span>
               <input className="field mt-1" value={form.moodle_url} onChange={(event) => updateField('moodle_url', event.target.value)} />
             </label>
-            <label className="block sm:col-span-2 2xl:col-span-1">
+            <label className="block lg:col-span-2 2xl:col-span-1">
               <span className="label">Report file</span>
               <input className="field mt-1" value={form.report_file} onChange={(event) => updateField('report_file', event.target.value)} />
             </label>
@@ -261,11 +261,11 @@ export function TasksPage() {
 
           <div className="card overflow-hidden">
             {isLoading ? (
-              <div className="p-6 text-sm text-slate-400">Loading tasks...</div>
+              <div className="app-muted p-6 text-sm">Loading tasks...</div>
             ) : tasks.length ? (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
-                  <thead className="bg-slate-950/70 text-xs uppercase tracking-wide text-slate-500">
+                <table className="app-table">
+                  <thead>
                     <tr>
                       <th className="px-4 py-3">Task</th>
                       <th className="px-4 py-3">Subject</th>
@@ -276,20 +276,20 @@ export function TasksPage() {
                       <th className="px-4 py-3"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody>
                     {tasks.map((task) => (
                       <tr key={task.id} className="align-top">
                         <td className="px-4 py-4">
-                          <p className="font-semibold text-slate-100">{task.title}</p>
-                          {task.description ? <p className="mt-1 max-w-md text-xs text-slate-500">{task.description}</p> : null}
-                          <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
+                          <p className="font-semibold text-[#F2F0EA]">{task.title}</p>
+                          {task.description ? <p className="app-muted mt-1 max-w-md text-xs">{task.description}</p> : null}
+                          <div className="app-muted mt-2 flex flex-wrap gap-2 text-xs">
                             {task.estimated_hours ? <span>{task.estimated_hours}h</span> : null}
-                            {task.github_url ? <a className="text-cyan-300 hover:text-cyan-200" href={task.github_url} target="_blank">GitHub</a> : null}
-                            {task.moodle_url ? <a className="text-cyan-300 hover:text-cyan-200" href={task.moodle_url} target="_blank">Moodle</a> : null}
+                            {task.github_url ? <a className="app-link" href={task.github_url} target="_blank">GitHub</a> : null}
+                            {task.moodle_url ? <a className="app-link" href={task.moodle_url} target="_blank">Moodle</a> : null}
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-slate-300">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
-                        <td className="px-4 py-4 text-slate-400">{formatDate(task.deadline)}</td>
+                        <td className="px-4 py-4 text-[#BCB8AE]">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
+                        <td className="app-muted px-4 py-4">{formatDate(task.deadline)}</td>
                         <td className="px-4 py-4"><Badge value={task.type} variant="type" /></td>
                         <td className="px-4 py-4"><Badge value={task.priority} variant="priority" /></td>
                         <td className="px-4 py-4">

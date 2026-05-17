@@ -8,7 +8,7 @@ import { getErrorMessage } from '../utils/errors'
 
 const initialForm: SubjectPayload = {
   name: '',
-  color: '#38bdf8',
+  color: '#bcb8ae',
   teacher: '',
   semester: '',
   description: '',
@@ -69,11 +69,11 @@ export function SubjectsPage() {
     <section>
       <PageHeader title="Subjects" subtitle="Courses, teachers, semesters, and notes." />
 
-      {error ? <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</p> : null}
+      {error ? <p className="app-error mb-4">{error}</p> : null}
 
       <div className="grid gap-6 xl:grid-cols-[380px_1fr]">
         <form onSubmit={onSubmit} className="card h-fit p-5">
-          <h2 className="mb-4 text-lg font-semibold text-slate-50">Create subject</h2>
+          <h2 className="app-section-title mb-4">Create subject</h2>
           <div className="space-y-4">
             <label className="block">
               <span className="label">Name</span>
@@ -103,21 +103,21 @@ export function SubjectsPage() {
 
         <div className="space-y-3">
           {isLoading ? (
-            <div className="card p-6 text-sm text-slate-400">Loading subjects...</div>
+            <div className="card app-muted p-6 text-sm">Loading subjects...</div>
           ) : subjects.length ? (
             subjects.map((subject) => (
               <article key={subject.id} className="card p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="mb-2 flex items-center gap-3">
-                      <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: subject.color }} />
-                      <h2 className="truncate text-lg font-semibold text-slate-50">{subject.name}</h2>
+                      <span className="h-3 w-3 rounded-sm border border-white/20" style={{ backgroundColor: subject.color }} />
+                      <h2 className="truncate text-lg font-semibold text-[#F2F0EA]">{subject.name}</h2>
                     </div>
-                    <div className="flex flex-wrap gap-2 text-xs text-slate-400">
+                    <div className="app-muted flex flex-wrap gap-2 text-xs">
                       {subject.teacher ? <span>{subject.teacher}</span> : null}
                       {subject.semester ? <span>{subject.semester}</span> : null}
                     </div>
-                    {subject.description ? <p className="mt-3 text-sm text-slate-400">{subject.description}</p> : null}
+                    {subject.description ? <p className="app-muted mt-3 text-sm">{subject.description}</p> : null}
                   </div>
                   <button className="btn-secondary" type="button" onClick={() => onDelete(subject.id)}>
                     Delete

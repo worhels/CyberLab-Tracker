@@ -22,16 +22,16 @@ export function AppLayout() {
   const { user, logout } = useAuth()
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-100">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-slate-800 bg-slate-950/80 backdrop-blur xl:block">
+    <div className="app-shell">
+      <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-64 xl:block">
         <div className="flex h-full flex-col">
-          <div className="flex items-center gap-3 border-b border-slate-800 px-5 py-5">
-            <div className="grid h-10 w-10 place-items-center rounded-lg border border-cyan-400/30 bg-cyan-400/10 text-cyan-200">
+          <div className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-5">
+            <div className="app-brand-mark">
               <Shield size={21} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-50">CyberLab</p>
-              <p className="text-xs text-slate-500">Tracker</p>
+              <p className="app-brand-kicker">CyberLab</p>
+              <p className="app-brand-subtitle">Tracker</p>
             </div>
           </div>
 
@@ -44,10 +44,8 @@ export function AppLayout() {
                   to={item.to}
                   className={({ isActive }) =>
                     [
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition',
-                      isActive
-                        ? 'bg-cyan-400/10 text-cyan-200'
-                        : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100',
+                      'app-nav-link flex items-center gap-3 px-3 py-2 text-sm font-medium',
+                      isActive ? 'app-nav-link--active' : '',
                     ].join(' ')
                   }
                 >
@@ -58,8 +56,8 @@ export function AppLayout() {
             })}
           </nav>
 
-          <div className="border-t border-slate-800 p-4">
-            <p className="truncate text-sm font-medium text-slate-200">{user?.email}</p>
+          <div className="border-t border-white/[0.08] p-4">
+            <p className="truncate text-sm font-medium text-[#F2F0EA]">{user?.email}</p>
             <button type="button" onClick={logout} className="mt-3 w-full btn-secondary">
               <LogOut size={16} />
               Logout
@@ -68,12 +66,12 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <div className="xl:pl-64">
-        <header className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950/70 px-4 py-4 backdrop-blur md:px-8">
+      <div className="app-frame xl:pl-64">
+        <header className="app-header sticky top-0 z-10 px-4 py-4 md:px-8">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-wide text-cyan-300">CyberLab Tracker</p>
-              <p className="text-sm text-slate-400">Study control center</p>
+              <p className="app-brand-kicker">CyberLab Tracker</p>
+              <p className="app-brand-subtitle">Study control center</p>
             </div>
             <nav className="flex gap-2 overflow-x-auto xl:hidden">
               {navItems.map((item) => {
@@ -84,10 +82,8 @@ export function AppLayout() {
                     to={item.to}
                     className={({ isActive }) =>
                       [
-                        'inline-flex shrink-0 items-center gap-2 rounded-md border px-3 py-2 text-sm',
-                        isActive
-                          ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-200'
-                          : 'border-slate-800 text-slate-400',
+                        'app-mobile-nav-link inline-flex shrink-0 items-center gap-2 px-3 py-2 text-sm',
+                        isActive ? 'app-mobile-nav-link--active' : '',
                       ].join(' ')
                     }
                   >
@@ -100,7 +96,7 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="px-4 py-6 md:px-8">
+        <main className="app-main px-4 py-6 md:px-8">
           <Outlet />
         </main>
       </div>
