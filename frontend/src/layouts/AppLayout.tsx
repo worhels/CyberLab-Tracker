@@ -23,6 +23,7 @@ export function AppLayout() {
 
   return (
     <div className="app-shell">
+      <div className="app-atmosphere" aria-hidden="true" />
       <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-64 xl:block">
         <div className="flex h-full flex-col">
           <div className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-5">
@@ -72,6 +73,13 @@ export function AppLayout() {
             <div>
               <p className="app-brand-kicker">CyberLab Tracker</p>
               <p className="app-brand-subtitle">Study control center</p>
+            </div>
+            <div className="system-status">
+              <span className="system-status__label">API Connected</span>
+              <span className="system-status__meta">
+                <span className="system-status__light" aria-hidden="true" />
+                System online
+              </span>
             </div>
             <nav className="flex gap-2 overflow-x-auto xl:hidden">
               {navItems.map((item) => {

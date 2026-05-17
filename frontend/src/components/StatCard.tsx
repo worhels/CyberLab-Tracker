@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 interface StatCardProps {
   label: string
   value: ReactNode
+  description?: string
   accent?: 'ivory' | 'success' | 'red' | 'amber'
 }
 
@@ -13,11 +14,14 @@ const accents = {
   amber: 'stat-card-value--amber',
 }
 
-export function StatCard({ label, value, accent = 'ivory' }: StatCardProps) {
+export function StatCard({ label, value, description, accent = 'ivory' }: StatCardProps) {
   return (
-    <div className="card p-4">
-      <p className="label">{label}</p>
-      <div className={`stat-card-value mt-3 text-3xl font-semibold ${accents[accent]}`}>{value}</div>
+    <div className="card stat-card p-4">
+      <div>
+        <p className="label">{label}</p>
+        <div className={`stat-card-value mt-3 text-3xl font-semibold ${accents[accent]}`}>{value}</div>
+      </div>
+      {description ? <p className="stat-card-description mt-4">{description}</p> : null}
     </div>
   )
 }
