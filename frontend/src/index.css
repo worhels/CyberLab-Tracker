@@ -352,6 +352,72 @@ textarea {
     margin: 0 auto;
   }
 
+  .tasks-page {
+    position: relative;
+    min-height: calc(100vh - 9rem);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .tasks-page__content {
+    position: relative;
+    z-index: 10;
+  }
+
+  .tasks-page .card {
+    background:
+      linear-gradient(180deg, rgba(43, 42, 38, 0.76), rgba(15, 14, 12, 0.82)),
+      rgba(18, 17, 15, 0.78);
+  }
+
+  .pressure-field-background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 52% 45%, rgba(242, 240, 234, 0.055), transparent 33rem),
+      linear-gradient(135deg, #050505 0%, #10100f 48%, #030303 100%);
+  }
+
+  .pressure-field-background__canvas,
+  .pressure-field-background__soft-mask,
+  .pressure-field-background__grain,
+  .pressure-field-background__vignette {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .pressure-field-background__canvas {
+    z-index: 1;
+    display: block;
+  }
+
+  .pressure-field-background__soft-mask {
+    z-index: 2;
+    background:
+      linear-gradient(180deg, rgba(5, 5, 4, 0.18), rgba(5, 5, 4, 0.06) 28%, rgba(5, 5, 4, 0.34) 100%),
+      linear-gradient(90deg, rgba(5, 5, 4, 0.24), transparent 24%, transparent 72%, rgba(5, 5, 4, 0.36));
+  }
+
+  .pressure-field-background__grain {
+    z-index: 3;
+    opacity: 0.075;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.34'/%3E%3C/svg%3E");
+  }
+
+  .pressure-field-background__vignette {
+    z-index: 4;
+    background:
+      radial-gradient(ellipse at 52% 48%, transparent 22%, rgba(0, 0, 0, 0.22) 61%, rgba(0, 0, 0, 0.68) 100%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.24), transparent 18%, transparent 72%, rgba(0, 0, 0, 0.62));
+  }
+
   .app-title {
     color: #f2f0ea;
     font-size: clamp(1.55rem, 3vw, 2.35rem);

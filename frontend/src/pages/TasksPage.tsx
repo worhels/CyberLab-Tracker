@@ -5,6 +5,7 @@ import { getSubjects } from '../api/subjects'
 import { Badge } from '../components/Badge'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
+import { PressureFieldBackground } from '../components/visuals/PressureFieldBackground'
 import type { Subject, Task, TaskPayload, TaskPriority, TaskStatus, TaskType } from '../types'
 import { getErrorMessage } from '../utils/errors'
 import { formatDate, humanize, toApiDateTime, toInputDateTime } from '../utils/format'
@@ -139,7 +140,10 @@ export function TasksPage() {
   }
 
   return (
-    <section>
+    <section className="tasks-page">
+      <PressureFieldBackground intensity={0.9} variant="tasks" />
+
+      <div className="tasks-page__content">
       <PageHeader title="Tasks" subtitle="Labs, coursework, reports, and deadlines." />
 
       {error ? <p className="app-error mb-4">{error}</p> : null}
@@ -318,6 +322,7 @@ export function TasksPage() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </section>
   )
