@@ -1,11 +1,14 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties } from 'react'
 import * as THREE from 'three'
 
-export type PressureFieldVariant = 'tasks' | 'dashboard' | 'crisis'
+export type PressureFieldVariant = 'tasks' | 'dashboard' | 'subjects' | 'crisis' | 'stats' | 'settings'
 
 interface PressureFieldBackgroundProps {
   intensity?: number
+  opacity?: number
+  speed?: number
   variant?: PressureFieldVariant
   className?: string
 }
@@ -36,6 +39,14 @@ const VARIANT_SETTINGS = {
     lineCount: 72,
     dustCount: 180,
   },
+  subjects: {
+    seed: 3167,
+    speed: 0.52,
+    dpr: 1.2,
+    shaderBias: -0.02,
+    lineCount: 78,
+    dustCount: 190,
+  },
   crisis: {
     seed: 3821,
     speed: 0.68,
@@ -43,6 +54,22 @@ const VARIANT_SETTINGS = {
     shaderBias: 0.24,
     lineCount: 96,
     dustCount: 260,
+  },
+  stats: {
+    seed: 4721,
+    speed: 0.42,
+    dpr: 1.15,
+    shaderBias: -0.12,
+    lineCount: 68,
+    dustCount: 160,
+  },
+  settings: {
+    seed: 5923,
+    speed: 0.32,
+    dpr: 1,
+    shaderBias: -0.18,
+    lineCount: 48,
+    dustCount: 100,
   },
 } satisfies Record<PressureFieldVariant, VariantSettings>
 
@@ -394,10 +421,12 @@ function FieldPlane({
   intensity,
   reducedMotion,
   settings,
+  speed,
 }: {
   intensity: number
   reducedMotion: boolean
   settings: VariantSettings
+  speed: number
 }) {
   const size = useThree((state) => state.size)
   const invalidate = useThree((state) => state.invalidate)
@@ -421,7 +450,7 @@ function FieldPlane({
 
   useFrame(({ clock }) => {
     if (!reducedMotion) {
-      material.uniforms.uTime.value = clock.elapsedTime * settings.speed
+      material.uniforms.uTime.value = clock.elapsedTime * speed
     }
   })
 
@@ -437,10 +466,12 @@ function FiberLines({
   intensity,
   reducedMotion,
   settings,
+  speed,
 }: {
   intensity: number
   reducedMotion: boolean
   settings: VariantSettings
+  speed: number
 }) {
   const geometry = useMemo(() => buildFiberGeometry(settings, reducedMotion), [reducedMotion, settings])
   const material = useMemo(
@@ -464,7 +495,7 @@ function FiberLines({
 
   useFrame(({ clock }) => {
     if (!reducedMotion) {
-      material.uniforms.uTime.value = clock.elapsedTime * settings.speed
+      material.uniforms.uTime.value = clock.elapsedTime * speed
     }
   })
 
@@ -479,10 +510,12 @@ function DustPoints({
   intensity,
   reducedMotion,
   settings,
+  speed,
 }: {
   intensity: number
   reducedMotion: boolean
   settings: VariantSettings
+  speed: number
 }) {
   const viewport = useThree((state) => state.viewport)
   const geometry = useMemo(() => buildDustGeometry(settings, reducedMotion), [reducedMotion, settings])
@@ -512,7 +545,7 @@ function DustPoints({
 
   useFrame(({ clock }) => {
     if (!reducedMotion) {
-      material.uniforms.uTime.value = clock.elapsedTime * settings.speed
+      material.uniforms.uTime.value = clock.elapsedTime * speed
     }
   })
 
@@ -527,46 +560,57 @@ function PressureFieldScene({
   intensity,
   reducedMotion,
   settings,
+  speed,
 }: {
   intensity: number
   reducedMotion: boolean
   settings: VariantSettings
+  speed: number
 }) {
   return (
     <>
-      <FieldPlane intensity={intensity} reducedMotion={reducedMotion} settings={settings} />
-      <FiberLines intensity={intensity} reducedMotion={reducedMotion} settings={settings} />
-      <DustPoints intensity={intensity * 0.82} reducedMotion={reducedMotion} settings={settings} />
+      <FieldPlane intensity={intensity} reducedMotion={reducedMotion} settings={settings} speed={speed} />
+      <FiberLines intensity={intensity} reducedMotion={reducedMotion} settings={settings} speed={speed} />
+      <DustPoints intensity={intensity * 0.82} reducedMotion={reducedMotion} settings={settings} speed={speed} />
     </>
   )
 }
 
 export function PressureFieldBackground({
   intensity = 0.82,
+  opacity = 0.2,
+  speed,
   variant = 'tasks',
   className,
 }: PressureFieldBackgroundProps) {
   const reducedMotion = usePrefersReducedMotion()
   const settings = VARIANT_SETTINGS[variant]
   const clampedIntensity = clamp(intensity, 0.2, 1.35)
+  const clampedOpacity = clamp(opacity, 0.05, 0.75)
+  const resolvedSpeed = speed ?? settings.speed
   const devicePixelRatio = typeof window === 'undefined' ? settings.dpr : window.devicePixelRatio || settings.dpr
   const dprMax = reducedMotion ? 1 : Math.min(settings.dpr, devicePixelRatio)
   const classes = ['pressure-field-background', `pressure-field-background--${variant}`, className].filter(Boolean).join(' ')
+  const style = { '--pressure-field-opacity': clampedOpacity } as CSSProperties
 
   return (
-    <div className={classes} aria-hidden="true">
-      <Canvas
-        className="pressure-field-background__canvas"
-        dpr={[1, dprMax]}
-        frameloop={reducedMotion ? 'demand' : 'always'}
-        gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}
-        onCreated={({ gl }) => {
-          gl.setClearColor('#050505', 1)
-          gl.outputColorSpace = THREE.SRGBColorSpace
-        }}
-      >
-        <PressureFieldScene intensity={clampedIntensity} reducedMotion={reducedMotion} settings={settings} />
-      </Canvas>
+    <div className={classes} style={style} aria-hidden="true">
+      {reducedMotion ? (
+        <div className="pressure-field-background__reduced" />
+      ) : (
+        <Canvas
+          className="pressure-field-background__canvas"
+          dpr={[1, dprMax]}
+          frameloop="always"
+          gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}
+          onCreated={({ gl }) => {
+            gl.setClearColor('#050505', 1)
+            gl.outputColorSpace = THREE.SRGBColorSpace
+          }}
+        >
+          <PressureFieldScene intensity={clampedIntensity} reducedMotion={reducedMotion} settings={settings} speed={resolvedSpeed} />
+        </Canvas>
+      )}
       <div className="pressure-field-background__soft-mask" />
       <div className="pressure-field-background__grain" />
       <div className="pressure-field-background__vignette" />

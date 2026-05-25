@@ -5,7 +5,6 @@ import { getSubjects } from '../api/subjects'
 import { Badge } from '../components/Badge'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
-import { PressureFieldBackground } from '../components/visuals/PressureFieldBackground'
 import type { Subject, Task, TaskPayload, TaskPriority, TaskStatus, TaskType } from '../types'
 import { getErrorMessage } from '../utils/errors'
 import { formatDate, humanize, toApiDateTime, toInputDateTime } from '../utils/format'
@@ -141,22 +140,19 @@ export function TasksPage() {
 
   return (
     <section className="tasks-page">
-      <PressureFieldBackground intensity={0.9} variant="tasks" />
-
-      <div className="tasks-page__content">
       <PageHeader title="Tasks" subtitle="Labs, coursework, reports, and deadlines." />
 
       {error ? <p className="app-error mb-4">{error}</p> : null}
 
-      <div className="grid gap-6 2xl:grid-cols-[420px_1fr]">
-        <form onSubmit={onSubmit} className="card h-fit p-5">
-          <h2 className="app-section-title mb-4">Create task</h2>
-          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-1">
-            <label className="block lg:col-span-2 2xl:col-span-1">
+      <div className="tasks-workspace">
+        <form onSubmit={onSubmit} className="task-create-panel">
+          <h2 className="app-section-title">Create task</h2>
+          <div className="task-form-grid">
+            <label className="task-form-field">
               <span className="label">Title</span>
               <input className="field mt-1" value={form.title} onChange={(event) => updateField('title', event.target.value)} required />
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">Subject</span>
               <select className="field mt-1" value={form.subject_id} onChange={(event) => updateField('subject_id', event.target.value)} required>
                 <option value="" disabled>
@@ -169,11 +165,11 @@ export function TasksPage() {
                 ))}
               </select>
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">Deadline</span>
               <input className="field mt-1" type="datetime-local" value={form.deadline} onChange={(event) => updateField('deadline', event.target.value)} />
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">Type</span>
               <select className="field mt-1" value={form.type} onChange={(event) => updateField('type', event.target.value as TaskType)}>
                 {taskTypes.map((type) => (
@@ -183,7 +179,7 @@ export function TasksPage() {
                 ))}
               </select>
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">Priority</span>
               <select className="field mt-1" value={form.priority} onChange={(event) => updateField('priority', event.target.value as TaskPriority)}>
                 {taskPriorities.map((priority) => (
@@ -193,7 +189,7 @@ export function TasksPage() {
                 ))}
               </select>
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">Status</span>
               <select className="field mt-1" value={form.status} onChange={(event) => updateField('status', event.target.value as TaskStatus)}>
                 {taskStatuses.map((status) => (
@@ -203,23 +199,23 @@ export function TasksPage() {
                 ))}
               </select>
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">Estimated hours</span>
               <input className="field mt-1" min="0" type="number" value={form.estimated_hours} onChange={(event) => updateField('estimated_hours', event.target.value)} />
             </label>
-            <label className="block lg:col-span-2 2xl:col-span-1">
+            <label className="task-form-field">
               <span className="label">Description</span>
-              <textarea className="field mt-1 min-h-24" value={form.description} onChange={(event) => updateField('description', event.target.value)} />
+              <textarea className="field task-form-textarea mt-1" value={form.description} onChange={(event) => updateField('description', event.target.value)} />
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">GitHub URL</span>
               <input className="field mt-1" value={form.github_url} onChange={(event) => updateField('github_url', event.target.value)} />
             </label>
-            <label className="block">
+            <label className="task-form-field">
               <span className="label">Moodle URL</span>
               <input className="field mt-1" value={form.moodle_url} onChange={(event) => updateField('moodle_url', event.target.value)} />
             </label>
-            <label className="block lg:col-span-2 2xl:col-span-1">
+            <label className="task-form-field">
               <span className="label">Report file</span>
               <input className="field mt-1" value={form.report_file} onChange={(event) => updateField('report_file', event.target.value)} />
             </label>
@@ -229,10 +225,10 @@ export function TasksPage() {
           </button>
         </form>
 
-        <div className="space-y-4">
-          <div className="card grid gap-3 p-4 md:grid-cols-[1fr_160px_160px_auto]">
-            <input className="field" placeholder="Search tasks" value={search} onChange={(event) => setSearch(event.target.value)} />
-            <select className="field" value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as TaskPriority | '')}>
+        <section className="tasks-panel">
+          <div className="tasks-panel__toolbar">
+            <input className="field tasks-filter-search" placeholder="Search tasks" value={search} onChange={(event) => setSearch(event.target.value)} />
+            <select className="field tasks-filter-select" value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as TaskPriority | '')}>
               <option value="">All priorities</option>
               {taskPriorities.map((priority) => (
                 <option key={priority} value={priority}>
@@ -240,7 +236,7 @@ export function TasksPage() {
                 </option>
               ))}
             </select>
-            <select className="field" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as TaskType | '')}>
+            <select className="field tasks-filter-select" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as TaskType | '')}>
               <option value="">All types</option>
               {taskTypes.map((type) => (
                 <option key={type} value={type}>
@@ -261,30 +257,30 @@ export function TasksPage() {
             >
               Apply
             </button>
-          </div>
 
-          <div className="card overflow-hidden">
+          </div>
+          <div className="tasks-panel__body">
             {isLoading ? (
               <div className="app-muted p-6 text-sm">Loading tasks...</div>
             ) : tasks.length ? (
-              <div className="overflow-x-auto">
-                <table className="app-table">
+              <div className="tasks-table-scroll">
+                <table className="app-table tasks-table">
                   <thead>
                     <tr>
-                      <th className="px-4 py-3">Task</th>
-                      <th className="px-4 py-3">Subject</th>
-                      <th className="px-4 py-3">Deadline</th>
-                      <th className="px-4 py-3">Type</th>
-                      <th className="px-4 py-3">Priority</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3"></th>
+                      <th>Task</th>
+                      <th>Subject</th>
+                      <th>Deadline</th>
+                      <th>Type</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {tasks.map((task) => (
                       <tr key={task.id} className="align-top">
-                        <td className="px-4 py-4">
-                          <p className="font-semibold text-[#F2F0EA]">{task.title}</p>
+                        <td className="tasks-table__task-cell">
+                          <p className="tasks-table__title">{task.title}</p>
                           {task.description ? <p className="app-muted mt-1 max-w-md text-xs">{task.description}</p> : null}
                           <div className="app-muted mt-2 flex flex-wrap gap-2 text-xs">
                             {task.estimated_hours ? <span>{task.estimated_hours}h</span> : null}
@@ -292,12 +288,12 @@ export function TasksPage() {
                             {task.moodle_url ? <a className="app-link" href={task.moodle_url} target="_blank">Moodle</a> : null}
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-[#BCB8AE]">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
-                        <td className="app-muted px-4 py-4">{formatDate(task.deadline)}</td>
-                        <td className="px-4 py-4"><Badge value={task.type} variant="type" /></td>
-                        <td className="px-4 py-4"><Badge value={task.priority} variant="priority" /></td>
-                        <td className="px-4 py-4">
-                          <select className="field min-w-36" value={task.status} onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}>
+                        <td className="tasks-table__subject-cell">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
+                        <td className="app-muted">{formatDate(task.deadline)}</td>
+                        <td><Badge value={task.type} variant="type" /></td>
+                        <td><Badge value={task.priority} variant="priority" /></td>
+                        <td>
+                          <select className="field task-status-select" value={task.status} onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}>
                             {taskStatuses.map((status) => (
                               <option key={status} value={status}>
                                 {humanize(status)}
@@ -305,8 +301,8 @@ export function TasksPage() {
                             ))}
                           </select>
                         </td>
-                        <td className="px-4 py-4 text-right">
-                          <button className="btn-secondary" type="button" onClick={() => onDelete(task.id)}>
+                        <td className="tasks-table__action-cell">
+                          <button className="btn-secondary task-delete-button" type="button" onClick={() => onDelete(task.id)}>
                             Delete
                           </button>
                         </td>
@@ -321,8 +317,7 @@ export function TasksPage() {
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </section>
       </div>
     </section>
   )

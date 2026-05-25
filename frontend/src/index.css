@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color: #f2f0ea;
-  background: #0b0a07;
+  color: #e8e5da;
+  background: #030303;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -19,11 +19,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at 12% 4%, rgba(242, 240, 234, 0.075), transparent 28rem),
-    radial-gradient(circle at 86% 12%, rgba(188, 184, 174, 0.055), transparent 30rem),
-    radial-gradient(circle at 50% 100%, rgba(69, 68, 65, 0.08), transparent 34rem),
-    linear-gradient(135deg, #0b0a07 0%, #151411 52%, #070604 100%);
+  background: #030303;
 }
 
 button,
@@ -62,14 +58,14 @@ textarea {
 
   .field {
     width: 100%;
-    min-height: 2.75rem;
-    padding: 0.68rem 0.82rem;
-    color: #f2f0ea;
-    border: 1px solid rgba(69, 68, 65, 0.88);
-    border-radius: 8px;
+    min-height: 44px;
+    padding: 0.62rem 0.78rem;
+    color: #e8e5da;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
     outline: none;
-    background: rgba(48, 47, 45, 0.82);
-    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.055);
+    font-size: 0.86rem;
     transition:
       border-color 160ms ease,
       box-shadow 160ms ease,
@@ -78,13 +74,13 @@ textarea {
   }
 
   .field::placeholder {
-    color: rgba(188, 184, 174, 0.48);
+    color: rgba(142, 142, 134, 0.62);
   }
 
   .field:focus {
-    border-color: rgba(242, 240, 234, 0.28);
-    background: #302f2d;
-    box-shadow: 0 0 0 3px rgba(242, 240, 234, 0.07);
+    border-color: rgba(242, 240, 231, 0.28);
+    background: rgba(255, 255, 255, 0.075);
+    box-shadow: 0 0 0 3px rgba(242, 240, 231, 0.055);
   }
 
   .field[type="color"] {
@@ -94,9 +90,9 @@ textarea {
 
   .label {
     display: block;
-    color: #bcb8ae;
-    font-size: 0.72rem;
-    font-weight: 650;
+    color: #8e8e86;
+    font-size: 0.66rem;
+    font-weight: 720;
     letter-spacing: 0;
     text-transform: uppercase;
   }
@@ -167,38 +163,18 @@ textarea {
   .app-shell {
     position: relative;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
     color: #f2f0ea;
-    background:
-      radial-gradient(circle at 13% 8%, rgba(242, 240, 234, 0.05), transparent 30rem),
-      radial-gradient(circle at 86% 14%, rgba(141, 138, 132, 0.04), transparent 32rem),
-      linear-gradient(135deg, #0b0a07 0%, #151411 52%, #070604 100%);
+    background: #030303;
     isolation: isolate;
   }
 
   .app-shell::before {
-    position: fixed;
-    inset: 0;
-    z-index: 4;
-    pointer-events: none;
-    content: "";
-    opacity: 0.092;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.36'/%3E%3C/svg%3E");
+    content: none;
   }
 
   .app-shell::after {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    content: "";
-    background:
-      radial-gradient(ellipse at 43% 18%, rgba(242, 240, 234, 0.06), transparent 37rem),
-      radial-gradient(ellipse at 82% 72%, rgba(188, 184, 174, 0.045), transparent 30rem),
-      radial-gradient(ellipse at 50% 46%, transparent 30%, rgba(0, 0, 0, 0.46) 100%),
-      linear-gradient(90deg, rgba(242, 240, 234, 0.022), transparent 28%, rgba(5, 5, 4, 0.46) 100%),
-      linear-gradient(180deg, rgba(5, 5, 4, 0.08), transparent 22%, transparent 72%, rgba(5, 5, 4, 0.48));
+    content: none;
   }
 
   .app-atmosphere {
@@ -240,20 +216,34 @@ textarea {
 
   .app-frame {
     position: relative;
-    z-index: 2;
+    z-index: 1;
     min-height: 100vh;
+    overflow: hidden;
+    background: #030303;
+    isolation: isolate;
+  }
+
+  .app-readability-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 12%, rgba(0, 0, 0, 0.32), transparent 22rem),
+      radial-gradient(ellipse at 54% 46%, transparent 18%, rgba(0, 0, 0, 0.46) 76%, rgba(0, 0, 0, 0.74) 100%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.14) 11rem, rgba(0, 0, 0, 0.5) 100%),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0%, transparent 16rem, transparent 70%, rgba(0, 0, 0, 0.52) 100%);
   }
 
   .app-sidebar {
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
     background:
-      radial-gradient(ellipse at 0% 0%, rgba(242, 240, 234, 0.055), transparent 18rem),
-      linear-gradient(180deg, rgba(29, 28, 25, 0.96), rgba(15, 14, 12, 0.9)),
-      rgba(29, 28, 25, 0.88);
+      radial-gradient(ellipse at 0% 0%, rgba(242, 240, 231, 0.04), transparent 18rem),
+      rgba(18, 18, 16, 0.82);
     box-shadow:
-      26px 0 84px rgba(0, 0, 0, 0.46),
+      18px 0 64px rgba(0, 0, 0, 0.36),
       inset -1px 0 0 rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(18px);
   }
 
   .app-brand-mark {
@@ -288,7 +278,7 @@ textarea {
     position: relative;
     color: #bcb8ae;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 12px;
     transition:
       border-color 160ms ease,
       background 160ms ease,
@@ -298,18 +288,18 @@ textarea {
 
   .app-nav-link:hover,
   .app-mobile-nav-link:hover {
-    color: #f2f0ea;
-    border-color: rgba(242, 240, 234, 0.11);
-    background: rgba(48, 47, 45, 0.48);
+    color: #e8e5da;
+    border-color: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.045);
   }
 
   .app-nav-link--active,
   .app-mobile-nav-link--active {
-    color: #f2f0ea;
-    border-color: rgba(242, 240, 234, 0.24);
+    color: #f2f0e7;
+    border-color: rgba(255, 255, 255, 0.13);
     background:
-      linear-gradient(180deg, rgba(48, 47, 45, 0.8), rgba(37, 36, 33, 0.62)),
-      rgba(48, 47, 45, 0.72);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+      rgba(255, 255, 255, 0.035);
     box-shadow:
       0 14px 36px rgba(0, 0, 0, 0.22),
       inset 0 1px 0 rgba(242, 240, 234, 0.07);
@@ -319,11 +309,11 @@ textarea {
     position: absolute;
     top: 0.58rem;
     bottom: 0.58rem;
-    left: -0.35rem;
+    left: -0.28rem;
     width: 2px;
     content: "";
     border-radius: 999px;
-    background: rgba(242, 240, 234, 0.58);
+    background: rgba(242, 240, 231, 0.46);
     box-shadow: 0 0 18px rgba(242, 240, 234, 0.12);
   }
 
@@ -338,36 +328,124 @@ textarea {
   }
 
   .app-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background:
-      linear-gradient(180deg, rgba(29, 28, 25, 0.9), rgba(21, 20, 17, 0.68)),
-      rgba(21, 20, 17, 0.74);
-    box-shadow: 0 18px 52px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+    background: rgba(7, 7, 7, 0.58);
+    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(12px);
   }
 
   .app-main {
     width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .app-main > section:not(.tasks-page) {
+    width: 100%;
     max-width: 96rem;
     margin: 0 auto;
+    padding: 32px 48px 48px;
   }
 
   .tasks-page {
     position: relative;
-    min-height: calc(100vh - 9rem);
-    overflow: hidden;
-    isolation: isolate;
+    width: 100%;
+    max-width: 1440px;
+    min-height: calc(100vh - 5.5rem);
+    margin: 0 auto;
+    padding: 32px 48px 48px;
   }
 
-  .tasks-page__content {
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin-bottom: 24px;
+  }
+
+  .tasks-workspace {
+    display: grid;
+    grid-template-columns: 380px minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+  }
+
+  .task-create-panel,
+  .tasks-panel {
     position: relative;
     z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    box-shadow:
+      0 26px 82px rgba(0, 0, 0, 0.44),
+      inset 0 1px 0 rgba(242, 240, 231, 0.035);
+    backdrop-filter: blur(16px);
   }
 
-  .tasks-page .card {
-    background:
-      linear-gradient(180deg, rgba(43, 42, 38, 0.76), rgba(15, 14, 12, 0.82)),
-      rgba(18, 17, 15, 0.78);
+  .task-create-panel {
+    position: sticky;
+    top: 104px;
+    width: 100%;
+    padding: 24px;
+    background: rgba(18, 18, 16, 0.72);
+  }
+
+  .task-create-panel .app-section-title {
+    margin-bottom: 18px;
+  }
+
+  .task-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .task-form-field {
+    display: block;
+    min-width: 0;
+  }
+
+  .task-form-field:first-child,
+  .task-form-field:nth-child(8),
+  .task-form-field:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .task-form-textarea {
+    min-height: 88px;
+    max-height: 132px;
+    resize: vertical;
+  }
+
+  .tasks-panel {
+    min-width: 0;
+    overflow: hidden;
+    background: rgba(18, 18, 16, 0.68);
+  }
+
+  .tasks-panel__toolbar {
+    display: grid;
+    grid-template-columns: minmax(18rem, 1fr) 160px 150px 104px;
+    gap: 12px;
+    align-items: center;
+    padding: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  }
+
+  .tasks-filter-select {
+    width: 100%;
+  }
+
+  .tasks-panel__toolbar .btn-secondary {
+    width: 104px;
+  }
+
+  .tasks-panel__body {
+    min-width: 0;
+  }
+
+  .tasks-table-scroll {
+    overflow-x: auto;
   }
 
   .pressure-field-background {
@@ -376,6 +454,7 @@ textarea {
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
+    opacity: var(--pressure-field-opacity, 0.2);
     background:
       radial-gradient(ellipse at 52% 45%, rgba(242, 240, 234, 0.055), transparent 33rem),
       linear-gradient(135deg, #050505 0%, #10100f 48%, #030303 100%);
@@ -395,6 +474,16 @@ textarea {
   .pressure-field-background__canvas {
     z-index: 1;
     display: block;
+  }
+
+  .pressure-field-background__reduced {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse at 68% 22%, rgba(242, 240, 231, 0.16), transparent 34rem),
+      radial-gradient(ellipse at 26% 70%, rgba(242, 240, 231, 0.065), transparent 30rem),
+      linear-gradient(135deg, #050505 0%, #10100f 48%, #030303 100%);
   }
 
   .pressure-field-background__soft-mask {
@@ -419,19 +508,19 @@ textarea {
   }
 
   .app-title {
-    color: #f2f0ea;
-    font-size: clamp(1.55rem, 3vw, 2.35rem);
+    color: #e8e5da;
+    font-size: clamp(1.65rem, 2.25vw, 2.18rem);
     font-weight: 650;
     line-height: 1.1;
   }
 
   .app-subtitle {
-    color: #8d8a84;
+    color: #8e8e86;
     font-size: 0.94rem;
   }
 
   .app-section-title {
-    color: #f2f0ea;
+    color: #e8e5da;
     font-size: 1rem;
     font-weight: 650;
   }
@@ -530,37 +619,39 @@ textarea {
   .badge {
     display: inline-flex;
     align-items: center;
-    border-radius: 8px;
-    border: 1px solid rgba(188, 184, 174, 0.18);
-    padding: 0.34rem 0.52rem;
-    background: rgba(48, 47, 45, 0.46);
-    color: #bcb8ae;
-    font-size: 0.73rem;
+    min-height: 1.72rem;
+    white-space: nowrap;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.24rem 0.54rem;
+    background: rgba(255, 255, 255, 0.045);
+    color: #a9a79f;
+    font-size: 0.68rem;
     font-weight: 700;
   }
 
   .badge--quiet {
-    color: #bcb8ae;
-    border-color: rgba(188, 184, 174, 0.18);
-    background: rgba(48, 47, 45, 0.42);
+    color: #a9a79f;
+    border-color: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.035);
   }
 
   .badge--ivory {
-    color: #f2f0ea;
-    border-color: rgba(242, 240, 234, 0.22);
-    background: rgba(242, 240, 234, 0.075);
+    color: #e8e5da;
+    border-color: rgba(242, 240, 231, 0.18);
+    background: rgba(242, 240, 231, 0.065);
   }
 
   .badge--amber {
-    color: #facc15;
-    border-color: rgba(245, 158, 11, 0.38);
-    background: rgba(146, 64, 14, 0.18);
+    color: #d8c48b;
+    border-color: rgba(216, 196, 139, 0.24);
+    background: rgba(134, 102, 35, 0.13);
   }
 
   .badge--red {
-    color: #fecaca;
-    border-color: rgba(248, 113, 113, 0.38);
-    background: rgba(127, 29, 29, 0.2);
+    color: #e3b2aa;
+    border-color: rgba(227, 178, 170, 0.25);
+    background: rgba(98, 37, 34, 0.17);
   }
 
   .progress-track {
@@ -581,13 +672,14 @@ textarea {
   .app-table {
     min-width: 100%;
     text-align: left;
-    font-size: 0.88rem;
+    border-collapse: collapse;
+    font-size: 0.84rem;
   }
 
   .app-table thead {
-    color: #8d8a84;
-    background: rgba(21, 20, 17, 0.58);
-    font-size: 0.72rem;
+    color: #6f6f68;
+    background: rgba(255, 255, 255, 0.028);
+    font-size: 0.66rem;
     font-weight: 700;
     text-transform: uppercase;
   }
@@ -595,7 +687,7 @@ textarea {
   .app-table th,
   .app-table td {
     padding: 0.92rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.055);
   }
 
   .app-table tbody tr {
@@ -603,11 +695,78 @@ textarea {
   }
 
   .app-table tbody tr:hover {
-    background: rgba(48, 47, 45, 0.24);
+    background: rgba(255, 255, 255, 0.035);
   }
 
   .app-table tbody tr:last-child td {
     border-bottom: 0;
+  }
+
+  .tasks-table {
+    min-width: 860px;
+    table-layout: fixed;
+  }
+
+  .tasks-table th:nth-child(1),
+  .tasks-table td:nth-child(1) {
+    width: 34%;
+  }
+
+  .tasks-table th:nth-child(2),
+  .tasks-table td:nth-child(2) {
+    width: 17%;
+  }
+
+  .tasks-table th:nth-child(3),
+  .tasks-table td:nth-child(3) {
+    width: 14%;
+  }
+
+  .tasks-table th:nth-child(4),
+  .tasks-table td:nth-child(4),
+  .tasks-table th:nth-child(5),
+  .tasks-table td:nth-child(5) {
+    width: 10%;
+  }
+
+  .tasks-table th:nth-child(6),
+  .tasks-table td:nth-child(6) {
+    width: 12rem;
+  }
+
+  .tasks-table th:nth-child(7),
+  .tasks-table td:nth-child(7) {
+    width: 6.5rem;
+  }
+
+  .tasks-table__title {
+    max-width: 32rem;
+    margin: 0;
+    color: #e8e5da;
+    font-weight: 650;
+    line-height: 1.32;
+  }
+
+  .tasks-table__subject-cell {
+    color: #b7b4aa;
+  }
+
+  .tasks-table__action-cell {
+    text-align: right;
+  }
+
+  .task-status-select {
+    min-width: 10rem;
+    min-height: 38px;
+    padding-block: 0.48rem;
+    font-size: 0.8rem;
+  }
+
+  .task-delete-button {
+    min-height: 38px;
+    padding-inline: 0.7rem;
+    color: #9f9d95;
+    background: transparent;
   }
 
   .system-status {
@@ -809,6 +968,62 @@ textarea {
 
     .dashboard-panel__header {
       display: grid;
+    }
+  }
+
+  @media (max-width: 1279px) {
+    .tasks-page,
+    .app-main > section:not(.tasks-page) {
+      padding: 28px 32px 40px;
+    }
+
+    .tasks-workspace {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .task-create-panel {
+      position: relative;
+      top: auto;
+    }
+
+    .task-form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 899px) {
+    .tasks-page,
+    .app-main > section:not(.tasks-page) {
+      padding: 24px 20px 34px;
+    }
+
+    .tasks-panel__toolbar {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tasks-panel__toolbar .btn-secondary,
+    .tasks-filter-select {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .tasks-page,
+    .app-main > section:not(.tasks-page) {
+      padding: 20px 14px 28px;
+    }
+
+    .task-create-panel,
+    .tasks-panel {
+      border-radius: 14px;
+    }
+
+    .task-form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .task-form-field {
+      grid-column: auto;
     }
   }
 }

@@ -7,7 +7,9 @@ import {
   Settings,
   Shield,
 } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { PressureFieldBackground } from '../components/visual/PressureFieldBackground'
+import type { PressureFieldVariant } from '../components/visual/PressureFieldBackground'
 import { useAuth } from '../context/AuthContext'
 
 const navItems = [
@@ -18,13 +20,27 @@ const navItems = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
+const routeBackgrounds: Record<string, { variant: PressureFieldVariant; intensity: number; opacity: number; speed: number }> = {
+  '/dashboard': { variant: 'dashboard', intensity: 0.72, opacity: 0.24, speed: 0.44 },
+  '/subjects': { variant: 'subjects', intensity: 0.58, opacity: 0.18, speed: 0.42 },
+  '/tasks': { variant: 'tasks', intensity: 0.42, opacity: 0.15, speed: 0.34 },
+  '/crisis': { variant: 'crisis', intensity: 0.72, opacity: 0.22, speed: 0.48 },
+  '/settings': { variant: 'settings', intensity: 0.34, opacity: 0.1, speed: 0.24 },
+}
+
+function getBackgroundConfig(pathname: string) {
+  const route = Object.keys(routeBackgrounds).find((key) => pathname.startsWith(key))
+  return route ? routeBackgrounds[route] : routeBackgrounds['/dashboard']
+}
+
 export function AppLayout() {
   const { user, logout } = useAuth()
+  const location = useLocation()
+  const background = getBackgroundConfig(location.pathname)
 
   return (
     <div className="app-shell">
-      <div className="app-atmosphere" aria-hidden="true" />
-      <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-64 xl:block">
+      <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-[248px] xl:block">
         <div className="flex h-full flex-col">
           <div className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-5">
             <div className="app-brand-mark">
@@ -67,7 +83,10 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <div className="app-frame xl:pl-64">
+      <div className="app-frame xl:pl-[248px]">
+        <PressureFieldBackground {...background} />
+        <div className="app-readability-overlay" aria-hidden="true" />
+
         <header className="app-header sticky top-0 z-10 px-4 py-4 md:px-8">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
@@ -104,7 +123,7 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="app-main px-4 py-6 md:px-8">
+        <main className="app-main relative z-10">
           <Outlet />
         </main>
       </div>
