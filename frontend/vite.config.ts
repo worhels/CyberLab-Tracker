@@ -3,6 +3,21 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 850,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('@react-three')) return 'react-three-vendor'
+          if (id.includes('three/addons') || id.includes('three/examples')) return 'three-addons'
+          if (id.includes('three')) return 'three-core'
+          if (id.includes('react') || id.includes('scheduler')) return 'react-vendor'
+          return 'vendor'
+        },
+      },
+    },
+  },
   server: {
     headers: {
       'Content-Security-Policy': [

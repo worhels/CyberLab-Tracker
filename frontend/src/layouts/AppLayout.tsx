@@ -1,13 +1,18 @@
 import {
   Activity,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   Gauge,
   ListChecks,
   LogOut,
   Settings,
   Shield,
 } from 'lucide-react'
+import { useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { PageTransition } from '../components/PageTransition'
 import { PressureFieldBackground } from '../components/visual/PressureFieldBackground'
 import type { PressureFieldVariant } from '../components/visual/PressureFieldBackground'
 import { useAuth } from '../context/AuthContext'
@@ -36,23 +41,38 @@ function getBackgroundConfig(pathname: string) {
 export function AppLayout() {
   const { user, logout } = useAuth()
   const location = useLocation()
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const background = getBackgroundConfig(location.pathname)
+  const SidebarToggleIcon = isSidebarCollapsed ? ChevronRight : ChevronLeft
+  const sidebarToggleLabel = isSidebarCollapsed ? 'Развернуть меню' : 'Свернуть меню'
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-[248px] xl:block">
+      <aside className={['app-sidebar fixed inset-y-0 left-0 z-20 hidden xl:block', isSidebarCollapsed ? 'app-sidebar--collapsed' : ''].join(' ')}>
+        <button
+          type="button"
+          className="app-sidebar-toggle"
+          aria-label={sidebarToggleLabel}
+          aria-pressed={isSidebarCollapsed}
+          data-tooltip={sidebarToggleLabel}
+          title={sidebarToggleLabel}
+          onClick={() => setIsSidebarCollapsed((current) => !current)}
+        >
+          <SidebarToggleIcon size={14} />
+        </button>
+
         <div className="flex h-full flex-col">
-          <div className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-5">
+          <div className="app-sidebar-brand flex items-center gap-3 border-b border-white/[0.08] px-5 py-5">
             <div className="app-brand-mark">
               <Shield size={21} />
             </div>
-            <div>
+            <div className="app-sidebar__brand-copy">
               <p className="app-brand-kicker">CyberLab</p>
               <p className="app-brand-subtitle">Tracker</p>
             </div>
           </div>
 
-          <nav className="flex-1 space-y-1 px-3 py-5">
+          <nav className="app-sidebar-nav flex-1 space-y-1 px-3 py-5">
             {navItems.map((item) => {
               const Icon = item.icon
               return (
@@ -61,29 +81,29 @@ export function AppLayout() {
                   to={item.to}
                   className={({ isActive }) =>
                     [
-                      'app-nav-link flex items-center gap-3 px-3 py-2 text-sm font-medium',
+                      'app-nav-link flex items-center gap-3 text-sm font-medium',
                       isActive ? 'app-nav-link--active' : '',
                     ].join(' ')
                   }
                 >
                   <Icon size={18} />
-                  {item.label}
+                  <span className="app-nav-link__label">{item.label}</span>
                 </NavLink>
               )
             })}
           </nav>
 
-          <div className="border-t border-white/[0.08] p-4">
-            <p className="truncate text-sm font-medium text-[#F2F0EA]">{user?.email}</p>
+          <div className="app-sidebar-footer border-t border-white/[0.08] p-4">
+            <p className="app-sidebar__footer-copy truncate text-sm font-medium text-[#F2F0EA]">{user?.email}</p>
             <button type="button" onClick={logout} className="mt-3 w-full btn-secondary">
               <LogOut size={16} />
-              Logout
+              <span className="app-sidebar__logout-label">Logout</span>
             </button>
           </div>
         </div>
       </aside>
 
-      <div className="app-frame xl:pl-[248px]">
+      <div className={['app-frame', isSidebarCollapsed ? 'app-frame--sidebar-collapsed' : ''].join(' ')}>
         <PressureFieldBackground {...background} />
         <div className="app-readability-overlay" aria-hidden="true" />
 
@@ -109,7 +129,7 @@ export function AppLayout() {
                     to={item.to}
                     className={({ isActive }) =>
                       [
-                        'app-mobile-nav-link inline-flex shrink-0 items-center gap-2 px-3 py-2 text-sm',
+                        'app-mobile-nav-link inline-flex shrink-0 items-center gap-2 text-sm',
                         isActive ? 'app-mobile-nav-link--active' : '',
                       ].join(' ')
                     }
@@ -124,7 +144,11 @@ export function AppLayout() {
         </header>
 
         <main className="app-main relative z-10">
-          <Outlet />
+          <AnimatePresence mode="wait" initial={false}>
+            <PageTransition key={location.pathname}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
         </main>
       </div>
     </div>

@@ -7,3 +7,11 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 postgres_data/
+
+# Accidental root drops
+/package-lock.json
+/telegram-*.png
+/тимоха/
+/тимоха.zip
+/TIMOXA/
+/TIMOXA.zip

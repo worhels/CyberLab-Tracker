@@ -1,9 +1,10 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+import jwt
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.security import decode_access_token
 from app.crud.users import get_user_by_id
 from app.db.session import get_db
 from app.models.user import User
@@ -19,12 +20,12 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     )
 
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = decode_access_token(token)
         subject = payload.get("sub")
         if subject is None:
             raise credentials_exception
         user_id = int(subject)
-    except (JWTError, ValueError):
+    except (jwt.InvalidTokenError, ValueError):
         raise credentials_exception from None
 
     user = get_user_by_id(db, user_id)

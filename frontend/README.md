@@ -6,3 +6,9 @@ React interface for CyberLab Tracker.
 npm install
 npm run dev
 ```
+
+Optional local API override:
+
+```bash
+cp .env.example .env
+```

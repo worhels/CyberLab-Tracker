@@ -6,7 +6,8 @@ interface PageHeaderProps {
 export function PageHeader({ title, subtitle }: PageHeaderProps) {
   return (
     <div className="page-header">
-      <p className="app-brand-kicker">Workspace</p>
+      <div className="page-header__rule" aria-hidden="true" />
+      <p className="page-header__label">Workspace</p>
       <h1 className="app-title">{title}</h1>
       {subtitle ? <p className="app-subtitle">{subtitle}</p> : null}
     </div>

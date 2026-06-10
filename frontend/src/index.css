@@ -15,6 +15,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -38,11 +42,11 @@ textarea {
       linear-gradient(180deg, rgba(43, 42, 38, 0.72), rgba(21, 20, 17, 0.78)),
       rgba(21, 20, 17, 0.72);
     box-shadow:
-      0 30px 88px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(0, 0, 0, 0.2),
+      0 14px 34px rgba(0, 0, 0, 0.28),
+      0 0 0 1px rgba(0, 0, 0, 0.16),
       inset 0 1px 0 rgba(242, 240, 234, 0.065),
-      inset 0 -18px 42px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(18px);
+      inset 0 -10px 24px rgba(0, 0, 0, 0.12);
+    backdrop-filter: none;
   }
 
   .card::before {
@@ -221,6 +225,7 @@ textarea {
     overflow: hidden;
     background: #030303;
     isolation: isolate;
+    transition: padding-left 200ms ease;
   }
 
   .app-readability-overlay {
@@ -236,14 +241,150 @@ textarea {
   }
 
   .app-sidebar {
+    width: 248px;
     border-right: 1px solid rgba(255, 255, 255, 0.07);
     background:
       radial-gradient(ellipse at 0% 0%, rgba(242, 240, 231, 0.04), transparent 18rem),
       rgba(18, 18, 16, 0.82);
     box-shadow:
-      18px 0 64px rgba(0, 0, 0, 0.36),
+      10px 0 30px rgba(0, 0, 0, 0.22),
       inset -1px 0 0 rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(18px);
+    backdrop-filter: none;
+    transition:
+      width 200ms ease,
+      background 200ms ease,
+      border-color 200ms ease;
+  }
+
+  .app-sidebar--collapsed {
+    width: 72px;
+  }
+
+  .app-sidebar.app-sidebar--collapsed {
+    width: 72px;
+  }
+
+  .app-sidebar-toggle {
+    position: absolute;
+    top: 5.1rem;
+    right: -0.95rem;
+    z-index: 30;
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    color: #8d8a84;
+    border: 1px solid rgba(242, 240, 234, 0.095);
+    border-radius: 999px;
+    background: rgba(28, 27, 25, 0.94);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(242, 240, 234, 0.035);
+    transition:
+      color 200ms ease,
+      border-color 200ms ease,
+      background 200ms ease,
+      transform 200ms ease;
+  }
+
+  .app-sidebar-toggle:hover,
+  .app-sidebar-toggle[aria-pressed="true"] {
+    color: #d7d3ca;
+    border-color: rgba(242, 240, 234, 0.18);
+    background: rgba(42, 41, 38, 0.98);
+  }
+
+  .app-sidebar-toggle:hover {
+    transform: translateX(0.5px);
+  }
+
+  .app-sidebar-toggle::after {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 0.42rem);
+    pointer-events: none;
+    content: attr(data-tooltip);
+    padding: 0.32rem 0.46rem;
+    color: #bcb8ae;
+    border: 1px solid rgba(242, 240, 234, 0.08);
+    border-radius: 6px;
+    background: rgba(18, 18, 16, 0.92);
+    font-size: 0.68rem;
+    font-weight: 650;
+    line-height: 1;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate3d(-4px, -50%, 0);
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  .app-sidebar-toggle:hover::after {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0);
+  }
+
+  .app-sidebar-brand,
+  .app-sidebar-nav,
+  .app-sidebar-footer,
+  .app-sidebar__brand-copy,
+  .app-nav-link__label,
+  .app-sidebar__footer-copy,
+  .app-sidebar__logout-label {
+    transition:
+      opacity 180ms ease,
+      max-width 200ms ease,
+      padding 200ms ease,
+      transform 200ms ease;
+  }
+
+  .app-sidebar__brand-copy,
+  .app-nav-link__label,
+  .app-sidebar__footer-copy,
+  .app-sidebar__logout-label {
+    max-width: 12rem;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .app-sidebar--collapsed .app-sidebar-brand {
+    justify-content: center;
+    padding-right: 0.9rem;
+    padding-left: 0.9rem;
+  }
+
+  .app-sidebar--collapsed .app-sidebar-nav {
+    padding-right: 0.68rem;
+    padding-left: 0.68rem;
+  }
+
+  .app-sidebar--collapsed .app-nav-link {
+    justify-content: center;
+    gap: 0;
+    padding-right: 0.68rem;
+    padding-left: 0.68rem;
+  }
+
+  .app-sidebar--collapsed .app-sidebar__brand-copy,
+  .app-sidebar--collapsed .app-nav-link__label,
+  .app-sidebar--collapsed .app-sidebar__footer-copy,
+  .app-sidebar--collapsed .app-sidebar__logout-label {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  .app-sidebar--collapsed .app-sidebar-footer {
+    padding-right: 0.68rem;
+    padding-left: 0.68rem;
+  }
+
+  .app-sidebar--collapsed .app-sidebar-footer .btn-secondary {
+    width: 100%;
+    min-width: 0;
+    padding-right: 0;
+    padding-left: 0;
   }
 
   .app-brand-mark {
@@ -279,11 +420,22 @@ textarea {
     color: #bcb8ae;
     border: 1px solid transparent;
     border-radius: 12px;
+    line-height: 1.25;
     transition:
       border-color 160ms ease,
       background 160ms ease,
       color 160ms ease,
       box-shadow 160ms ease;
+  }
+
+  .app-nav-link {
+    min-height: 2.55rem;
+    padding: 0.62rem 0.86rem;
+  }
+
+  .app-mobile-nav-link {
+    min-height: 2.6rem;
+    padding: 0.62rem 0.95rem;
   }
 
   .app-nav-link:hover,
@@ -330,14 +482,19 @@ textarea {
   .app-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.055);
     background: rgba(7, 7, 7, 0.58);
-    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(12px);
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
   .app-main {
     width: 100%;
     max-width: none;
     margin: 0;
+  }
+
+  .page-transition {
+    width: 100%;
+    min-width: 0;
   }
 
   .app-main > section:not(.tasks-page) {
@@ -359,8 +516,25 @@ textarea {
   .page-header {
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
+    gap: 0.42rem;
     margin-bottom: 24px;
+  }
+
+  .page-header__rule {
+    width: min(100%, 34rem);
+    height: 1px;
+    margin-bottom: 0.95rem;
+    background: linear-gradient(90deg, rgba(242, 240, 234, 0.22), rgba(242, 240, 234, 0.035), transparent);
+  }
+
+  .page-header__label {
+    margin: 0;
+    color: #8d8a84;
+    font-size: 0.7rem;
+    font-weight: 560;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
   }
 
   .tasks-workspace {
@@ -377,9 +551,9 @@ textarea {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
     box-shadow:
-      0 26px 82px rgba(0, 0, 0, 0.44),
+      0 12px 32px rgba(0, 0, 0, 0.26),
       inset 0 1px 0 rgba(242, 240, 231, 0.035);
-    backdrop-filter: blur(16px);
+    backdrop-filter: none;
   }
 
   .task-create-panel {
@@ -446,6 +620,35 @@ textarea {
 
   .tasks-table-scroll {
     overflow-x: auto;
+    scroll-behavior: smooth;
+  }
+
+  .tasks-panel__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 14px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.055);
+    background: rgba(255, 255, 255, 0.018);
+  }
+
+  .tasks-pagination-summary,
+  .tasks-pagination-page {
+    color: #8d8a84;
+    font-size: 0.78rem;
+    font-weight: 650;
+  }
+
+  .tasks-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.62rem;
+  }
+
+  .tasks-pagination-button {
+    min-height: 2.25rem;
+    padding-inline: 0.72rem;
   }
 
   .pressure-field-background {
@@ -971,6 +1174,16 @@ textarea {
     }
   }
 
+  @media (min-width: 1280px) {
+    .app-frame {
+      padding-left: 248px;
+    }
+
+    .app-frame--sidebar-collapsed {
+      padding-left: 72px;
+    }
+  }
+
   @media (max-width: 1279px) {
     .tasks-page,
     .app-main > section:not(.tasks-page) {
@@ -1025,6 +1238,21 @@ textarea {
     .task-form-field {
       grid-column: auto;
     }
+
+    .tasks-panel__footer {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .tasks-pagination-controls {
+      justify-content: space-between;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
@@ -1171,10 +1399,10 @@ textarea {
       linear-gradient(180deg, rgba(37, 36, 33, 0.66), rgba(21, 20, 17, 0.72)),
       rgba(21, 20, 17, 0.72);
     box-shadow:
-      0 34px 96px rgba(0, 0, 0, 0.62),
+      0 16px 42px rgba(0, 0, 0, 0.34),
       0 0 0 1px rgba(0, 0, 0, 0.18),
       inset 0 1px 0 rgba(242, 240, 234, 0.05);
-    backdrop-filter: blur(18px);
+    backdrop-filter: none;
   }
 
   .auth-card-heading {

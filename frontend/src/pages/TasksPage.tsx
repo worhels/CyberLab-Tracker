@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { createTask, deleteTask, getTasks, updateTaskStatus } from '../api/tasks'
 import { getSubjects } from '../api/subjects'
 import { Badge } from '../components/Badge'
@@ -38,6 +39,9 @@ const initialTaskForm: TaskFormState = {
   estimated_hours: '',
 }
 
+const TASKS_PER_PAGE = 8
+const taskRowEase = [0.22, 1, 0.36, 1] as const
+
 export function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
@@ -48,6 +52,7 @@ export function TasksPage() {
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | ''>('')
   const [typeFilter, setTypeFilter] = useState<TaskType | ''>('')
+  const [page, setPage] = useState(1)
   const [appliedFilters, setAppliedFilters] = useState<{
     search: string
     priority: TaskPriority | ''
@@ -57,6 +62,14 @@ export function TasksPage() {
   const subjectById = useMemo(() => {
     return new Map(subjects.map((subject) => [subject.id, subject]))
   }, [subjects])
+
+  const pageCount = useMemo(() => Math.max(1, Math.ceil(tasks.length / TASKS_PER_PAGE)), [tasks.length])
+  const visibleTasks = useMemo(() => {
+    const start = (page - 1) * TASKS_PER_PAGE
+    return tasks.slice(start, start + TASKS_PER_PAGE)
+  }, [page, tasks])
+  const pageStart = tasks.length ? (page - 1) * TASKS_PER_PAGE + 1 : 0
+  const pageEnd = Math.min(page * TASKS_PER_PAGE, tasks.length)
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -86,6 +99,10 @@ export function TasksPage() {
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  useEffect(() => {
+    setPage((current) => Math.min(current, pageCount))
+  }, [pageCount])
 
   const updateField = <Key extends keyof TaskFormState>(field: Key, value: TaskFormState[Key]) => {
     setForm((current) => ({ ...current, [field]: value }))
@@ -247,13 +264,14 @@ export function TasksPage() {
             <button
               className="btn-secondary"
               type="button"
-              onClick={() =>
+              onClick={() => {
+                setPage(1)
                 setAppliedFilters({
                   search,
                   priority: priorityFilter,
                   type: typeFilter,
                 })
-              }
+              }}
             >
               Apply
             </button>
@@ -277,8 +295,20 @@ export function TasksPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {tasks.map((task) => (
-                      <tr key={task.id} className="align-top">
+                    <AnimatePresence initial={false}>
+                      {visibleTasks.map((task, index) => (
+                      <motion.tr
+                        key={task.id}
+                        className="align-top"
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.22, delay: index * 0.035, ease: taskRowEase },
+                        }}
+                        exit={{ opacity: 0, y: -6, transition: { duration: 0.14, ease: taskRowEase } }}
+                      >
                         <td className="tasks-table__task-cell">
                           <p className="tasks-table__title">{task.title}</p>
                           {task.description ? <p className="app-muted mt-1 max-w-md text-xs">{task.description}</p> : null}
@@ -306,10 +336,35 @@ export function TasksPage() {
                             Delete
                           </button>
                         </td>
-                      </tr>
-                    ))}
+                      </motion.tr>
+                      ))}
+                    </AnimatePresence>
                   </tbody>
                 </table>
+                <div className="tasks-panel__footer">
+                  <p className="tasks-pagination-summary">
+                    Showing {pageStart}-{pageEnd} of {tasks.length} tasks
+                  </p>
+                  <div className="tasks-pagination-controls">
+                    <button
+                      className="btn-secondary tasks-pagination-button"
+                      type="button"
+                      disabled={page === 1}
+                      onClick={() => setPage((current) => Math.max(1, current - 1))}
+                    >
+                      Previous
+                    </button>
+                    <span className="tasks-pagination-page">Page {page} / {pageCount}</span>
+                    <button
+                      className="btn-secondary tasks-pagination-button"
+                      type="button"
+                      disabled={page === pageCount}
+                      onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="p-4">
