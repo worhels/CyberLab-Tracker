@@ -76,7 +76,6 @@ const VARIANT_SETTINGS = {
 const FIELD_Y_BIAS = 0.38
 const MAX_RENDER_DPR = 1.5
 const TARGET_FPS = 60
-const FRAME_MS = 1000 / TARGET_FPS
 
 const FIELD_VERTEX = `
 varying vec2 vUv;
@@ -434,7 +433,6 @@ function FieldPlane({
   const size = useThree((state) => state.size)
   const invalidate = useThree((state) => state.invalidate)
   const timeRef = useRef(reducedMotion ? 9 : 0)
-  const lastFrameRef = useRef(0)
   const material = useMemo(
     () =>
       createShaderMaterial(FIELD_VERTEX, FIELD_FRAGMENT, {
@@ -453,14 +451,9 @@ function FieldPlane({
 
   useEffect(() => () => material.dispose(), [material])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (reducedMotion) return
-    const now = performance.now()
-    const elapsedMs = now - lastFrameRef.current
-    if (elapsedMs < FRAME_MS) return
-    lastFrameRef.current = now
-
-    timeRef.current += Math.min(elapsedMs / 1000, 0.05) * speed
+    timeRef.current += Math.min(delta, 0.05) * speed
     material.uniforms.uTime.value = timeRef.current
   })
 
@@ -484,7 +477,6 @@ function FiberLines({
   speed: number
 }) {
   const timeRef = useRef(reducedMotion ? 9 : 0)
-  const lastFrameRef = useRef(0)
   const geometry = useMemo(() => buildFiberGeometry(settings, reducedMotion), [reducedMotion, settings])
   const material = useMemo(
     () =>
@@ -505,14 +497,9 @@ function FiberLines({
   useEffect(() => () => geometry.dispose(), [geometry])
   useEffect(() => () => material.dispose(), [material])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (reducedMotion) return
-    const now = performance.now()
-    const elapsedMs = now - lastFrameRef.current
-    if (elapsedMs < FRAME_MS) return
-    lastFrameRef.current = now
-
-    timeRef.current += Math.min(elapsedMs / 1000, 0.05) * speed
+    timeRef.current += Math.min(delta, 0.05) * speed
     material.uniforms.uTime.value = timeRef.current
   })
 
@@ -536,7 +523,6 @@ function DustPoints({
 }) {
   const viewport = useThree((state) => state.viewport)
   const timeRef = useRef(reducedMotion ? 11 : 0)
-  const lastFrameRef = useRef(0)
   const geometry = useMemo(() => buildDustGeometry(settings, reducedMotion), [reducedMotion, settings])
   const material = useMemo(
     () =>
@@ -562,14 +548,9 @@ function DustPoints({
   useEffect(() => () => geometry.dispose(), [geometry])
   useEffect(() => () => material.dispose(), [material])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (reducedMotion) return
-    const now = performance.now()
-    const elapsedMs = now - lastFrameRef.current
-    if (elapsedMs < FRAME_MS) return
-    lastFrameRef.current = now
-
-    timeRef.current += Math.min(elapsedMs / 1000, 0.05) * speed
+    timeRef.current += Math.min(delta, 0.05) * speed
     material.uniforms.uTime.value = timeRef.current
   })
 
@@ -578,6 +559,16 @@ function DustPoints({
       <primitive attach="material" object={material} />
     </points>
   )
+}
+
+function PressureFrameInvalidator({ tick }: { tick: number }) {
+  const invalidate = useThree((state) => state.invalidate)
+
+  useEffect(() => {
+    invalidate()
+  }, [invalidate, tick])
+
+  return null
 }
 
 function PressureFieldScene({
@@ -608,6 +599,7 @@ export function PressureFieldBackground({
   className,
 }: PressureFieldBackgroundProps) {
   const reducedMotion = usePrefersReducedMotion()
+  const [tick, setTick] = useState(0)
   const settings = VARIANT_SETTINGS[variant]
   const clampedIntensity = clamp(intensity, 0.2, 1.35)
   const clampedOpacity = clamp(opacity, 0.05, 0.75)
@@ -617,6 +609,12 @@ export function PressureFieldBackground({
   const classes = ['pressure-field-background', `pressure-field-background--${variant}`, className].filter(Boolean).join(' ')
   const style = { '--pressure-field-opacity': clampedOpacity } as CSSProperties
 
+  useEffect(() => {
+    if (reducedMotion) return
+    const id = setInterval(() => setTick((value) => value + 1), 1000 / TARGET_FPS)
+    return () => clearInterval(id)
+  }, [reducedMotion])
+
   return (
     <div className={classes} style={style} aria-hidden="true">
       {reducedMotion ? (
@@ -625,7 +623,7 @@ export function PressureFieldBackground({
         <Canvas
           className="pressure-field-background__canvas"
           dpr={[1, dprMax]}
-          frameloop="always"
+          frameloop="demand"
           gl={{ alpha: false, antialias: false, powerPreference: 'default' }}
           onCreated={({ gl }) => {
             gl.setPixelRatio(Math.min(gl.getPixelRatio(), MAX_RENDER_DPR))
@@ -633,6 +631,7 @@ export function PressureFieldBackground({
             gl.outputColorSpace = THREE.SRGBColorSpace
           }}
         >
+          <PressureFrameInvalidator tick={tick} />
           <PressureFieldScene intensity={clampedIntensity} reducedMotion={reducedMotion} settings={settings} speed={resolvedSpeed} />
         </Canvas>
       )}
