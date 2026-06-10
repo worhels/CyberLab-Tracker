@@ -497,11 +497,12 @@ textarea {
     min-width: 0;
   }
 
+  .page-transition > section:not(.tasks-page),
   .app-main > section:not(.tasks-page) {
     width: 100%;
     max-width: 96rem;
     margin: 0 auto;
-    padding: 32px 48px 48px;
+    padding: 34px clamp(48px, 5vw, 72px) 52px clamp(56px, 5vw, 80px);
   }
 
   .tasks-page {
@@ -1186,6 +1187,7 @@ textarea {
 
   @media (max-width: 1279px) {
     .tasks-page,
+    .page-transition > section:not(.tasks-page),
     .app-main > section:not(.tasks-page) {
       padding: 28px 32px 40px;
     }
@@ -1206,6 +1208,7 @@ textarea {
 
   @media (max-width: 899px) {
     .tasks-page,
+    .page-transition > section:not(.tasks-page),
     .app-main > section:not(.tasks-page) {
       padding: 24px 20px 34px;
     }
@@ -1222,6 +1225,7 @@ textarea {
 
   @media (max-width: 639px) {
     .tasks-page,
+    .page-transition > section:not(.tasks-page),
     .app-main > section:not(.tasks-page) {
       padding: 20px 14px 28px;
     }
