@@ -102,6 +102,8 @@ const MASK_WIDTH = 64
 const MASK_HEIGHT = 96
 const RIGHT_RESERVE = 0.72
 const SCULPTURE_SHIFT_X = -0.28
+const MAX_RENDER_DPR = 1.5
+const BLOOM_BUFFER_SIZE = 512
 
 const SPINE_POINTS: Array<[number, number, number]> = [
   [0.60, -0.22, 0.08],
@@ -718,7 +720,7 @@ function createSharedUniforms(textures: MaskTextures, profile: QualityProfile, r
     uDelta: { value: 0 },
     uViewport: { value: new THREE.Vector2(2, 2) },
     uResolution: { value: new THREE.Vector2(1, 1) },
-    uDpr: { value: profile.dpr },
+    uDpr: { value: Math.min(profile.dpr, MAX_RENDER_DPR) },
     uMaskTex0: { value: textures.tex0 },
     uMaskTex1: { value: textures.tex1 },
     uMaskTex2: { value: textures.tex2 },
@@ -1337,8 +1339,10 @@ function LowerNodeMesh({ geometry, uniforms }: { geometry: THREE.InstancedBuffer
 function ComposerLayer({ profile, reducedMotion }: { profile: QualityProfile; reducedMotion: boolean }) {
   const { gl, scene, camera, size, viewport } = useThree()
   const composerRef = useRef<EffectComposer | null>(null)
+  const bloomRef = useRef<UnrealBloomPass | null>(null)
   const postPassRef = useRef<ShaderPass | null>(null)
   const fxaaRef = useRef<ShaderPass | null>(null)
+  const postTimeRef = useRef(0)
 
   useEffect(() => {
     if (reducedMotion && !profile.bloom) return
@@ -1346,8 +1350,15 @@ function ComposerLayer({ profile, reducedMotion }: { profile: QualityProfile; re
     composer.addPass(new RenderPass(scene, camera))
 
     if (profile.bloom) {
-      const bloom = new UnrealBloomPass(new THREE.Vector2(size.width, size.height), profile.tier === 'high' ? 0.52 : 0.38, 0.28, 0.79)
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(BLOOM_BUFFER_SIZE, BLOOM_BUFFER_SIZE),
+        profile.tier === 'high' ? 0.52 : 0.38,
+        0.28,
+        0.79,
+      )
+      bloom.setSize(BLOOM_BUFFER_SIZE, BLOOM_BUFFER_SIZE)
       composer.addPass(bloom)
+      bloomRef.current = bloom
     }
 
     const postPass = new ShaderPass({
@@ -1374,6 +1385,7 @@ function ComposerLayer({ profile, reducedMotion }: { profile: QualityProfile; re
     return () => {
       composer.dispose()
       composerRef.current = null
+      bloomRef.current = null
       postPassRef.current = null
       fxaaRef.current = null
     }
@@ -1381,8 +1393,10 @@ function ComposerLayer({ profile, reducedMotion }: { profile: QualityProfile; re
 
   useEffect(() => {
     if (!composerRef.current) return
+    const pixelRatio = Math.min(viewport.dpr, profile.dpr, MAX_RENDER_DPR)
+    composerRef.current.setPixelRatio(pixelRatio)
     composerRef.current.setSize(size.width, size.height)
-    const pixelRatio = Math.min(viewport.dpr, profile.dpr)
+    bloomRef.current?.setSize(BLOOM_BUFFER_SIZE, BLOOM_BUFFER_SIZE)
     const fxaa = fxaaRef.current
     if (fxaa) {
       const resolutionUniform = fxaa.material.uniforms.resolution
@@ -1399,13 +1413,15 @@ function ComposerLayer({ profile, reducedMotion }: { profile: QualityProfile; re
     }
   }, [profile.dpr, size.height, size.width, viewport.dpr])
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!composerRef.current) return
+    const frameDelta = Math.min(delta, 0.05)
     const postPass = postPassRef.current
     if (postPass) {
-      postPass.material.uniforms.uTime.value = clock.elapsedTime
+      postTimeRef.current += frameDelta
+      postPass.material.uniforms.uTime.value = postTimeRef.current
     }
-    composerRef.current.render()
+    composerRef.current.render(frameDelta)
   }, 1)
 
   return null
@@ -1426,25 +1442,32 @@ function MotionController({
   const performance = useThree((state) => state.performance)
   const previousSmooth = useRef(new THREE.Vector2(0, 0))
   const velocityTarget = useRef(new THREE.Vector2(0, 0))
+  const elapsedTime = useRef(0)
+
+  useEffect(() => {
+    elapsedTime.current = 0
+  }, [uniforms])
 
   useEffect(() => {
     uniforms.uResolution.value.set(size.width, size.height)
     uniforms.uViewport.value.set(viewport.width, viewport.height)
-    uniforms.uDpr.value = Math.min(viewport.dpr, uniforms.uDpr.value)
+    uniforms.uDpr.value = Math.min(viewport.dpr, MAX_RENDER_DPR)
   }, [size.height, size.width, uniforms, viewport.dpr, viewport.height, viewport.width])
 
-  useFrame((state, delta) => {
-    const decayA = 1 - Math.exp(-delta * 12)
-    const decayB = 1 - Math.exp(-delta * 18)
-    uniforms.uTime.value = state.clock.elapsedTime
-    uniforms.uDelta.value = delta
+  useFrame((_, delta) => {
+    const frameDelta = Math.min(delta, 0.05)
+    const decayA = 1 - Math.exp(-frameDelta * 12)
+    const decayB = 1 - Math.exp(-frameDelta * 18)
+    elapsedTime.current += frameDelta
+    uniforms.uTime.value = elapsedTime.current
+    uniforms.uDelta.value = frameDelta
     uniforms.uPointer.value.set(pointer.x, pointer.y)
 
     const smooth = uniforms.uPointerSmooth.value
     smooth.x += (pointer.x - smooth.x) * decayA
     smooth.y += (pointer.y - smooth.y) * decayA
 
-    velocityTarget.current.copy(smooth).sub(previousSmooth.current).multiplyScalar(1 / Math.max(delta, 1e-4))
+    velocityTarget.current.copy(smooth).sub(previousSmooth.current).multiplyScalar(1 / Math.max(frameDelta, 1e-4))
     const velocity = uniforms.uPointerVelocity.value
     velocity.x += (velocityTarget.current.x - velocity.x) * decayB
     velocity.y += (velocityTarget.current.y - velocity.y) * decayB
@@ -1525,7 +1548,11 @@ function AuthMeshScene({ mode, profile, reducedMotion }: { mode: AuthMode; profi
 export function AuthGenerativeVisual({ mode }: AuthGenerativeVisualProps) {
   const reducedMotion = usePrefersReducedMotion()
   const profile = useMemo(() => selectQuality(reducedMotion), [reducedMotion])
-  const dprMax = Math.min(profile.dpr, typeof window === 'undefined' ? profile.dpr : window.devicePixelRatio || profile.dpr)
+  const dprMax = Math.min(
+    MAX_RENDER_DPR,
+    profile.dpr,
+    typeof window === 'undefined' ? profile.dpr : window.devicePixelRatio || profile.dpr,
+  )
 
   return (
     <div className={`auth-generative-visual auth-generative-visual--${mode}`}>
@@ -1537,6 +1564,7 @@ export function AuthGenerativeVisual({ mode }: AuthGenerativeVisualProps) {
         frameloop={reducedMotion ? 'demand' : 'always'}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => {
+          gl.setPixelRatio(Math.min(gl.getPixelRatio(), MAX_RENDER_DPR))
           gl.toneMapping = THREE.ACESFilmicToneMapping
           gl.outputColorSpace = THREE.SRGBColorSpace
         }}

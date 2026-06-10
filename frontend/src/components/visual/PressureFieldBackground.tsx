@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import * as THREE from 'three'
 
@@ -74,6 +74,7 @@ const VARIANT_SETTINGS = {
 } satisfies Record<PressureFieldVariant, VariantSettings>
 
 const FIELD_Y_BIAS = 0.38
+const MAX_RENDER_DPR = 1.5
 
 const FIELD_VERTEX = `
 varying vec2 vUv;
@@ -430,6 +431,7 @@ function FieldPlane({
 }) {
   const size = useThree((state) => state.size)
   const invalidate = useThree((state) => state.invalidate)
+  const timeRef = useRef(reducedMotion ? 9 : 0)
   const material = useMemo(
     () =>
       createShaderMaterial(FIELD_VERTEX, FIELD_FRAGMENT, {
@@ -448,9 +450,10 @@ function FieldPlane({
 
   useEffect(() => () => material.dispose(), [material])
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!reducedMotion) {
-      material.uniforms.uTime.value = clock.elapsedTime * speed
+      timeRef.current += Math.min(delta, 0.05) * speed
+      material.uniforms.uTime.value = timeRef.current
     }
   })
 
@@ -473,6 +476,7 @@ function FiberLines({
   settings: VariantSettings
   speed: number
 }) {
+  const timeRef = useRef(reducedMotion ? 9 : 0)
   const geometry = useMemo(() => buildFiberGeometry(settings, reducedMotion), [reducedMotion, settings])
   const material = useMemo(
     () =>
@@ -493,9 +497,10 @@ function FiberLines({
   useEffect(() => () => geometry.dispose(), [geometry])
   useEffect(() => () => material.dispose(), [material])
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!reducedMotion) {
-      material.uniforms.uTime.value = clock.elapsedTime * speed
+      timeRef.current += Math.min(delta, 0.05) * speed
+      material.uniforms.uTime.value = timeRef.current
     }
   })
 
@@ -518,6 +523,7 @@ function DustPoints({
   speed: number
 }) {
   const viewport = useThree((state) => state.viewport)
+  const timeRef = useRef(reducedMotion ? 11 : 0)
   const geometry = useMemo(() => buildDustGeometry(settings, reducedMotion), [reducedMotion, settings])
   const material = useMemo(
     () =>
@@ -526,7 +532,7 @@ function DustPoints({
         DUST_FRAGMENT,
         {
           uTime: { value: reducedMotion ? 11 : 0 },
-          uDpr: { value: Math.min(viewport.dpr, settings.dpr) },
+          uDpr: { value: Math.min(viewport.dpr, settings.dpr, MAX_RENDER_DPR) },
           uIntensity: { value: intensity },
           uReducedMotion: { value: reducedMotion ? 1 : 0 },
           uVariant: { value: settings.shaderBias },
@@ -537,15 +543,16 @@ function DustPoints({
   )
 
   useEffect(() => {
-    material.uniforms.uDpr.value = Math.min(viewport.dpr, settings.dpr)
+    material.uniforms.uDpr.value = Math.min(viewport.dpr, settings.dpr, MAX_RENDER_DPR)
   }, [material, settings.dpr, viewport.dpr])
 
   useEffect(() => () => geometry.dispose(), [geometry])
   useEffect(() => () => material.dispose(), [material])
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (!reducedMotion) {
-      material.uniforms.uTime.value = clock.elapsedTime * speed
+      timeRef.current += Math.min(delta, 0.05) * speed
+      material.uniforms.uTime.value = timeRef.current
     }
   })
 
@@ -589,7 +596,7 @@ export function PressureFieldBackground({
   const clampedOpacity = clamp(opacity, 0.05, 0.75)
   const resolvedSpeed = speed ?? settings.speed
   const devicePixelRatio = typeof window === 'undefined' ? settings.dpr : window.devicePixelRatio || settings.dpr
-  const dprMax = reducedMotion ? 1 : Math.min(settings.dpr, devicePixelRatio)
+  const dprMax = reducedMotion ? 1 : Math.min(settings.dpr, devicePixelRatio, MAX_RENDER_DPR)
   const classes = ['pressure-field-background', `pressure-field-background--${variant}`, className].filter(Boolean).join(' ')
   const style = { '--pressure-field-opacity': clampedOpacity } as CSSProperties
 
@@ -604,6 +611,7 @@ export function PressureFieldBackground({
           frameloop="always"
           gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}
           onCreated={({ gl }) => {
+            gl.setPixelRatio(Math.min(gl.getPixelRatio(), MAX_RENDER_DPR))
             gl.setClearColor('#050505', 1)
             gl.outputColorSpace = THREE.SRGBColorSpace
           }}
