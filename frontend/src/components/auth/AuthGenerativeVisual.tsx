@@ -104,6 +104,7 @@ const RIGHT_RESERVE = 0.72
 const SCULPTURE_SHIFT_X = -0.28
 const MAX_RENDER_DPR = 1.5
 const BLOOM_BUFFER_SIZE = 512
+const TARGET_FPS = 60
 
 const SPINE_POINTS: Array<[number, number, number]> = [
   [0.60, -0.22, 0.08],
@@ -589,14 +590,13 @@ function sampleShell(spine: THREE.CatmullRomCurve3, t: number, phi: number, rho:
 function selectQuality(reducedMotion: boolean): QualityProfile {
   const width = typeof window === 'undefined' ? 1920 : window.innerWidth
   const height = typeof window === 'undefined' ? 1080 : window.innerHeight
-  const dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1
   const cores = typeof navigator === 'undefined' ? 8 : navigator.hardwareConcurrency || 8
   const largerSide = Math.max(width, height)
 
   let tier: QualityTier = 'low'
-  if (largerSide >= 2900 && cores >= 8 && dpr >= 1.25) {
+  if (largerSide >= 3840 && cores >= 12) {
     tier = 'high'
-  } else if (largerSide >= 1500 && cores >= 6) {
+  } else if (largerSide >= 1500 && cores >= 4) {
     tier = 'mid'
   }
 
@@ -1431,15 +1431,17 @@ function MotionController({
   uniforms,
   reducedMotion,
   groupRef,
+  tick,
 }: {
   uniforms: SharedUniforms
   reducedMotion: boolean
   groupRef: React.RefObject<THREE.Group | null>
+  tick: number
 }) {
+  const { invalidate } = useThree()
   const pointer = useThree((state) => state.pointer)
   const viewport = useThree((state) => state.viewport)
   const size = useThree((state) => state.size)
-  const performance = useThree((state) => state.performance)
   const previousSmooth = useRef(new THREE.Vector2(0, 0))
   const velocityTarget = useRef(new THREE.Vector2(0, 0))
   const elapsedTime = useRef(0)
@@ -1447,6 +1449,10 @@ function MotionController({
   useEffect(() => {
     elapsedTime.current = 0
   }, [uniforms])
+
+  useEffect(() => {
+    invalidate()
+  }, [invalidate, reducedMotion, tick])
 
   useEffect(() => {
     uniforms.uResolution.value.set(size.width, size.height)
@@ -1473,13 +1479,6 @@ function MotionController({
     velocity.y += (velocityTarget.current.y - velocity.y) * decayB
     previousSmooth.current.copy(smooth)
 
-    if (!reducedMotion) {
-      const speed = Math.abs(velocity.x) + Math.abs(velocity.y)
-      if (speed > 1.2) {
-        performance.regress()
-      }
-    }
-
     if (groupRef.current) {
       const amp = uniforms.uParallaxAmp.value
       groupRef.current.position.x = smooth.x * amp.x
@@ -1501,7 +1500,17 @@ function OrthoLock() {
   return null
 }
 
-function AuthMeshScene({ mode, profile, reducedMotion }: { mode: AuthMode; profile: QualityProfile; reducedMotion: boolean }) {
+function AuthMeshScene({
+  mode,
+  profile,
+  reducedMotion,
+  tick,
+}: {
+  mode: AuthMode
+  profile: QualityProfile
+  reducedMotion: boolean
+  tick: number
+}) {
   const groupRef = useRef<THREE.Group>(null)
   const viewport = useThree((state) => state.viewport)
 
@@ -1527,7 +1536,7 @@ function AuthMeshScene({ mode, profile, reducedMotion }: { mode: AuthMode; profi
   return (
     <>
       <OrthoLock />
-      <MotionController uniforms={uniforms} reducedMotion={reducedMotion} groupRef={groupRef} />
+      <MotionController uniforms={uniforms} reducedMotion={reducedMotion} groupRef={groupRef} tick={tick} />
       <group ref={groupRef} scale={[xScale, 1, 1]}>
         <BackgroundPlane uniforms={uniforms} />
         <WideLineSegments positions={curves.atmosphere} color="#9a9a9d" linewidth={0.78} opacity={0.22} renderOrder={1} />
@@ -1548,6 +1557,14 @@ function AuthMeshScene({ mode, profile, reducedMotion }: { mode: AuthMode; profi
 export function AuthGenerativeVisual({ mode }: AuthGenerativeVisualProps) {
   const reducedMotion = usePrefersReducedMotion()
   const profile = useMemo(() => selectQuality(reducedMotion), [reducedMotion])
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    if (reducedMotion) return
+    const id = setInterval(() => setTick((value) => value + 1), 1000 / TARGET_FPS)
+    return () => clearInterval(id)
+  }, [reducedMotion])
+
   const dprMax = Math.min(
     MAX_RENDER_DPR,
     profile.dpr,
@@ -1561,15 +1578,15 @@ export function AuthGenerativeVisual({ mode }: AuthGenerativeVisualProps) {
         orthographic
         dpr={[1, dprMax]}
         performance={{ min: 0.5, debounce: 200 }}
-        frameloop={reducedMotion ? 'demand' : 'always'}
-        gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+        frameloop="demand"
+        gl={{ alpha: true, antialias: false, powerPreference: 'default' }}
         onCreated={({ gl }) => {
           gl.setPixelRatio(Math.min(gl.getPixelRatio(), MAX_RENDER_DPR))
           gl.toneMapping = THREE.ACESFilmicToneMapping
           gl.outputColorSpace = THREE.SRGBColorSpace
         }}
       >
-        <AuthMeshScene mode={mode} profile={profile} reducedMotion={reducedMotion} />
+        <AuthMeshScene mode={mode} profile={profile} reducedMotion={reducedMotion} tick={tick} />
       </Canvas>
       <div className="auth-generative-grain" />
       <div className="auth-generative-vignette" />

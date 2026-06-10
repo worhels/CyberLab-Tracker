@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -5,8 +6,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "CyberLab Tracker API"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = False
-    DATABASE_URL: str
-    JWT_SECRET_KEY: str
+    DATABASE_URL: str = Field(default="", min_length=1, validate_default=True)
+    JWT_SECRET_KEY: str = Field(default="", min_length=1, validate_default=True)
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
