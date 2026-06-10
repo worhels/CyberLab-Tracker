@@ -26,55 +26,55 @@ const VARIANT_SETTINGS = {
   tasks: {
     seed: 1409,
     speed: 0.58,
-    dpr: 1.25,
+    dpr: 0.75,
     shaderBias: 0.1,
-    lineCount: 86,
-    dustCount: 230,
+    lineCount: 28,
+    dustCount: 70,
   },
   dashboard: {
     seed: 2617,
     speed: 0.48,
-    dpr: 1.2,
+    dpr: 0.75,
     shaderBias: -0.08,
-    lineCount: 72,
-    dustCount: 180,
+    lineCount: 26,
+    dustCount: 64,
   },
   subjects: {
     seed: 3167,
     speed: 0.52,
-    dpr: 1.2,
+    dpr: 0.75,
     shaderBias: -0.02,
-    lineCount: 78,
-    dustCount: 190,
+    lineCount: 26,
+    dustCount: 66,
   },
   crisis: {
     seed: 3821,
     speed: 0.68,
-    dpr: 1.25,
+    dpr: 0.75,
     shaderBias: 0.24,
-    lineCount: 96,
-    dustCount: 260,
+    lineCount: 34,
+    dustCount: 84,
   },
   stats: {
     seed: 4721,
     speed: 0.42,
-    dpr: 1.15,
+    dpr: 0.75,
     shaderBias: -0.12,
-    lineCount: 68,
-    dustCount: 160,
+    lineCount: 24,
+    dustCount: 56,
   },
   settings: {
     seed: 5923,
     speed: 0.32,
-    dpr: 1,
+    dpr: 0.75,
     shaderBias: -0.18,
-    lineCount: 48,
-    dustCount: 100,
+    lineCount: 18,
+    dustCount: 44,
   },
 } satisfies Record<PressureFieldVariant, VariantSettings>
 
 const FIELD_Y_BIAS = 0.38
-const MAX_RENDER_DPR = 1.5
+const MAX_RENDER_DPR = 0.75
 const TARGET_FPS = 60
 
 const FIELD_VERTEX = `
@@ -116,7 +116,7 @@ float noise(vec2 p) {
 float fbm(vec2 p) {
   float value = 0.0;
   float amp = 0.5;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 2; i++) {
     value += noise(p) * amp;
     p = mat2(1.62, -1.18, 1.18, 1.62) * p;
     amp *= 0.5;
@@ -149,10 +149,10 @@ void main() {
   float fibers = 0.0;
   float glow = 0.0;
 
-  for (int i = 0; i < 42; i++) {
+  for (int i = 0; i < 12; i++) {
     float fi = float(i);
     float seed = hash21(vec2(fi * 0.137, uVariant + 2.41));
-    float lane = mix(-0.82, 0.82, (fi + seed * 0.8) / 42.0);
+    float lane = mix(-0.82, 0.82, (fi + seed * 0.8) / 12.0);
     float laneCurve = lane * 0.44;
     float wave = sin(along * (1.1 + seed * 2.0) + t * (0.024 + seed * 0.024) + seed * 6.283) * (0.026 + seed * 0.04);
     wave += sin(along * (4.2 + seed * 3.4) - t * 0.026 + seed * 9.0) * 0.012;
@@ -622,7 +622,7 @@ export function PressureFieldBackground({
       ) : (
         <Canvas
           className="pressure-field-background__canvas"
-          dpr={[1, dprMax]}
+          dpr={dprMax}
           frameloop="demand"
           gl={{ alpha: false, antialias: false, powerPreference: 'default' }}
           onCreated={({ gl }) => {

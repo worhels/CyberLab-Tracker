@@ -653,11 +653,13 @@ textarea {
   }
 
   .pressure-field-background {
-    position: absolute;
+    position: fixed;
     inset: 0;
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
+    width: 100vw;
+    height: 100svh;
     opacity: var(--pressure-field-opacity, 0.2);
     background:
       radial-gradient(ellipse at 52% 45%, rgba(242, 240, 234, 0.055), transparent 33rem),
