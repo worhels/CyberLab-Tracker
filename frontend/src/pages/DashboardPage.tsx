@@ -4,7 +4,6 @@ import { getSubjects } from '../api/subjects'
 import { getTasks } from '../api/tasks'
 import { Badge } from '../components/Badge'
 import { EmptyState } from '../components/EmptyState'
-import { PageHeader } from '../components/PageHeader'
 import { StatCard } from '../components/StatCard'
 import type { DashboardSummary, Subject, Task } from '../types'
 import { getErrorMessage } from '../utils/errors'
@@ -89,59 +88,299 @@ export function DashboardPage() {
   }, [tasks])
 
   return (
-    <section>
-      <PageHeader title="Dashboard" subtitle="Workload, progress, and near-term risk in one control surface." />
+    <div style={{ padding: '32px 36px', maxWidth: '1400px' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <p
+          style={{
+            fontSize: '10px',
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--text-faint)',
+            marginBottom: '8px',
+          }}
+        >
+          WORKSPACE
+        </p>
+        <h1
+          style={{
+            fontSize: '36px',
+            fontWeight: 800,
+            color: 'var(--text-main)',
+            letterSpacing: '-0.02em',
+            lineHeight: 1.1,
+            marginBottom: '8px',
+          }}
+        >
+          Dashboard
+        </h1>
+        <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          Workload, progress, and near-term risk in one control surface.
+        </p>
+      </div>
 
-      {error ? <p className="app-error mb-4">{error}</p> : null}
+      {error ? (
+        <p style={{ color: 'var(--accent-debt)', marginBottom: '16px', fontSize: '13px' }}>{error}</p>
+      ) : null}
 
       {isLoading ? (
-        <div className="card app-muted p-6 text-sm">Loading dashboard...</div>
+        <div
+          style={{
+            background: 'var(--surface)',
+            borderRadius: 'var(--r-lg)',
+            boxShadow: 'var(--shadow-md)',
+            padding: '24px',
+            fontSize: '13px',
+            color: 'var(--text-muted)',
+          }}
+        >
+          Loading dashboard...
+        </div>
       ) : summary ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '16px',
+              marginBottom: '20px',
+            }}
+          >
             <StatCard label="Subjects" value={summary.total_subjects} description="Active study lanes in this workspace." />
             <StatCard label="Tasks" value={summary.total_tasks} description="Total tracked deliverables and checkpoints." />
             <StatCard label="Accepted" value={summary.accepted_tasks} accent="success" description="Work already cleared from the queue." />
-            <StatCard label="In progress" value={summary.in_progress_tasks} description="Current active execution surface." />
+            <StatCard label="In Progress" value={summary.in_progress_tasks} description="Current active execution surface." />
             <StatCard label="Debt" value={summary.debt_tasks} accent="red" description="Items that need recovery attention." />
             <StatCard label="Overdue" value={summary.overdue_tasks} accent="amber" description="Deadline pressure above baseline." />
-            <StatCard label="Progress" value={`${summary.progress_percent}%`} accent="success" description="Accepted work against total tracked work." />
-            <StatCard label="Nearest deadline" value={formatDate(summary.nearest_deadline)} description="Closest visible point on the timeline." />
+            <StatCard
+              label="Progress"
+              value={`${summary.progress_percent}%`}
+              accent="success"
+              description="Accepted work against total tracked work."
+            />
+            <StatCard
+              label="Nearest Deadline"
+              value={formatDate(summary.nearest_deadline)}
+              description="Closest visible point on the timeline."
+            />
           </div>
 
-          <div className="card mt-6 p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="app-section-title">Progress</p>
-              <p className="app-soft text-sm">{summary.progress_percent}%</p>
+          <div
+            style={{
+              background: 'var(--surface)',
+              borderRadius: 'var(--r-lg)',
+              boxShadow: 'var(--shadow-lg)',
+              border: '1px solid rgba(255,255,255,0.045)',
+              padding: '22px 26px',
+              marginBottom: '20px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                marginBottom: '14px',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  letterSpacing: '0.10em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-faint)',
+                }}
+              >
+                Overall Progress
+              </p>
+              <p
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  color: 'var(--text-main)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {summary.progress_percent}%
+              </p>
             </div>
-            <div className="progress-track">
+            <div
+              style={{
+                width: '100%',
+                height: '12px',
+                borderRadius: 'var(--r-full)',
+                background: 'var(--surface-soft)',
+                boxShadow: 'var(--shadow-inset)',
+                position: 'relative',
+                overflow: 'visible',
+              }}
+            >
               <div
-                className="progress-bar"
-                style={{ width: `${Math.min(summary.progress_percent, 100)}%` }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  height: '100%',
+                  width: `${Math.min(summary.progress_percent, 100)}%`,
+                  borderRadius: 'var(--r-full)',
+                  background: 'var(--active)',
+                  boxShadow: '0 0 10px rgba(240,237,228,0.2)',
+                  transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)',
+                }}
               />
+              {summary.progress_percent > 2 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: `calc(${Math.min(summary.progress_percent, 100)}% - 8px)`,
+                    transform: 'translateY(-50%)',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: 'var(--active)',
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'left 0.5s cubic-bezier(0.4,0,0.2,1)',
+                  }}
+                />
+              )}
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="card dashboard-panel">
-              <div className="dashboard-panel__header">
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1.15fr 0.85fr',
+              gap: '16px',
+              marginBottom: '20px',
+            }}
+          >
+            <div
+              style={{
+                background: 'var(--surface)',
+                borderRadius: 'var(--r-lg)',
+                boxShadow: 'var(--shadow-lg)',
+                border: '1px solid rgba(255,255,255,0.045)',
+                padding: '24px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '20px',
+                }}
+              >
                 <div>
-                  <p className="dashboard-panel__title">Priority queue</p>
-                  <p className="dashboard-panel__subtitle">Highest-friction tasks, weighted by priority, debt, and deadline pressure.</p>
+                  <p
+                    style={{
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      color: 'var(--text-main)',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    Priority Queue
+                  </p>
+                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', lineHeight: 1.4 }}>
+                    Highest-friction tasks, weighted by priority, debt, and deadline pressure.
+                  </p>
                 </div>
-                <span className="badge badge--ivory">{priorityQueue.length} visible</span>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '4px 12px',
+                    borderRadius: 'var(--r-full)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    background: 'var(--surface-soft)',
+                    boxShadow: 'var(--shadow-inset-sm)',
+                    color: 'var(--text-muted)',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    marginLeft: '16px',
+                  }}
+                >
+                  {priorityQueue.length} visible
+                </span>
               </div>
 
               {priorityQueue.length ? (
-                <div className="queue-list">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {priorityQueue.map((task, index) => (
-                    <article key={task.id} className="queue-item">
-                      <span className="queue-rank">{index + 1}</span>
-                      <div className="min-w-0">
-                        <p className="item-title truncate">{task.title}</p>
-                        <div className="item-meta">
-                          <span className="meta-pill">{subjectById.get(task.subject_id)?.name || 'Unknown subject'}</span>
-                          <span className="meta-pill">{formatDate(task.deadline)}</span>
+                    <article
+                      key={task.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '14px',
+                        background: 'var(--surface-soft)',
+                        borderRadius: 'var(--r-md)',
+                        boxShadow: 'var(--shadow-inset-sm)',
+                        border: '1px solid rgba(0,0,0,0.2)',
+                        padding: '14px 16px',
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '26px',
+                          height: '26px',
+                          borderRadius: 'var(--r-xs)',
+                          background: 'var(--active)',
+                          color: 'var(--active-text)',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          flexShrink: 0,
+                          boxShadow: 'var(--shadow-sm)',
+                        }}
+                      >
+                        {index + 1}
+                      </span>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p
+                          style={{
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            color: 'var(--text-main)',
+                            marginBottom: '8px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {task.title}
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                          <span
+                            style={{
+                              padding: '2px 10px',
+                              borderRadius: 'var(--r-full)',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              background: 'rgba(255,255,255,0.06)',
+                              color: 'var(--text-muted)',
+                            }}
+                          >
+                            {subjectById.get(task.subject_id)?.name || 'Unknown'}
+                          </span>
+                          <span
+                            style={{
+                              padding: '2px 10px',
+                              borderRadius: 'var(--r-full)',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              background: 'rgba(255,255,255,0.06)',
+                              color: 'var(--text-muted)',
+                            }}
+                          >
+                            {formatDate(task.deadline)}
+                          </span>
                           <Badge value={task.priority} variant="priority" />
                           <Badge value={task.status} variant="status" />
                         </div>
@@ -154,27 +393,104 @@ export function DashboardPage() {
               )}
             </div>
 
-            <div className="card dashboard-panel">
-              <div className="dashboard-panel__header">
-                <div>
-                  <p className="dashboard-panel__title">Subject progress</p>
-                  <p className="dashboard-panel__subtitle">Accepted work by subject, based on the current task set.</p>
-                </div>
+            <div
+              style={{
+                background: 'var(--surface)',
+                borderRadius: 'var(--r-lg)',
+                boxShadow: 'var(--shadow-lg)',
+                border: '1px solid rgba(255,255,255,0.045)',
+                padding: '24px',
+              }}
+            >
+              <div style={{ marginBottom: '20px' }}>
+                <p
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    color: 'var(--text-main)',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Subject Progress
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--text-faint)', lineHeight: 1.4 }}>
+                  Accepted work by subject, based on the current task set.
+                </p>
               </div>
 
               {subjectProgress.length ? (
-                <div className="subject-progress-list">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                   {subjectProgress.map(({ subject, accepted, total, percent }) => (
-                    <article key={subject.id} className="subject-progress-item">
-                      <div className="subject-progress-row">
-                        <div className="subject-progress-name">
-                          <span className="subject-dot" style={{ backgroundColor: subject.color }} />
-                          <p className="item-title truncate">{subject.name}</p>
+                    <article key={subject.id}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          <span
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: subject.color,
+                              flexShrink: 0,
+                              boxShadow: `0 0 6px ${subject.color}88`,
+                            }}
+                          />
+                          <p
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              color: 'var(--text-main)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {subject.name}
+                          </p>
                         </div>
-                        <span className="meta-pill">{total ? `${accepted}/${total}` : 'No tasks'}</span>
+                        <span
+                          style={{
+                            padding: '2px 10px',
+                            borderRadius: 'var(--r-full)',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            background: 'var(--surface-soft)',
+                            boxShadow: 'var(--shadow-inset-sm)',
+                            color: 'var(--text-muted)',
+                            flexShrink: 0,
+                            marginLeft: '8px',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}
+                        >
+                          {total ? `${accepted}/${total}` : 'No tasks'}
+                        </span>
                       </div>
-                      <div className="subject-meter" aria-label={`${subject.name} progress`}>
-                        <div className="subject-meter__bar" style={{ width: `${percent}%` }} />
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '6px',
+                          borderRadius: 'var(--r-full)',
+                          background: 'var(--surface-soft)',
+                          boxShadow: 'var(--shadow-inset-sm)',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${percent}%`,
+                            height: '100%',
+                            borderRadius: 'var(--r-full)',
+                            backgroundColor: subject.color,
+                            boxShadow: `0 0 6px ${subject.color}66`,
+                            transition: 'width 0.45s cubic-bezier(0.4,0,0.2,1)',
+                          }}
+                        />
                       </div>
                     </article>
                   ))}
@@ -183,40 +499,98 @@ export function DashboardPage() {
                 <EmptyState title="No subjects yet" text="Create subjects and tasks to populate the progress map." />
               )}
             </div>
+          </div>
 
-            <div className="card dashboard-panel xl:col-span-2">
-              <div className="dashboard-panel__header">
-                <div>
-                  <p className="dashboard-panel__title">Recent activity</p>
-                  <p className="dashboard-panel__subtitle">Latest task updates across the workspace.</p>
-                </div>
-              </div>
-
-              {recentActivity.length ? (
-                <div className="activity-list">
-                  {recentActivity.map((task) => (
-                    <article key={task.id} className="activity-item">
-                      <span className="activity-dot" aria-hidden="true" />
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="item-title truncate">{task.title}</p>
-                          <Badge value={task.type} variant="type" />
-                          <Badge value={task.status} variant="status" />
-                        </div>
-                        <p className="activity-copy">
-                          {subjectById.get(task.subject_id)?.name || 'Unknown subject'} updated {formatDate(task.updated_at)}
-                        </p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState title="No activity yet" text="Task updates will appear here once the workspace starts moving." />
-              )}
+          <div
+            style={{
+              background: 'var(--surface)',
+              borderRadius: 'var(--r-lg)',
+              boxShadow: 'var(--shadow-lg)',
+              border: '1px solid rgba(255,255,255,0.045)',
+              padding: '24px',
+            }}
+          >
+            <div style={{ marginBottom: '20px' }}>
+              <p
+                style={{
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  color: 'var(--text-main)',
+                  marginBottom: '4px',
+                }}
+              >
+                Recent Activity
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--text-faint)', lineHeight: 1.4 }}>
+                Latest task updates across the workspace.
+              </p>
             </div>
+
+            {recentActivity.length ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {recentActivity.map((task) => (
+                  <article
+                    key={task.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '14px',
+                      background: 'var(--surface-soft)',
+                      borderRadius: 'var(--r-md)',
+                      boxShadow: 'var(--shadow-inset-sm)',
+                      border: '1px solid rgba(0,0,0,0.2)',
+                      padding: '14px 16px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: 'var(--active)',
+                        flexShrink: 0,
+                        marginTop: '5px',
+                        boxShadow: '0 0 6px rgba(240,237,228,0.3)',
+                      }}
+                    />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '5px',
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            color: 'var(--text-main)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {task.title}
+                        </p>
+                        <Badge value={task.type} variant="type" />
+                        <Badge value={task.status} variant="status" />
+                      </div>
+                      <p style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                        {subjectById.get(task.subject_id)?.name || 'Unknown subject'} - updated {formatDate(task.updated_at)}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <EmptyState title="No activity yet" text="Task updates will appear here once the workspace starts moving." />
+            )}
           </div>
         </>
       ) : null}
-    </section>
+    </div>
   )
 }

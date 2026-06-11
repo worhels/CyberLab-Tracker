@@ -1,0 +1,54 @@
+/* Reusable neumorphic utility classes */
+
+.nm-card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.nm-card-sm {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.nm-inset {
+  background: var(--surface-soft);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-inset);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.nm-pill-active {
+  background: var(--active);
+  color: var(--active-text);
+  border-radius: var(--r-full);
+  box-shadow: var(--shadow-active);
+  border: none;
+}
+
+.nm-pill-inactive {
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--r-full);
+  box-shadow: none;
+  border: none;
+}
+
+.nm-squircle-active {
+  background: var(--active);
+  color: var(--active-text);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-active);
+  border: none;
+}
+
+.nm-squircle-inactive {
+  background: var(--surface-soft);
+  color: var(--text-muted);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-inset-sm);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}

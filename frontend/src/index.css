@@ -1,18 +1,27 @@
+@import './styles/tokens.css';
+@import './styles/neumorphism.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  color: #e8e5da;
-  background: #030303;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
   color-scheme: dark;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html {
@@ -22,8 +31,6 @@ html {
 body {
   min-width: 320px;
   min-height: 100vh;
-  margin: 0;
-  background: #030303;
 }
 
 button,
@@ -33,19 +40,23 @@ textarea {
   font: inherit;
 }
 
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-hover);
+  border-radius: var(--r-full);
+}
+
 @layer components {
   .card {
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    background:
-      linear-gradient(180deg, rgba(43, 42, 38, 0.72), rgba(21, 20, 17, 0.78)),
-      rgba(21, 20, 17, 0.72);
-    box-shadow:
-      0 14px 34px rgba(0, 0, 0, 0.28),
-      0 0 0 1px rgba(0, 0, 0, 0.16),
-      inset 0 1px 0 rgba(242, 240, 234, 0.065),
-      inset 0 -10px 24px rgba(0, 0, 0, 0.12);
     backdrop-filter: none;
   }
 
@@ -181,6 +192,82 @@ textarea {
     content: none;
   }
 
+  .app-sidebar-brand-toggle {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    transform: translateZ(0);
+  }
+
+  .app-sidebar-brand-button {
+    display: inline-flex;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--r-xs);
+    background: var(--surface-soft);
+    box-shadow: var(--shadow-inset-sm);
+    cursor: pointer;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    transition:
+      transform 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      color 150ms ease;
+    will-change: transform;
+  }
+
+  .app-sidebar-brand-button:hover,
+  .app-sidebar-brand-button:focus-visible {
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.09);
+    background: var(--surface-hover);
+    box-shadow: var(--shadow-sm);
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .app-sidebar-brand-button:focus-visible {
+    outline: 2px solid rgba(240, 237, 228, 0.18);
+    outline-offset: 3px;
+  }
+
+  .app-sidebar-brand-tooltip {
+    position: absolute;
+    top: 50%;
+    left: var(--sidebar-toggle-tooltip-left, calc(100% + 16px));
+    z-index: 40;
+    padding: 8px 10px;
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(29, 29, 27, 0.98);
+    box-shadow: var(--shadow-sm);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(-4px, -50%, 0);
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease;
+    will-change: opacity, transform;
+  }
+
+  .app-sidebar-brand-toggle:hover .app-sidebar-brand-tooltip,
+  .app-sidebar-brand-toggle:focus-within .app-sidebar-brand-tooltip {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0);
+  }
+
   .app-atmosphere {
     position: fixed;
     inset: 0;
@@ -225,7 +312,6 @@ textarea {
     overflow: hidden;
     background: #030303;
     isolation: isolate;
-    transition: padding-left 200ms ease;
   }
 
   .app-readability-overlay {
@@ -790,38 +876,6 @@ textarea {
     font-size: 0.88rem;
   }
 
-  .stat-card {
-    min-height: 9rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .stat-card-value {
-    color: #f2f0ea;
-    line-height: 1;
-    text-shadow: 0 0 28px rgba(242, 240, 234, 0.08);
-  }
-
-  .stat-card-value--success,
-  .stat-card-value--ivory {
-    color: #f2f0ea;
-  }
-
-  .stat-card-value--red {
-    color: #fca5a5;
-  }
-
-  .stat-card-value--amber {
-    color: #facc15;
-  }
-
-  .stat-card-description {
-    color: #8d8a84;
-    font-size: 0.82rem;
-    line-height: 1.45;
-  }
-
   .badge {
     display: inline-flex;
     align-items: center;
@@ -858,21 +912,6 @@ textarea {
     color: #e3b2aa;
     border-color: rgba(227, 178, 170, 0.25);
     background: rgba(98, 37, 34, 0.17);
-  }
-
-  .progress-track {
-    height: 0.72rem;
-    overflow: hidden;
-    border: 1px solid rgba(69, 68, 65, 0.78);
-    border-radius: 8px;
-    background: rgba(21, 20, 17, 0.86);
-  }
-
-  .progress-bar {
-    height: 100%;
-    border-radius: 8px;
-    background: linear-gradient(90deg, #8d8a84, #f2f0ea);
-    box-shadow: 0 0 24px rgba(242, 240, 234, 0.12);
   }
 
   .app-table {
@@ -1011,72 +1050,6 @@ textarea {
     box-shadow: 0 0 16px rgba(242, 240, 234, 0.18);
   }
 
-  .dashboard-grid {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .dashboard-panel {
-    padding: clamp(1rem, 2vw, 1.25rem);
-  }
-
-  .dashboard-panel__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .dashboard-panel__title {
-    margin: 0;
-    color: #f2f0ea;
-    font-size: 1rem;
-    font-weight: 650;
-  }
-
-  .dashboard-panel__subtitle {
-    margin: 0.3rem 0 0;
-    color: #8d8a84;
-    font-size: 0.86rem;
-  }
-
-  .queue-list,
-  .activity-list,
-  .subject-progress-list {
-    display: grid;
-    gap: 0.72rem;
-  }
-
-  .queue-item,
-  .activity-item,
-  .subject-progress-item {
-    border: 1px solid rgba(69, 68, 65, 0.72);
-    border-radius: 8px;
-    background: rgba(48, 47, 45, 0.38);
-    box-shadow: inset 0 1px 0 rgba(242, 240, 234, 0.035);
-  }
-
-  .queue-item {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.75rem;
-    padding: 0.82rem;
-  }
-
-  .queue-rank {
-    display: grid;
-    width: 2rem;
-    height: 2rem;
-    place-items: center;
-    color: #f2f0ea;
-    border: 1px solid rgba(242, 240, 234, 0.16);
-    border-radius: 8px;
-    background: rgba(21, 20, 17, 0.56);
-    font-size: 0.82rem;
-    font-weight: 750;
-  }
-
   .item-title {
     margin: 0;
     color: #f2f0ea;
@@ -1103,87 +1076,10 @@ textarea {
     font-weight: 650;
   }
 
-  .subject-progress-item {
-    padding: 0.82rem;
-  }
-
-  .subject-progress-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 0.7rem;
-  }
-
-  .subject-progress-name {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 0.55rem;
-  }
-
-  .subject-dot {
-    width: 0.55rem;
-    height: 0.55rem;
-    flex: 0 0 auto;
-    border: 1px solid rgba(242, 240, 234, 0.24);
-    border-radius: 3px;
-  }
-
-  .subject-meter {
-    height: 0.45rem;
-    overflow: hidden;
-    border: 1px solid rgba(69, 68, 65, 0.78);
-    border-radius: 999px;
-    background: rgba(21, 20, 17, 0.86);
-  }
-
-  .subject-meter__bar {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #8d8a84, #f2f0ea);
-  }
-
-  .activity-item {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.72rem;
-    padding: 0.76rem 0.82rem;
-  }
-
-  .activity-dot {
-    width: 0.58rem;
-    height: 0.58rem;
-    margin-top: 0.34rem;
-    border-radius: 999px;
-    background: #bcb8ae;
-    box-shadow: 0 0 18px rgba(242, 240, 234, 0.12);
-  }
-
-  .activity-copy {
-    margin: 0.24rem 0 0;
-    color: #8d8a84;
-    font-size: 0.82rem;
-  }
-
   @media (max-width: 767px) {
     .system-status {
       width: 100%;
       justify-items: start;
-    }
-
-    .dashboard-panel__header {
-      display: grid;
-    }
-  }
-
-  @media (min-width: 1280px) {
-    .app-frame {
-      padding-left: 248px;
-    }
-
-    .app-frame--sidebar-collapsed {
-      padding-left: 72px;
     }
   }
 
