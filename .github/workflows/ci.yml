@@ -40,8 +40,8 @@ jobs:
       - name: Test backend
         working-directory: backend
         env:
-          DATABASE_URL: sqlite+pysqlite:///:memory:
-          JWT_SECRET_KEY: ci-only-secret-for-tests-with-safe-length
+          DATABASE_URL: "sqlite+pysqlite:///:memory:"
+          JWT_SECRET_KEY: "ci-only-secret-for-tests-with-safe-length"
         run: pytest
 
       - name: Compile backend
