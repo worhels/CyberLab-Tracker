@@ -1,637 +1,662 @@
-# 🚀 CyberLab Tracker — Полная Дорожная Карта
+# CyberLab Tracker — Roadmap
 
-**От текущего состояния до окончательной версии личного проекта**
+**CyberLab Tracker** — личный study/task tracker для контроля предметов, задач, дедлайнов и кризисных периодов.
 
-> ⏱️ **Ожидаемый период**: 6-9 месяцев интенсивной разработки
-> 
-> 🎯 **Конечная цель**: Полнофункциональный, надежный и красивый трекер учебной нагрузки для личного использования
+Проект не строится как enterprise-система. Цель — рабочее, безопасное, визуально приятное приложение для личного использования и портфолио.
 
----
+## Цель проекта
 
-## 🎬 Phase 1: Фундамент & DevOps (Недели 1-3)
+Сделать локальный трекер, который помогает:
 
-### ✅ Infrastructure & CI/CD
+* видеть текущую нагрузку по предметам;
+* контролировать дедлайны;
+* быстро находить просроченные и критичные задачи;
+* отслеживать прогресс по учебным предметам;
+* визуализировать состояние нагрузки через Crisis Mode;
+* безопасно хранить данные локально.
 
-- [ ] **GitHub Actions для автоматизации**
-  - [ ] CI pipeline: тесты, линтинг, type checking
-  - [ ] Backend: pytest с coverage reporting
-  - [ ] Frontend: Vitest для unit тестов
-  - [ ] Python: ruff + mypy
-  - [ ] TypeScript: ESLint + tsc
-  - [ ] Автоматическая проверка на каждый push
-  - Время: **3-4 дня**
+## Текущий стек
 
-### 📚 Метаданные Проекта
+### Backend
 
-- [ ] **GitHub Repo улучшения**
-  - [ ] Добавить description: "Minimal study workload tracker — labs, coursework, deadlines"
-  - [ ] Topics: `tracker`, `academic`, `fastapi`, `react`, `typescript`, `productivity`
-  - [ ] Лицензия MIT (LICENSE файл)
-  - Время: **1 день**
+* FastAPI
+* PostgreSQL
+* SQLAlchemy
+* Alembic
+* Pydantic
+* JWT authentication
+* Docker Compose
 
-### 🖼️ README & Документация
+### Frontend
 
-- [ ] **Visual README**
-  - [ ] 4-5 скриншотов интерфейса (главная, создание задачи, статистика, 3D-визуализация)
-  - [ ] Feature list с эмодзи
-  - [ ] Architecture diagram (ASCII или image)
-  - [ ] Tech stack с версиями
-  - [ ] Installation & Quick Start (уже есть, улучшить)
-  - Время: **2-3 дня**
-
-- [ ] **API Documentation**
-  - [ ] Улучшить Swagger комментарии
-  - [ ] Выложить OpenAPI schema в docs/
-  - [ ] Создать Postman collection
-  - Время: **1-2 дня**
-
-**Phase 1 Total: ~1 неделя**
+* React
+* TypeScript
+* Vite
+* Axios
+* React Router
+* R3F / Three.js for 3D visualization
+* Dark Soft Neumorphism UI
 
 ---
 
-## 📐 Phase 2: Качество Кода & Тестирование (Недели 4-6)
+# Current Status
 
-### 🧪 Backend Testing
+## Done
 
-- [ ] **Unit Tests для CRUD**
-  - [ ] Tasks CRUD (create, read, update, delete)
-  - [ ] Subjects CRUD
-  - [ ] Auth (login, register, token refresh)
-  - [ ] Task filtering & sorting
-  - [ ] Status & priority handling
-  - Target coverage: **80%+**
-  - Время: **4-5 дней**
-
-- [ ] **Integration Tests**
-  - [ ] Full API endpoint tests
-  - [ ] Database transaction tests
-  - [ ] Middleware & auth flow tests
-  - [ ] Error handling tests (404, 401, 400)
-  - Время: **3-4 дня**
-
-- [ ] **Database Tests**
-  - [ ] Migration tests
-  - [ ] Constraint validation
-  - [ ] Cascade delete tests
-  - Время: **2 дня**
-
-### 🧪 Frontend Testing
-
-- [ ] **Component Tests (React Testing Library)**
-  - [ ] Task list component
-  - [ ] Task form component
-  - [ ] Subject selector
-  - [ ] Dashboard cards
-  - [ ] Navigation
-  - Target coverage: **70%+**
-  - Время: **3-4 дня**
-
-- [ ] **Hook Tests**
-  - [ ] useAuth hook
-  - [ ] useTasks hook
-  - [ ] useSubjects hook
-  - [ ] useFilters hook
-  - Время: **2-3 дня**
-
-- [ ] **API Client Tests**
-  - [ ] Mock axios responses
-  - [ ] Error handling
-  - [ ] Request/response transformation
-  - Время: **1-2 дня**
-
-### 📐 Code Quality
-
-- [ ] **Backend Refactoring**
-  - [ ] Разбить main.py на модули (app/core, app/api/dependencies)
-  - [ ] Добавить proper logging (structlog)
-  - [ ] Standardize error responses
-  - [ ] Input validation review
-  - [ ] Constants management
-  - [ ] Docstrings для всех функций
-  - Время: **4-5 дней**
-
-- [ ] **Frontend Refactoring**
-  - [ ] Organize components tree (Pages, Components, Hooks)
-  - [ ] Extract custom hooks library
-  - [ ] Remove code duplication
-  - [ ] Performance optimization (React.memo, useMemo)
-  - [ ] Add JSDoc comments
-  - Время: **3-4 дня**
-
-**Phase 2 Total: ~3 недели**
+* [x] FastAPI backend
+* [x] PostgreSQL database
+* [x] SQLAlchemy models
+* [x] Alembic migrations
+* [x] React + TypeScript frontend
+* [x] Docker Compose setup
+* [x] Authentication base flow
+* [x] Dashboard page
+* [x] Subjects page
+* [x] Tasks page
+* [x] Settings page
+* [x] Crisis Mode page
+* [x] Dark Soft Neumorphism redesign
+* [x] Sidebar redesign
+* [x] Dashboard stat cards
+* [x] Dashboard progress blocks
+* [x] Priority Queue
+* [x] Subject Progress section
+* [x] Crisis Volume Cube 3D visualization
+* [x] Basic CRUD for subjects and tasks
 
 ---
 
-## ⚙️ Phase 3: Core Features Completion (Недели 7-12)
-
-### 🎨 UI/UX Polish
-
-- [ ] **Dark Mode Implementation**
-  - [ ] Theme provider (React Context)
-  - [ ] Tailwind dark mode configuration
-  - [ ] Persistent theme preference (localStorage)
-  - [ ] System preference detection
-  - [ ] Smooth transition between themes
-  - Время: **2-3 дня**
-
-- [ ] **Mobile Responsiveness**
-  - [ ] Mobile-first redesign для всех страниц
-  - [ ] Touch-friendly interactions
-  - [ ] Hamburger menu для навигации
-  - [ ] Responsive task cards & forms
-  - [ ] Mobile keyboard handling
-  - Время: **3-4 дня**
-
-- [ ] **Accessibility (A11y)**
-  - [ ] ARIA labels на все интерактивные элементы
-  - [ ] Keyboard navigation (Tab, Enter, Esc)
-  - [ ] Screen reader compatibility
-  - [ ] Color contrast validation
-  - Время: **2-3 дня**
-
-### 🆕 Feature: Enhanced Dashboard
-
-- [ ] **Statistics & Analytics**
-  - [ ] Task completion rate (%)
-  - [ ] Average time to completion
-  - [ ] Tasks by priority breakdown
-  - [ ] Tasks by type breakdown
-  - [ ] Subject workload distribution
-  - [ ] Weekly/monthly statistics
-  - Время: **3-4 дня**
-
-- [ ] **Advanced Charts**
-  - [ ] Task completion trend chart (line chart)
-  - [ ] Workload by subject (pie/bar chart)
-  - [ ] Priority distribution (donut chart)
-  - [ ] Time remaining visualization
-  - Время: **2-3 дня**
-
-- [ ] **Smart Alerts**
-  - [ ] Overdue tasks indicator
-  - [ ] Deadline approaching warnings (3 days before)
-  - [ ] "Start now" recommendations based on deadline & estimated hours
-  - [ ] High workload alerts
-  - Время: **2 дня**
-
-### 🔄 Feature: Task Management Enhanced
-
-- [ ] **Advanced Filtering & Sorting**
-  - [ ] Multi-filter combinations
-  - [ ] Save filter presets
-  - [ ] Sort by deadline, priority, type, subject
-  - [ ] Quick filters (Due today, This week, Overdue)
-  - Время: **2-3 дня**
-
-- [ ] **Bulk Operations**
-  - [ ] Select multiple tasks
-  - [ ] Bulk status update
-  - [ ] Bulk priority change
-  - [ ] Bulk delete
-  - Время: **1-2 дня**
-
-- [ ] **Task Templates**
-  - [ ] Create template from task
-  - [ ] Save common task templates
-  - [ ] Quick create from template
-  - Время: **1-2 дня**
-
-### 📋 Feature: Subject Management Enhanced
-
-- [ ] **Subject Statistics**
-  - [ ] Total tasks by status
-  - [ ] Average deadline
-  - [ ] Workload indicator
-  - [ ] Completion rate
-  - Время: **1-2 дня**
-
-- [ ] **Subject Organization**
-  - [ ] Reorder subjects (drag & drop)
-  - [ ] Archive subjects
-  - [ ] Subject notes/description
-  - Время: **2 дня**
-
-### 🔐 Feature: Data Management
-
-- [ ] **Export Functionality**
-  - [ ] Export tasks to CSV
-  - [ ] Export to JSON
-  - [ ] Export to PDF (simple format)
-  - Время: **2-3 дня**
-
-- [ ] **Import Functionality**
-  - [ ] Import tasks from CSV
-  - [ ] Validation & error handling
-  - Время: **2 дня**
-
-- [ ] **Backup & Restore**
-  - [ ] Automatic daily backup to file
-  - [ ] Manual backup trigger
-  - [ ] Restore from backup
-  - Время: **2-3 дня**
-
-**Phase 3 Total: ~6 недель**
-
----
-
-## 🎯 Phase 4: Advanced Features (Недели 13-18)
-
-### 🔔 Real-time Features
-
-- [ ] **WebSocket Integration**
-  - [ ] Live task updates (when task changes from another device)
-  - [ ] Real-time notifications
-  - [ ] Sync across browser tabs
-  - [ ] Connection status indicator
-  - [ ] Reconnect logic with exponential backoff
-  - Время: **3-4 дня**
-
-- [ ] **Notifications System**
-  - [ ] In-app notifications
-  - [ ] Browser push notifications
-  - [ ] Notification preferences
-  - [ ] Notification history
-  - Время: **2-3 дня**
-
-### 📊 Advanced Analytics
-
-- [ ] **Productivity Insights**
-  - [ ] Task completion velocity (tasks/week)
-  - [ ] Overdue task trends
-  - [ ] Most challenging subjects
-  - [ ] Optimal time for task completion
-  - [ ] Prediction: estimated finish date based on velocity
-  - Время: **3-4 дня**
-
-- [ ] **Time Tracking**
-  - [ ] Estimated hours vs actual spent
-  - [ ] Time log per task (manual entry)
-  - [ ] Time breakdown by subject
-  - [ ] Estimation accuracy feedback
-  - Время: **2-3 дня**
-
-- [ ] **Personal Statistics Dashboard**
-  - [ ] Total tasks completed (all-time)
-  - [ ] Current streak (tasks completed without deadlines)
-  - [ ] Best month/week
-  - [ ] Time management metrics
-  - [ ] Year/semester overview
-  - Время: **2 дня**
-
-### 🎨 Advanced Customization
-
-- [ ] **Custom Themes**
-  - [ ] Color scheme customization
-  - [ ] Font size adjustment
-  - [ ] Layout preferences (compact, normal, spacious)
-  - [ ] Save custom theme
-  - Время: **2-3 дня**
-
-- [ ] **Dashboard Customization**
-  - [ ] Reorderable dashboard widgets
-  - [ ] Show/hide widgets
-  - [ ] Custom quick links
-  - Время: **2 дня**
-
-### 🔗 External Integrations (Personal Use)
-
-- [ ] **Google Calendar Sync**
-  - [ ] One-way sync: export deadlines to Google Calendar
-  - [ ] Color-coded by subject
-  - [ ] Automatic sync on task creation/update
-  - [ ] Manual sync trigger
-  - Время: **3-4 дня**
-
-- [ ] **Calendar View**
-  - [ ] Monthly calendar with task dots
-  - [ ] Week view with task timeline
-  - [ ] Heatmap visualization of workload
-  - Время: **2-3 дня**
-
-- [ ] **Email Digest** (Optional)
-  - [ ] Weekly summary email
-  - [ ] Daily digest of deadlines
-  - Время: **1-2 дня**
-
-**Phase 4 Total: ~6 недель**
-
----
-
-## 🔒 Phase 5: Security & Reliability (Недели 19-22)
-
-### 🔐 Authentication & Security
-
-- [ ] **Email Verification**
-  - [ ] Email confirmation on registration
-  - [ ] Resend verification email
-  - [ ] Verify before full account activation
-  - Время: **2 дня**
-
-- [ ] **Password Management**
-  - [ ] Password strength validation
-  - [ ] Password change endpoint
-  - [ ] Password reset via email
-  - [ ] Password history (prevent reuse of last 3 passwords)
-  - Время: **2-3 дня**
-
-- [ ] **Session Security**
-  - [ ] Session timeout (30 min inactivity)
-  - [ ] Logout from all devices option
-  - [ ] Active sessions list & management
-  - [ ] Token rotation
-  - Время: **2 дня**
-
-- [ ] **Two-Factor Authentication (2FA)**
-  - [ ] TOTP (Time-based One-Time Password)
-  - [ ] Backup codes generation
-  - [ ] Disable 2FA option
-  - Время: **2-3 дня**
-
-### 🛡️ Data Protection
-
-- [ ] **Security Hardening**
-  - [ ] HTTPS enforcement
-  - [ ] CORS strict configuration
-  - [ ] CSP (Content Security Policy) headers
-  - [ ] X-Frame-Options, X-Content-Type-Options headers
-  - [ ] Input sanitization review
-  - [ ] SQL injection prevention audit
-  - [ ] XSS protection
-  - Время: **2-3 дня**
-
-- [ ] **Rate Limiting**
-  - [ ] API rate limiting (per user)
-  - [ ] Login attempt rate limiting
-  - [ ] Email sending rate limiting
-  - Время: **1-2 дня**
-
-- [ ] **Data Validation**
-  - [ ] Comprehensive input validation
-  - [ ] File upload validation (if needed)
-  - [ ] Size limits on requests
-  - Время: **1 день**
-
-### 📊 Monitoring & Logging
-
-- [ ] **Application Logging**
-  - [ ] Structured logging (JSON format)
-  - [ ] Log levels (DEBUG, INFO, WARNING, ERROR)
-  - [ ] Request/response logging
-  - [ ] Error tracking with stack traces
-  - [ ] Log rotation
-  - Время: **2 дня**
-
-- [ ] **Error Tracking**
-  - [ ] Centralized error logging
-  - [ ] Error notifications
-  - [ ] Error analytics
-  - Время: **1-2 дня**
-
-- [ ] **Performance Monitoring**
-  - [ ] Slow query logging
-  - [ ] API response time metrics
-  - [ ] Frontend performance metrics (Lighthouse)
-  - Время: **1-2 дня**
-
-### ✅ Quality Assurance
-
-- [ ] **Manual Testing Checklist**
-  - [ ] Complete user workflows
-  - [ ] Edge cases & error scenarios
-  - [ ] Browser compatibility (Chrome, Firefox, Safari, Edge)
-  - [ ] Mobile device testing (iOS, Android)
-  - Время: **2-3 дня**
-
-- [ ] **Load Testing**
-  - [ ] Performance under load (100+ concurrent users)
-  - [ ] Database query optimization
-  - [ ] Cache strategies
-  - Время: **2 дня**
-
-**Phase 5 Total: ~4 недели**
-
----
-
-## 🚀 Phase 6: Optimization & Final Polish (Недели 23-26)
-
-### ⚡ Performance Optimization
-
-- [ ] **Frontend Optimization**
-  - [ ] Lazy load components & routes
-  - [ ] Code splitting optimization
-  - [ ] Image optimization & compression
-  - [ ] CSS minification & purging
-  - [ ] Remove unused dependencies
-  - [ ] Bundle size analysis & reduction
-  - [ ] Lighthouse score improvement (target: 90+)
-  - Время: **3-4 дня**
-
-- [ ] **Backend Optimization**
-  - [ ] Database query optimization
-  - [ ] N+1 query elimination
-  - [ ] Proper indexing strategy
-  - [ ] Query caching for read-heavy operations
-  - [ ] Connection pooling optimization
-  - Время: **2-3 дня**
-
-- [ ] **Caching Strategy**
-  - [ ] Browser caching (ETag, Cache-Control headers)
-  - [ ] API response caching (Redis optional)
-  - [ ] Cache invalidation strategy
-  - [ ] Service Worker for offline functionality
-  - Время: **2-3 дня**
-
-### 🎨 UI/UX Final Polish
-
-- [ ] **Visual Design Refinement**
-  - [ ] Consistent spacing & typography
-  - [ ] Animation & transitions polish
-  - [ ] Empty state designs
-  - [ ] Loading state designs
-  - [ ] Error state designs
-  - Время: **2-3 дня**
-
-- [ ] **User Experience Refinement**
-  - [ ] Undo/Redo functionality for main actions
-  - [ ] Keyboard shortcuts documentation
-  - [ ] Command palette (Cmd+K)
-  - [ ] Toast notifications improvements
-  - [ ] Form validation UX polish
-  - Время: **2 дня**
-
-### 📚 Documentation Finalization
-
-- [ ] **User Documentation**
-  - [ ] Getting started guide
-  - [ ] Feature guides (with screenshots/GIFs)
-  - [ ] FAQ section
-  - [ ] Keyboard shortcuts reference
-  - [ ] Troubleshooting guide
-  - Время: **2-3 дня**
-
-- [ ] **Developer Documentation**
-  - [ ] Architecture documentation
-  - [ ] Database schema documentation
-  - [ ] API documentation (complete)
-  - [ ] Deployment guide
-  - [ ] Development environment setup
-  - Время: **2 дня**
-
-### 🔧 Deployment & Infrastructure
-
-- [ ] **Production Deployment**
-  - [ ] Choose hosting (Vercel for frontend, Railway/Render for backend)
-  - [ ] Domain setup
-  - [ ] SSL/TLS certificates
-  - [ ] Database hosted solution (PostgreSQL on Cloud)
-  - [ ] Environment variables management
-  - Время: **2-3 дня**
-
-- [ ] **CI/CD Pipeline Enhancement**
-  - [ ] Automated deployment on main branch
-  - [ ] Staging environment
-  - [ ] Database migration automation
-  - [ ] Rollback procedures
-  - Время: **2 дня**
-
-- [ ] **Monitoring & Alerting**
-  - [ ] Uptime monitoring
-  - [ ] Error rate alerts
-  - [ ] Performance alerts
-  - [ ] Database alerts
-  - Время: **1-2 дня**
-
-**Phase 6 Total: ~4 недели**
-
----
-
-## 🏆 Phase 7: Final Version Release (Неделя 27)
-
-### ✨ Release Preparation
-
-- [ ] **Version Bumping**
-  - [ ] Set version to 1.0.0
-  - [ ] Update CHANGELOG.md
-  - [ ] Create GitHub Release
-  - Время: **1 день**
-
-- [ ] **Final Testing**
-  - [ ] Regression testing
-  - [ ] User acceptance testing
-  - [ ] All browsers/devices
-  - Время: **1 день**
-
-- [ ] **Launch**
-  - [ ] Deploy to production
-  - [ ] Monitor for issues
-  - [ ] Create project showcase (optional)
-  - Время: **1 день**
-
-**Phase 7 Total: ~1 неделя**
-
----
-
-## 📅 Timeline Summary
-
-| Phase | Название | Недель | Статус |
-|-------|----------|--------|--------|
-| 1 | Фундамент & DevOps | 1 | ⚪ Not Started |
-| 2 | Качество & Тесты | 3 | ⚪ Not Started |
-| 3 | Core Features | 6 | ⚪ Not Started |
-| 4 | Advanced Features | 6 | ⚪ Not Started |
-| 5 | Security & Reliability | 4 | ⚪ Not Started |
-| 6 | Optimization & Polish | 4 | ⚪ Not Started |
-| 7 | Release | 1 | ⚪ Not Started |
-| **TOTAL** | **До версии 1.0** | **~25 недель** | **6 месяцев** |
-
----
-
-## 🎯 Feature Completeness Matrix
-
-### Core Features (Phase 1-3)
-- ✅ Task management (CRUD)
-- ✅ Subject management
-- ✅ Task filtering & sorting
-- ✅ Status tracking
-- ✅ Dashboard with statistics
-- ✅ Responsive design
-- ✅ Dark mode
-
-### Advanced Features (Phase 4)
-- ✅ Real-time synchronization
-- ✅ Advanced analytics
-- ✅ Time tracking
-- ✅ Custom themes
-- ✅ External integrations (Google Calendar)
-- ✅ Export/Import
-
-### Enterprise Features (Phase 5-6)
-- ✅ Advanced security (2FA, session management)
-- ✅ Comprehensive logging & monitoring
-- ✅ Performance optimization
-- ✅ Production-ready deployment
-
----
-
-## 💡 Development Principles
-
-### Code Quality
-- Test coverage: 75%+ (backend), 70%+ (frontend)
-- Type safety: strict TypeScript, mypy
-- Code style: consistent formatting, linting
-- Documentation: comments on complex logic
-
-### User Experience
-- Intuitive & fast
-- Mobile-first responsive
-- Accessible (WCAG 2.1 AA)
-- Smooth animations & transitions
-
-### Reliability
-- Error handling & recovery
-- Data backup & restore
-- Security best practices
-- Performance optimization
-
----
-
-## 🚀 Getting Started
-
-### Immediate Next Steps (Do This First!)
-1. Start Phase 1 (infrastructure setup)
-2. Get GitHub Actions running
-3. Add metadata & improve README
-
-### Recommended Daily Workflow
-```bash
-# Create feature branch
-git checkout -b feature/feature-name
-
-# Write tests first
-npm run test
-
-# Develop feature
-vim src/...
-
-# Commit with proper message
-git commit -m "[FEATURE] Add feature description"
-
-# Push & create PR
-git push origin feature/feature-name
+# Phase 0 — Security Hardening
+
+Security hardening blocks new feature development.
+Before adding new functionality, the project must have a clean and predictable security baseline.
+
+## Authentication and JWT
+
+* [ ] Replace `python-jose` with `PyJWT`
+* [ ] Use a fixed JWT algorithm, for example `HS256`
+* [ ] Do not trust token-provided algorithm values
+* [ ] Add required JWT claims:
+
+  * `sub`
+  * `exp`
+  * `iat`
+  * `type`
+* [ ] Validate required claims during token decode
+* [ ] Use `type="access"` for access tokens
+* [ ] Reject tokens with missing or invalid `type`
+* [ ] Make token expiration configurable through environment variables
+* [ ] Return the same auth error for wrong email and wrong password
+
+## Login timing attack mitigation
+
+* [ ] Add dummy password hash verification when user does not exist
+* [ ] Keep login response timing similar for:
+
+  * non-existing user
+  * wrong password
+  * valid user with wrong credentials
+* [ ] Avoid messages like `user not found`
+* [ ] Use a generic error message:
+
+  * `Incorrect email or password`
+
+## Password hashing
+
+* [ ] Explicitly configure bcrypt rounds
+* [ ] Use `bcrypt__rounds=12`
+* [ ] Keep password hashing logic centralized
+* [ ] Avoid duplicated password verification code
+
+## Rate limiting
+
+* [ ] Add rate limiting to `/auth/login`
+* [ ] Add rate limiting to `/auth/register`
+* [ ] Suggested limits:
+
+  * `/auth/login`: `5/minute`
+  * `/auth/register`: `3/minute`
+* [ ] Verify rate limiting works with `APIRouter`
+* [ ] Ensure limited endpoints explicitly accept `request: Request`
+* [ ] Add basic manual checks for repeated failed login attempts
+
+## CORS hardening
+
+* [ ] Remove wildcard CORS methods
+* [ ] Remove wildcard CORS headers
+* [ ] Use explicit frontend origins only
+* [ ] Suggested local origins:
+
+  * `http://localhost:5173`
+  * `http://127.0.0.1:5173`
+* [ ] Suggested allowed methods:
+
+  * `GET`
+  * `POST`
+  * `PUT`
+  * `PATCH`
+  * `DELETE`
+  * `OPTIONS`
+* [ ] Suggested allowed headers:
+
+  * `Authorization`
+  * `Content-Type`
+
+## Docker Compose hardening
+
+* [ ] Remove default value for `JWT_SECRET_KEY`
+* [ ] Remove default value for `POSTGRES_PASSWORD`
+* [ ] Use required environment variables with `:?`
+* [ ] Add safe `.env.example`
+* [ ] Do not commit real `.env`
+* [ ] Make sure `.env` is listed in `.gitignore`
+* [ ] Remove exposed PostgreSQL port from host machine
+* [ ] Keep PostgreSQL available only inside Docker network
+
+Example:
+
+```yaml
+JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
 ```
 
+## API docs hardening
+
+* [ ] Disable `/docs` when `DEBUG=False`
+* [ ] Disable `/redoc` when `DEBUG=False`
+* [ ] Disable `/openapi.json` when `DEBUG=False`
+* [ ] Keep API docs available in local development only
+
+## IDOR audit
+
+Every endpoint that accepts an entity ID must filter by the current authenticated user.
+
+### Subjects
+
+* [ ] `GET /subjects/{id}`
+* [ ] `PATCH /subjects/{id}`
+* [ ] `PUT /subjects/{id}`
+* [ ] `DELETE /subjects/{id}`
+
+### Tasks
+
+* [ ] `GET /tasks/{id}`
+* [ ] `PATCH /tasks/{id}`
+* [ ] `PUT /tasks/{id}`
+* [ ] `DELETE /tasks/{id}`
+
+### Dashboard and statistics
+
+* [ ] Check endpoints that accept `subject_id`
+* [ ] Check endpoints that accept `task_id`
+* [ ] Check all filtering logic uses `current_user.id`
+
+Correct pattern:
+
+```python
+task = db.query(Task).filter(
+    Task.id == task_id,
+    Task.user_id == current_user.id,
+).first()
+```
+
+Incorrect pattern:
+
+```python
+task = db.query(Task).filter(Task.id == task_id).first()
+```
+
+## Input validation
+
+* [ ] Add length validation for subject names
+* [ ] Add length validation for task titles
+* [ ] Add length validation for task descriptions
+* [ ] Validate priority values
+* [ ] Validate status values
+* [ ] Validate due date format
+* [ ] Prevent empty required fields
+* [ ] Return consistent validation errors
+
+## Security documentation
+
+* [ ] Create `SECURITY.md`
+* [ ] Document current threat model
+* [ ] Document known security decisions
+* [ ] Document what is intentionally out of scope
+* [ ] Document completed security fixes
+
 ---
 
-## 📝 Notes
+# Phase 1 — UI Completion
 
-- Каждая фаза может быть разделена на более мелкие PR
-- Тестирование должно быть основной фокусной точкой
-- Документация пишется параллельно с кодом
-- Регулярные commits & PRs помогают отслеживать прогресс
-- Не спешить с новыми фичами до завершения текущей фазы
+The goal of this phase is to finish the current visual system and make all pages feel consistent.
+
+## Global UI system
+
+* [ ] Unify spacing between pages
+* [ ] Unify card radius
+* [ ] Unify shadows
+* [ ] Unify form styling
+* [ ] Unify button styling
+* [ ] Unify hover states
+* [ ] Unify active states
+* [ ] Unify disabled states
+* [ ] Unify loading states
+* [ ] Unify empty states
+* [ ] Unify error states
+
+## Sidebar
+
+* [x] Floating pill sidebar
+* [x] Squircle icons
+* [ ] Active route state polish
+* [ ] Collapsed state polish, if needed
+* [ ] Mobile behavior check, if needed
+
+## Dashboard
+
+* [x] StatCard redesign
+* [x] Progress section
+* [x] Priority Queue
+* [x] Subject Progress
+* [ ] Empty state when there are no tasks
+* [ ] Empty state when there are no subjects
+* [ ] Error state when API request fails
+* [ ] Loading skeletons
+* [ ] Better visual hierarchy for critical tasks
+
+## Crisis Mode
+
+* [x] Crisis Volume Cube
+* [x] 3D particle-based visual state
+* [x] Core/mid/edge particle layers
+* [x] Slow rotation
+* [x] Mouse parallax
+* [x] Bloom effect for core particles
+* [ ] Add fallback for low-performance devices
+* [ ] Add empty state if there is no task data
+* [ ] Add short explanation of what the cube represents
+* [ ] Optimize animation if performance drops
+
+## Tasks page
+
+* [ ] Redesign task list in soft-card style
+* [ ] Add consistent task item layout
+* [ ] Add visual priority indicator
+* [ ] Add visual deadline indicator
+* [ ] Add overdue state
+* [ ] Add due today state
+* [ ] Add completed task state
+* [ ] Add loading state
+* [ ] Add empty state
+* [ ] Add API error state
+* [ ] Improve task form styling
+* [ ] Improve edit task modal/form styling
+
+## Subjects page
+
+* [ ] Redesign subjects as large soft cards
+* [ ] Add subject progress preview
+* [ ] Add task count per subject
+* [ ] Add debt/overdue count per subject
+* [ ] Add empty state
+* [ ] Add loading state
+* [ ] Add error state
+* [ ] Improve create subject form
+* [ ] Improve edit subject form
+
+## Settings page
+
+* [ ] Redesign forms in the same soft-card style
+* [ ] Add clear section separation
+* [ ] Add validation states
+* [ ] Add saved state
+* [ ] Add error state
+* [ ] Add consistent buttons
+* [ ] Add danger zone if destructive actions are added later
+
+## Forms and feedback
+
+* [ ] Add form-level validation
+* [ ] Add field-level validation
+* [ ] Add clear API error messages
+* [ ] Add success feedback after create/update/delete
+* [ ] Add confirmation for destructive actions
+* [ ] Avoid silent failures
 
 ---
 
-*Version: 1.0 - Complete Roadmap*
-*Last Updated: June 2024*
-*Target Completion: December 2024*
+# Phase 2 — Daily-use Features
+
+This phase contains small features that improve daily usefulness.
+Features should be implemented one by one, not all at once.
+
+## Priority 1 — Quick Filters
+
+* [ ] Add `Due today` filter
+* [ ] Add `This week` filter
+* [ ] Add `Overdue` filter
+* [ ] Add `Completed` filter
+* [ ] Add `Active` filter
+* [ ] Add filter reset button
+* [ ] Keep filter state simple and predictable
+
+Reason:
+
+Quick filters give the biggest practical value for the least complexity.
+
+## Priority 2 — Smart Deadline Alerts
+
+* [ ] Add `deadline in 3 days` badge
+* [ ] Add `due today` badge
+* [ ] Add `overdue` badge
+* [ ] Add visual severity levels
+* [ ] Use badges only inside the app
+* [ ] Do not add email notifications
+* [ ] Do not add push notifications
+
+Reason:
+
+The project should warn about critical tasks without adding unnecessary infrastructure.
+
+## Priority 3 — Subject Statistics
+
+* [ ] Add total tasks per subject
+* [ ] Add completed tasks per subject
+* [ ] Add active tasks per subject
+* [ ] Add overdue tasks per subject
+* [ ] Add accepted/completed ratio
+* [ ] Add debt indicator
+* [ ] Show statistics on subject cards
+* [ ] Reuse statistics on dashboard where possible
+
+Reason:
+
+Subject-level statistics make the app more useful for study planning.
+
+## Priority 4 — Export
+
+* [ ] Add export to JSON
+* [ ] Add export to CSV
+* [ ] Add backend export endpoint
+* [ ] Add frontend export button
+* [ ] Include subjects
+* [ ] Include tasks
+* [ ] Include timestamps
+* [ ] Keep export simple
+* [ ] No cloud sync
+* [ ] No scheduled backups
+
+Reason:
+
+Export is useful as a local backup and looks good in a portfolio project.
+
+## Priority 5 — Calendar View
+
+* [ ] Add list-based calendar view
+* [ ] Group tasks by date
+* [ ] Highlight today
+* [ ] Highlight overdue tasks
+* [ ] Show tasks without deadlines separately
+* [ ] Do not build a complex monthly grid at first
+* [ ] Reuse existing task cards if possible
+
+Reason:
+
+Calendar view is useful, but it can grow in complexity.
+The first version should be simple and list-based.
+
+---
+
+# Phase 3 — Portfolio Packaging
+
+This phase exists because the repository is public.
+The goal is to make the project understandable for another developer or interviewer.
+
+## README
+
+* [ ] Add clear project description
+* [ ] Add feature list
+* [ ] Add tech stack
+* [ ] Add local setup instructions
+* [ ] Add environment variable instructions
+* [ ] Add screenshots
+* [ ] Add demo credentials if seed data supports them
+* [ ] Add project status section
+* [ ] Add roadmap link
+* [ ] Add security note
+
+## Screenshots
+
+Required screenshots:
+
+* [ ] Login page
+* [ ] Dashboard
+* [ ] Tasks page
+* [ ] Subjects page
+* [ ] Crisis Mode
+* [ ] Settings page
+
+Optional screenshots:
+
+* [ ] Before/after UI redesign
+* [ ] Empty states
+* [ ] Overdue task state
+* [ ] Crisis Volume Cube close-up
+
+## Architecture diagram
+
+* [ ] Add architecture diagram
+* [ ] Show React frontend
+* [ ] Show FastAPI backend
+* [ ] Show PostgreSQL database
+* [ ] Show Docker Compose network
+* [ ] Show JWT auth flow
+* [ ] Save diagram as image in repository
+* [ ] Link diagram from README
+
+Suggested tools:
+
+* Excalidraw
+* draw.io
+* Mermaid
+
+## SECURITY.md
+
+* [ ] Add project threat model
+* [ ] Explain single-user local-first scope
+* [ ] Explain JWT security decisions
+* [ ] Explain password hashing
+* [ ] Explain CORS policy
+* [ ] Explain Docker secrets
+* [ ] Explain IDOR protection
+* [ ] Explain what is intentionally excluded
+
+## Integration tests
+
+Target: small number of meaningful tests, not artificial coverage.
+
+* [ ] Test user registration
+* [ ] Test user login
+* [ ] Test task creation
+* [ ] Test task access by owner
+* [ ] Test task access denial for another user
+* [ ] Test subject CRUD basic flow
+
+Recommended minimum:
+
+* [ ] Auth integration test
+* [ ] Task CRUD integration test
+* [ ] IDOR protection test
+
+## Demo seed data
+
+* [ ] Keep demo seed script
+* [ ] Add demo subjects
+* [ ] Add demo tasks
+* [ ] Add overdue task
+* [ ] Add due today task
+* [ ] Add completed task
+* [ ] Add crisis-level task distribution
+* [ ] Document how to run seed script
+
+---
+
+# Phase 4 — Cleanup and Maintainability
+
+This phase is for keeping the codebase clean after the main functionality works.
+
+## Backend cleanup
+
+* [ ] Remove duplicated CRUD logic
+* [ ] Keep auth logic centralized
+* [ ] Keep settings centralized
+* [ ] Keep database session handling consistent
+* [ ] Keep response schemas consistent
+* [ ] Remove unused imports
+* [ ] Remove dead code
+* [ ] Review naming consistency
+
+## Frontend cleanup
+
+* [ ] Split large components
+* [ ] Move reusable UI parts into shared components
+* [ ] Move API calls into API layer
+* [ ] Keep page components focused
+* [ ] Remove unused styles
+* [ ] Remove unused state
+* [ ] Review TypeScript types
+* [ ] Avoid duplicated card layouts
+
+## Error handling
+
+* [ ] Standardize backend error responses
+* [ ] Standardize frontend error display
+* [ ] Handle expired token
+* [ ] Handle failed network request
+* [ ] Handle empty backend data
+* [ ] Handle form validation errors
+
+## Developer experience
+
+* [ ] Add simple backend run instructions
+* [ ] Add simple frontend run instructions
+* [ ] Add Docker Compose run instructions
+* [ ] Add database migration instructions
+* [ ] Add seed script instructions
+* [ ] Add troubleshooting section
+
+---
+
+# Backlog — Optional Polish
+
+These features are not part of the core roadmap.
+They should not be started until Security, UI Completion, Daily-use Features and Portfolio Packaging are done.
+
+* [ ] Command palette
+* [ ] Custom themes
+* [ ] Layout density settings
+* [ ] Drag and drop subject reorder
+* [ ] Drag and drop task reorder
+* [ ] Task templates
+* [ ] Bulk operations
+* [ ] Multi-select tasks
+* [ ] Undo/redo
+* [ ] Advanced dashboard charts
+* [ ] Keyboard shortcuts
+* [ ] Local import from JSON/CSV
+* [ ] Archive old completed tasks
+
+---
+
+# Deliberately Out of Scope
+
+These features are intentionally excluded because they do not match the current project scope.
+
+## Not planned
+
+* CI/CD pipeline
+* GitHub Actions deployment workflow
+* 80% test coverage requirement
+* WebSocket real-time sync
+* Google Calendar integration
+* Email verification
+* Password reset through email
+* Two-factor authentication
+* Load testing for 100+ concurrent users
+* Redis caching
+* Production deployment
+* Multi-tenant architecture
+* Admin panel
+* Role-based access control
+* Public user registration for real users
+* Payment system
+* Mobile application
+
+## Reasoning
+
+CyberLab Tracker is currently a personal local-first project.
+
+The project does not need:
+
+* infrastructure for non-existing traffic;
+* production-grade email flow;
+* real-time multi-device synchronization;
+* large-scale caching;
+* enterprise authorization;
+* complex deployment automation.
+
+The priority is to keep the project:
+
+* useful;
+* understandable;
+* secure enough for its scope;
+* easy to run locally;
+* strong enough for portfolio review.
+
+---
+
+# Recommended Work Order
+
+The current recommended order:
+
+1. Finish Security Hardening.
+2. Complete UI consistency.
+3. Add quick filters.
+4. Add smart deadline alerts.
+5. Add subject statistics.
+6. Add export.
+7. Add simple calendar view.
+8. Prepare portfolio documentation.
+9. Add small integration tests.
+10. Clean up backend and frontend structure.
+
+---
+
+# Definition of Done
+
+A phase is considered done only when:
+
+* the feature works manually;
+* there are no obvious console errors;
+* there are no obvious backend errors;
+* UI state is handled for loading, empty and error cases;
+* code is not duplicated unnecessarily;
+* sensitive data is not committed;
+* README or relevant documentation is updated if behavior changed.
+
+---
+
+# Project Philosophy
+
+CyberLab Tracker should remain a focused personal productivity tool.
+
+The project should avoid fake enterprise complexity.
+Every feature must either:
+
+* improve daily usage;
+* improve security;
+* improve maintainability;
+* improve portfolio value.
+
+If a feature does not satisfy one of these conditions, it belongs in the backlog or should be excluded.
