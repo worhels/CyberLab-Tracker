@@ -18,3 +18,22 @@ class DashboardSummary(BaseModel):
 
 class CrisisTask(TaskRead):
     crisis_score: int
+
+
+class CrisisSeverityCounts(BaseModel):
+    critical: int
+    high: int
+    medium: int
+    low: int
+
+
+class CrisisDashboard(BaseModel):
+    total_tasks: int
+    accepted_tasks: int
+    active_tasks: int
+    completion_ratio: float
+    pressure_score: float
+    cohesion_score: float
+    instability_score: float
+    severity_counts: CrisisSeverityCounts
+    tasks: list[CrisisTask]

@@ -56,7 +56,7 @@ Task list filters:
 | Method | Path | Description |
 | --- | --- | --- |
 | `GET` | `/dashboard/summary` | Read dashboard counters and progress |
-| `GET` | `/dashboard/crisis` | Read ranked active crisis tasks |
+| `GET` | `/dashboard/crisis` | Read Crisis Mode metrics and ranked active tasks |
 
 `/dashboard/crisis` query parameters:
 
@@ -64,6 +64,30 @@ Task list filters:
 - `include_completed`: include `accepted` tasks when `true`
 
 By default, Crisis Mode excludes completed tasks.
+
+Response shape:
+
+```json
+{
+  "total_tasks": 5,
+  "accepted_tasks": 3,
+  "active_tasks": 2,
+  "completion_ratio": 0.6,
+  "pressure_score": 0.3375,
+  "cohesion_score": 0.6,
+  "instability_score": 0.2666,
+  "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 0
+  },
+  "tasks": []
+}
+```
+
+`tasks` contains the active list for Crisis Mode. The metrics are calculated from
+all tasks so the visual state can represent total completion progress.
 
 ## API Docs
 

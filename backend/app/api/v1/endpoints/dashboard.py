@@ -10,10 +10,29 @@ from app.db.session import get_db
 from app.models.subject import Subject
 from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.models.user import User
-from app.schemas.dashboard import CrisisTask, DashboardSummary
+from app.schemas.dashboard import CrisisDashboard, CrisisTask, DashboardSummary
 from app.schemas.task import TaskRead
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+
+ACTIVE_CRISIS_STATUSES = {
+    TaskStatus.NOT_STARTED,
+    TaskStatus.IN_PROGRESS,
+    TaskStatus.SUBMITTED,
+}
+
+PRIORITY_PRESSURE_WEIGHT = {
+    TaskPriority.LOW: 0.25,
+    TaskPriority.MEDIUM: 0.5,
+    TaskPriority.HIGH: 0.75,
+    TaskPriority.CRITICAL: 1.0,
+}
+
+STATUS_PRESSURE_WEIGHT = {
+    TaskStatus.NOT_STARTED: 1.0,
+    TaskStatus.IN_PROGRESS: 0.75,
+    TaskStatus.SUBMITTED: 0.35,
+}
 
 
 def normalize_dt(value: datetime | None) -> datetime | None:
@@ -31,6 +50,49 @@ def user_tasks_query(user_id: int, include_completed: bool = True):
         statement = statement.where(Task.status != TaskStatus.ACCEPTED)
 
     return statement
+
+
+def clamp_score(value: float) -> float:
+    return min(max(value, 0.0), 1.0)
+
+
+def is_active_crisis_task(task: Task) -> bool:
+    return task.status in ACTIVE_CRISIS_STATUSES
+
+
+def build_crisis_metrics(tasks: list[Task]) -> dict:
+    total_count = len(tasks)
+    active_tasks = [task for task in tasks if is_active_crisis_task(task)]
+    accepted_count = sum(1 for task in tasks if task.status == TaskStatus.ACCEPTED)
+    completion_ratio = accepted_count / total_count if total_count else 1.0
+
+    pressure_raw = 0.0
+    for task in active_tasks:
+        priority_weight = PRIORITY_PRESSURE_WEIGHT.get(task.priority, 0.5)
+        status_weight = STATUS_PRESSURE_WEIGHT.get(task.status, 0.75)
+        pressure_raw += priority_weight * status_weight
+
+    pressure_score = clamp_score(pressure_raw / len(active_tasks)) if active_tasks else 0.0
+    cohesion_score = clamp_score(completion_ratio)
+    instability_score = clamp_score(pressure_score * (1 - cohesion_score * 0.35))
+
+    severity_counts = {
+        "critical": sum(1 for task in active_tasks if task.priority == TaskPriority.CRITICAL),
+        "high": sum(1 for task in active_tasks if task.priority == TaskPriority.HIGH),
+        "medium": sum(1 for task in active_tasks if task.priority == TaskPriority.MEDIUM),
+        "low": sum(1 for task in active_tasks if task.priority == TaskPriority.LOW),
+    }
+
+    return {
+        "total_tasks": total_count,
+        "accepted_tasks": accepted_count,
+        "active_tasks": len(active_tasks),
+        "completion_ratio": round(completion_ratio, 4),
+        "pressure_score": round(pressure_score, 4),
+        "cohesion_score": round(cohesion_score, 4),
+        "instability_score": round(instability_score, 4),
+        "severity_counts": severity_counts,
+    }
 
 
 def crisis_score(task: Task, now: datetime) -> int:
@@ -126,7 +188,7 @@ def dashboard_summary(db: Session = Depends(get_db), current_user: User = Depend
     }
 
 
-@router.get("/crisis", response_model=list[CrisisTask])
+@router.get("/crisis", response_model=CrisisDashboard)
 def crisis_dashboard(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     include_completed: bool = False,
@@ -134,10 +196,11 @@ def crisis_dashboard(
     current_user: User = Depends(get_current_user),
 ):
     now = datetime.now(timezone.utc)
-    tasks = list(db.scalars(user_tasks_query(current_user.id, include_completed=include_completed)))
+    all_tasks = list(db.scalars(user_tasks_query(current_user.id)))
+    task_pool = all_tasks if include_completed else [task for task in all_tasks if is_active_crisis_task(task)]
 
     ranked = sorted(
-        tasks,
+        task_pool,
         key=lambda task: (
             -crisis_score(task, now),
             normalize_dt(task.deadline) or datetime.max.replace(tzinfo=timezone.utc),
@@ -151,4 +214,4 @@ def crisis_dashboard(
         data["crisis_score"] = crisis_score(task, now)
         response.append(CrisisTask(**data))
 
-    return response
+    return {**build_crisis_metrics(all_tasks), "tasks": response}

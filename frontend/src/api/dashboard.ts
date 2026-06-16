@@ -1,12 +1,12 @@
 import { api } from './client'
-import type { CrisisTask, DashboardSummary } from '../types'
+import type { CrisisDashboard, DashboardSummary } from '../types'
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const response = await api.get<DashboardSummary>('/dashboard/summary')
   return response.data
 }
 
-export async function getCrisisTasks(): Promise<CrisisTask[]> {
-  const response = await api.get<CrisisTask[]>('/dashboard/crisis')
+export async function getCrisisData(): Promise<CrisisDashboard> {
+  const response = await api.get<CrisisDashboard>('/dashboard/crisis')
   return response.data
 }

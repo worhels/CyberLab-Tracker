@@ -61,6 +61,25 @@ export interface CrisisTask extends Task {
   crisis_score: number
 }
 
+export interface CrisisSeverityCounts {
+  critical: number
+  high: number
+  medium: number
+  low: number
+}
+
+export interface CrisisDashboard {
+  total_tasks: number
+  accepted_tasks: number
+  active_tasks: number
+  completion_ratio: number
+  pressure_score: number
+  cohesion_score: number
+  instability_score: number
+  severity_counts: CrisisSeverityCounts
+  tasks: CrisisTask[]
+}
+
 export interface SubjectPayload {
   name: string
   color: string
