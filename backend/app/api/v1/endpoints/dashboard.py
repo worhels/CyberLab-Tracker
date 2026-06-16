@@ -24,8 +24,13 @@ def normalize_dt(value: datetime | None) -> datetime | None:
     return value
 
 
-def user_tasks_query(user_id: int):
-    return select(Task).join(Subject).where(Subject.user_id == user_id)
+def user_tasks_query(user_id: int, include_completed: bool = True):
+    statement = select(Task).join(Subject).where(Subject.user_id == user_id)
+
+    if not include_completed:
+        statement = statement.where(Task.status != TaskStatus.ACCEPTED)
+
+    return statement
 
 
 def crisis_score(task: Task, now: datetime) -> int:
@@ -124,11 +129,12 @@ def dashboard_summary(db: Session = Depends(get_db), current_user: User = Depend
 @router.get("/crisis", response_model=list[CrisisTask])
 def crisis_dashboard(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    include_completed: bool = False,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     now = datetime.now(timezone.utc)
-    tasks = list(db.scalars(user_tasks_query(current_user.id)))
+    tasks = list(db.scalars(user_tasks_query(current_user.id, include_completed=include_completed)))
 
     ranked = sorted(
         tasks,
