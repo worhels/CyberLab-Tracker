@@ -37,19 +37,24 @@ Avoid vague messages such as `updates`, `fix`, or `misc`.
 
 ## Checks
 
+Backend:
+
+```powershell
+cd backend
+python -m pip install -r requirements-dev.txt
+ruff check .
+pytest
+python -m compileall app scripts alembic
+```
+
 Frontend:
 
 ```powershell
 cd frontend
 npm ci
+npm run typecheck
 npm run lint
 npm run build
-```
-
-Backend:
-
-```powershell
-python -m compileall backend\app backend\scripts backend\alembic
 ```
 
 Local app smoke test:
@@ -69,3 +74,10 @@ Every pull request should include:
 
 Do not commit local logs, generated build output, personal `.env` files, or editor
 state.
+
+## Security Work
+
+Use `SECURITY.md`, `docs/SECURITY_MODEL.md`, and `docs/THREAT_MODEL.md` when
+changing authentication, authorization, CORS, Docker secrets, or ownership
+checks. Security-related pull requests should explain the risk being reduced and
+the validation used.

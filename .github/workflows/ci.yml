@@ -28,12 +28,25 @@ jobs:
           python-version: "3.12"
 
       - name: Install backend dependencies
+        working-directory: backend
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Lint backend
+        working-directory: backend
+        run: ruff check .
+
+      - name: Test backend
+        working-directory: backend
+        env:
+          DATABASE_URL: sqlite+pysqlite:///:memory:
+          JWT_SECRET_KEY: ci-only-secret-for-tests-with-safe-length
+        run: pytest
 
       - name: Compile backend
-        run: python -m compileall backend/app backend/scripts backend/alembic
+        working-directory: backend
+        run: python -m compileall app scripts alembic
 
   frontend:
     name: Frontend
@@ -53,6 +66,10 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: Typecheck frontend
+        working-directory: frontend
+        run: npm run typecheck
 
       - name: Lint frontend
         working-directory: frontend

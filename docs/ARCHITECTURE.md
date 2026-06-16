@@ -88,6 +88,21 @@ a score derived from:
 The default Crisis Mode response excludes completed tasks. Passing
 `include_completed=true` returns the full ranked list.
 
+## Security Boundaries
+
+The application uses a local-first security model:
+
+- authentication is handled by JWT access tokens
+- passwords are hashed with bcrypt
+- API routes resolve the current user from the bearer token
+- subject queries filter directly by `Subject.user_id`
+- task queries filter through subject ownership
+- CORS is restricted to configured frontend origins
+- API docs are disabled unless `DEBUG=true`
+
+See [SECURITY_MODEL.md](SECURITY_MODEL.md) and [THREAT_MODEL.md](THREAT_MODEL.md)
+for details.
+
 ## Local Development
 
 `scripts/dev.ps1` is the primary local workflow. It prepares environment files,

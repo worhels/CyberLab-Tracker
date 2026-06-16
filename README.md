@@ -1,44 +1,108 @@
 # CyberLab Tracker
 
 [![CI](https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml/badge.svg)](https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml)
 
-CyberLab Tracker is a full-stack study workload tracker for labs, coursework, debts,
-deadlines, and academic progress. It combines a FastAPI/PostgreSQL backend with a
-React/TypeScript workspace UI and a dedicated Crisis Mode for prioritizing the
-highest-risk tasks.
+CyberLab Tracker is a full-stack local-first academic workload tracker built
+with FastAPI, PostgreSQL, React, TypeScript, Docker, and GitHub Actions.
 
-## Product Scope
+The project is designed as a practical portfolio application with a
+security-focused backend roadmap. It tracks subjects, academic tasks, deadlines,
+debts, workload pressure, completion progress, and crisis-level task priority.
 
-- Track subjects, labs, practice work, coursework, exams, and debts.
-- Prioritize urgent academic work with Crisis Mode scoring.
-- Store task metadata such as deadlines, status, priority, links, reports, and estimates.
-- Provide a demo account and seeded local data for fast review.
-- Run the whole project locally with one PowerShell command.
+## Overview
 
-## Stack
+CyberLab Tracker helps organize academic work by showing:
 
-| Area | Technology |
+- active subjects
+- pending labs and coursework
+- overdue tasks
+- task priority
+- completion progress
+- crisis-level workload
+- visual 3D workload state through Crisis Mode
+
+This is not positioned as a generic cybersecurity product. The security scope is
+application hardening for a realistic full-stack productivity app.
+
+## Why This Project Exists
+
+The goal is to show a complete engineering workflow rather than only a UI demo:
+
+- backend API design with authenticated ownership checks
+- database schema and migrations
+- local Docker development environment
+- frontend application workflow
+- security policy and threat model
+- CI quality gates
+- maintainable repository structure
+
+## Features
+
+- Email/password authentication with JWT access tokens
+- Subject management
+- Task management with status, priority, type, deadlines, estimates, and links
+- Dashboard summary with progress and deadline signals
+- Crisis Mode ranking for high-risk active tasks
+- Demo seed data for local review
+- Docker Compose setup for PostgreSQL and backend
+- One-command local development script for Windows
+
+## Security Focus
+
+CyberLab Tracker is intentionally not designed as an enterprise SaaS. The
+security scope is focused on practical application hardening:
+
+- JWT validation with explicit algorithm and required claims
+- bcrypt password hashing
+- generic authentication errors
+- login/register rate limiting
+- CORS hardening
+- Docker secret handling
+- IDOR prevention through per-user data access checks
+- local-first data safety
+- documented threat model and known boundaries
+
+See [SECURITY.md](SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md),
+and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+
+## Tech Stack
+
+| Area | Stack |
 | --- | --- |
-| Backend | FastAPI, SQLAlchemy 2, Alembic |
+| Backend | FastAPI, SQLAlchemy 2, Alembic, Pydantic |
 | Database | PostgreSQL 16 |
 | Frontend | React, TypeScript, Vite |
-| Visuals | Three.js, React Three Fiber, Framer Motion |
-| Styling | Tailwind CSS, custom CSS tokens |
-| Tooling | Docker Compose, PowerShell dev script, GitHub Actions |
+| UI and visuals | Tailwind CSS, Three.js, React Three Fiber, Framer Motion |
+| Tooling | Docker Compose, PowerShell scripts, GitHub Actions |
+| Security | JWT auth, bcrypt hashing, CORS policy, rate limiting roadmap |
 
-## Repository Layout
+## Screenshots
 
-```text
-.
-|-- backend/              # FastAPI app, SQLAlchemy models, Alembic migrations
-|-- frontend/             # React/Vite client
-|-- scripts/              # Local developer automation
-|-- docs/                 # Architecture and workflow documentation
-|-- .github/              # CI, issue templates, PR template
-|-- docker-compose.yml    # PostgreSQL + backend services
-|-- .env.example          # Root backend/database environment template
-`-- README.md
+Screenshots are tracked under `docs/screenshots/`.
+
+The repository currently reserves these assets:
+
+- `docs/screenshots/login.png`
+- `docs/screenshots/dashboard.png`
+- `docs/screenshots/tasks.png`
+- `docs/screenshots/subjects.png`
+- `docs/screenshots/crisis-mode.png`
+- `docs/screenshots/settings.png`
+
+Add fresh screenshots after the UI pass is finalized.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser["Browser"] --> Frontend["React + Vite frontend"]
+    Frontend --> API["FastAPI backend"]
+    API --> DB["PostgreSQL"]
+    API --> Auth["JWT auth + ownership checks"]
 ```
+
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Quick Start
 
@@ -74,78 +138,86 @@ Demo account:
 - Email: `demo@cyberlab.dev`
 - Password: `password123`
 
-## Useful Commands
+## Environment Variables
 
-Reset the local Docker database volume and start fresh:
+Root `.env` is created from `.env.example`.
+
+| Variable | Purpose |
+| --- | --- |
+| `POSTGRES_DB` | Local PostgreSQL database name |
+| `POSTGRES_USER` | Local PostgreSQL user |
+| `POSTGRES_PASSWORD` | Required local database password |
+| `BACKEND_PORT` | Host port for the backend container |
+| `DEBUG` | Enables API docs when `true` |
+| `JWT_SECRET_KEY` | Required signing secret for JWT tokens |
+| `JWT_ALGORITHM` | JWT signing algorithm |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime |
+| `CORS_ORIGINS` | Allowed frontend origins |
+
+Frontend `.env` is created from `frontend/.env.example` and contains:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+## Development Workflow
+
+Useful local commands:
 
 ```powershell
 .\scripts\dev.ps1 -ResetDb
-```
-
-Start without reseeding demo data:
-
-```powershell
 .\scripts\dev.ps1 -NoSeed
-```
-
-Start without running `npm install`:
-
-```powershell
 .\scripts\dev.ps1 -SkipInstall
-```
-
-Start only PostgreSQL and backend:
-
-```powershell
 .\scripts\dev.ps1 -BackendOnly
 ```
 
-Run frontend checks manually:
+Frontend checks:
 
 ```powershell
 cd frontend
 npm ci
+npm run typecheck
 npm run lint
 npm run build
 ```
 
-Run a backend syntax check:
+Backend checks:
 
 ```powershell
-python -m compileall backend\app backend\scripts backend\alembic
+cd backend
+python -m pip install -r requirements-dev.txt
+ruff check .
+pytest
 ```
 
-## Manual Run
+More detail: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
-Create environment files:
+## Quality Gates
 
-```powershell
-Copy-Item .env.example .env
-Copy-Item frontend\.env.example frontend\.env
-```
+GitHub Actions runs:
 
-Edit `.env` and set:
+- backend dependency install
+- Ruff check
+- backend tests
+- backend compile check
+- frontend dependency install
+- TypeScript typecheck
+- frontend lint
+- frontend production build
+- CodeQL analysis
+- dependency review on pull requests
 
-```env
-POSTGRES_PASSWORD=your-local-db-password
-JWT_SECRET_KEY=your-long-random-local-secret
-```
+## Roadmap
 
-Start backend and database:
+Current focus:
 
-```powershell
-docker compose up --build -d
-docker compose exec backend alembic upgrade head
-docker compose exec backend python -m scripts.seed_demo
-```
+- security hardening
+- UI consistency
+- daily-use productivity features
+- portfolio-grade documentation
+- integration tests
 
-Start frontend:
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
+See [ROADMAP.md](ROADMAP.md).
 
 ## API Docs
 
@@ -170,57 +242,18 @@ Then open:
 
 ## Branching Model
 
-This repository uses a simple project workflow:
-
 - `main` is stable and release-ready.
-- `develop` is the integration branch for completed work before release.
+- `develop` is the integration branch.
 - `feature/<scope>` is for product work.
 - `fix/<scope>` is for bug fixes.
-- `chore/<scope>` is for repository, tooling, and maintenance work.
+- `chore/<scope>` is for tooling, documentation, and maintenance.
 
-See [docs/BRANCHING.md](docs/BRANCHING.md) for the full workflow.
+See [docs/BRANCHING.md](docs/BRANCHING.md).
 
-## Documentation
+## Security Policy
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Branching and PR workflow](docs/BRANCHING.md)
-- [Contributing](CONTRIBUTING.md)
+See [SECURITY.md](SECURITY.md).
 
-## Troubleshooting
+## License
 
-### `POSTGRES_PASSWORD is required`
-
-Use the automated script:
-
-```powershell
-.\scripts\dev.ps1
-```
-
-It creates `.env` and fills missing local secrets.
-
-### Password authentication failed for user `cyberlab`
-
-This usually means the existing Docker volume was created with a different
-`POSTGRES_PASSWORD`.
-
-The script tries to synchronize the local PostgreSQL user password automatically.
-If you want a clean database instead, run:
-
-```powershell
-.\scripts\dev.ps1 -ResetDb
-```
-
-### `/docs` returns 404
-
-This is expected when `DEBUG=false`. Set `DEBUG=true` in `.env` and restart the
-backend.
-
-## Stop
-
-Stop frontend with `Ctrl+C` in the Vite terminal.
-
-Stop backend and database:
-
-```powershell
-docker compose down
-```
+This project is released under the MIT License. See [LICENSE](LICENSE).

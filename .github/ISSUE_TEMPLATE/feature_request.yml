@@ -2,7 +2,7 @@ name: Feature request
 description: Suggest a product or engineering improvement.
 title: "feature: "
 labels:
-  - enhancement
+  - "type: feature"
 body:
   - type: textarea
     id: problem

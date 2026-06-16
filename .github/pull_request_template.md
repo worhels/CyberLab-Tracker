@@ -4,8 +4,12 @@
 
 ## Validation
 
+- [ ] Backend lint
+- [ ] Backend tests
 - [ ] Backend compile check
-- [ ] Frontend lint/build
+- [ ] Frontend typecheck
+- [ ] Frontend lint
+- [ ] Frontend build
 - [ ] Local smoke test
 
 ## Notes

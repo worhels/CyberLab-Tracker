@@ -1,0 +1,37 @@
+name: Security hardening
+description: Track a security improvement, audit item, or accepted trade-off.
+title: "[Security] "
+labels:
+  - "area: security"
+  - "type: chore"
+body:
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk
+      description: What risk does this hardening task reduce?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What code, configuration, or documentation is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: How should this be tested or reviewed?
+    validations:
+      required: true
