@@ -187,7 +187,7 @@ def main() -> None:
         subjects = upsert_subjects(db, user)
         task_count = upsert_tasks(db, subjects, now)
 
-    print(f"Seeded demo user {DEMO_EMAIL} / {DEMO_PASSWORD}")
+    print(f"Seeded demo user {DEMO_EMAIL}")
     print(f"Seeded {len(subjects)} subjects and {task_count} tasks")
 
 
