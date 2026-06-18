@@ -1,12 +1,31 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createSubject, deleteSubject, getSubjects } from '../api/subjects'
+import { createTask } from '../api/tasks'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
-import type { Subject, SubjectPayload } from '../types'
+import type { Subject, SubjectPayload, TaskPayload, TaskPriority, TaskStatus, TaskType } from '../types'
 import { getErrorMessage } from '../utils/errors'
+import { humanize, toApiDateTime, toInputDateTime } from '../utils/format'
+import { taskPriorities, taskStatuses, taskTypes } from '../utils/options'
 
-const initialForm: SubjectPayload = {
+type CreateMode = 'subject' | 'task'
+
+interface TaskFormState {
+  title: string
+  description: string
+  deadline: string
+  subject_id: string
+  type: TaskType
+  priority: TaskPriority
+  status: TaskStatus
+  github_url: string
+  moodle_url: string
+  report_file: string
+  estimated_hours: string
+}
+
+const initialSubjectForm: SubjectPayload = {
   name: '',
   color: '#bcb8ae',
   teacher: '',
@@ -14,9 +33,25 @@ const initialForm: SubjectPayload = {
   description: '',
 }
 
+const initialTaskForm: TaskFormState = {
+  title: '',
+  description: '',
+  deadline: toInputDateTime(new Date(Date.now() + 24 * 60 * 60 * 1000)),
+  subject_id: '',
+  type: 'lab',
+  priority: 'medium',
+  status: 'not_started',
+  github_url: '',
+  moodle_url: '',
+  report_file: '',
+  estimated_hours: '',
+}
+
 export function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([])
-  const [form, setForm] = useState<SubjectPayload>(initialForm)
+  const [subjectForm, setSubjectForm] = useState<SubjectPayload>(initialSubjectForm)
+  const [taskForm, setTaskForm] = useState<TaskFormState>(initialTaskForm)
+  const [createMode, setCreateMode] = useState<CreateMode>('subject')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -24,7 +59,12 @@ export function SubjectsPage() {
   const loadSubjects = async () => {
     setIsLoading(true)
     try {
-      setSubjects(await getSubjects())
+      const subjectsData = await getSubjects()
+      setSubjects(subjectsData)
+      setTaskForm((current) => ({
+        ...current,
+        subject_id: current.subject_id || String(subjectsData[0]?.id || ''),
+      }))
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -36,8 +76,50 @@ export function SubjectsPage() {
     loadSubjects()
   }, [])
 
-  const updateField = (field: keyof SubjectPayload, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }))
+  const updateSubjectField = (field: keyof SubjectPayload, value: string) => {
+    setSubjectForm((current) => ({ ...current, [field]: value }))
+  }
+
+  const updateTaskField = <Key extends keyof TaskFormState>(field: Key, value: TaskFormState[Key]) => {
+    setTaskForm((current) => ({ ...current, [field]: value }))
+  }
+
+  const buildTaskPayload = (): TaskPayload => ({
+    title: taskForm.title,
+    description: taskForm.description || null,
+    deadline: toApiDateTime(taskForm.deadline),
+    subject_id: Number(taskForm.subject_id),
+    type: taskForm.type,
+    priority: taskForm.priority,
+    status: taskForm.status,
+    github_url: taskForm.github_url || null,
+    moodle_url: taskForm.moodle_url || null,
+    report_file: taskForm.report_file || null,
+    estimated_hours: taskForm.estimated_hours ? Number(taskForm.estimated_hours) : null,
+  })
+
+  const onSubjectSubmit = async () => {
+    await createSubject({
+      ...subjectForm,
+      teacher: subjectForm.teacher || null,
+      semester: subjectForm.semester || null,
+      description: subjectForm.description || null,
+    })
+    setSubjectForm(initialSubjectForm)
+    await loadSubjects()
+  }
+
+  const onTaskSubmit = async () => {
+    if (!taskForm.subject_id) {
+      setError('Create a subject before creating tasks')
+      return
+    }
+
+    await createTask(buildTaskPayload())
+    setTaskForm((current) => ({
+      ...initialTaskForm,
+      subject_id: current.subject_id,
+    }))
   }
 
   const onSubmit = async (event: FormEvent) => {
@@ -45,14 +127,11 @@ export function SubjectsPage() {
     setError('')
     setIsSubmitting(true)
     try {
-      await createSubject({
-        ...form,
-        teacher: form.teacher || null,
-        semester: form.semester || null,
-        description: form.description || null,
-      })
-      setForm(initialForm)
-      await loadSubjects()
+      if (createMode === 'subject') {
+        await onSubjectSubmit()
+      } else {
+        await onTaskSubmit()
+      }
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
@@ -67,37 +146,205 @@ export function SubjectsPage() {
 
   return (
     <section>
-      <PageHeader title="Subjects" subtitle="Courses, teachers, semesters, and notes." />
+      <PageHeader title="Subjects" subtitle="Create subjects and tasks from one intake surface." />
 
       {error ? <p className="app-error mb-4">{error}</p> : null}
 
-      <div className="grid gap-6 xl:grid-cols-[380px_1fr]">
-        <form onSubmit={onSubmit} className="card h-fit p-5">
-          <h2 className="app-section-title mb-4">Create subject</h2>
-          <div className="space-y-4">
-            <label className="block">
-              <span className="label">Name</span>
-              <input className="field mt-1" value={form.name} onChange={(event) => updateField('name', event.target.value)} required />
-            </label>
-            <label className="block">
-              <span className="label">Color</span>
-              <input className="field mt-1 h-11" type="color" value={form.color} onChange={(event) => updateField('color', event.target.value)} />
-            </label>
-            <label className="block">
-              <span className="label">Teacher</span>
-              <input className="field mt-1" value={form.teacher || ''} onChange={(event) => updateField('teacher', event.target.value)} />
-            </label>
-            <label className="block">
-              <span className="label">Semester</span>
-              <input className="field mt-1" value={form.semester || ''} onChange={(event) => updateField('semester', event.target.value)} />
-            </label>
-            <label className="block">
-              <span className="label">Description</span>
-              <textarea className="field mt-1 min-h-24" value={form.description || ''} onChange={(event) => updateField('description', event.target.value)} />
-            </label>
+      <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
+        <form onSubmit={onSubmit} className="card task-create-panel h-fit">
+          <h2 className="app-section-title">Create item</h2>
+
+          <div className="create-mode-switch" role="tablist" aria-label="Create item type">
+            <button
+              type="button"
+              className={`create-mode-button${createMode === 'subject' ? ' create-mode-button--active' : ''}`}
+              aria-pressed={createMode === 'subject'}
+              onClick={() => setCreateMode('subject')}
+            >
+              Subject
+            </button>
+            <button
+              type="button"
+              className={`create-mode-button${createMode === 'task' ? ' create-mode-button--active' : ''}`}
+              aria-pressed={createMode === 'task'}
+              onClick={() => setCreateMode('task')}
+            >
+              Task
+            </button>
           </div>
-          <button className="btn-primary mt-5 w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create subject'}
+
+          {createMode === 'subject' ? (
+            <div className="space-y-4">
+              <label className="block">
+                <span className="label">Name</span>
+                <input
+                  className="field mt-1"
+                  value={subjectForm.name}
+                  onChange={(event) => updateSubjectField('name', event.target.value)}
+                  required
+                />
+              </label>
+              <label className="block">
+                <span className="label">Color</span>
+                <input
+                  className="field mt-1 h-11"
+                  type="color"
+                  value={subjectForm.color}
+                  onChange={(event) => updateSubjectField('color', event.target.value)}
+                />
+              </label>
+              <label className="block">
+                <span className="label">Teacher</span>
+                <input
+                  className="field mt-1"
+                  value={subjectForm.teacher || ''}
+                  onChange={(event) => updateSubjectField('teacher', event.target.value)}
+                />
+              </label>
+              <label className="block">
+                <span className="label">Semester</span>
+                <input
+                  className="field mt-1"
+                  value={subjectForm.semester || ''}
+                  onChange={(event) => updateSubjectField('semester', event.target.value)}
+                />
+              </label>
+              <label className="block">
+                <span className="label">Description</span>
+                <textarea
+                  className="field mt-1 min-h-24"
+                  value={subjectForm.description || ''}
+                  onChange={(event) => updateSubjectField('description', event.target.value)}
+                />
+              </label>
+            </div>
+          ) : (
+            <div className="task-form-grid">
+              <label className="task-form-field">
+                <span className="label">Title</span>
+                <input
+                  className="field mt-1"
+                  value={taskForm.title}
+                  onChange={(event) => updateTaskField('title', event.target.value)}
+                  required
+                />
+              </label>
+              <label className="task-form-field">
+                <span className="label">Subject</span>
+                <select
+                  className="field mt-1"
+                  value={taskForm.subject_id}
+                  onChange={(event) => updateTaskField('subject_id', event.target.value)}
+                  required
+                >
+                  <option value="" disabled>
+                    Select subject
+                  </option>
+                  {subjects.map((subject) => (
+                    <option key={subject.id} value={subject.id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="task-form-field">
+                <span className="label">Deadline</span>
+                <input
+                  className="field mt-1"
+                  type="datetime-local"
+                  value={taskForm.deadline}
+                  onChange={(event) => updateTaskField('deadline', event.target.value)}
+                />
+              </label>
+              <label className="task-form-field">
+                <span className="label">Type</span>
+                <select
+                  className="field mt-1"
+                  value={taskForm.type}
+                  onChange={(event) => updateTaskField('type', event.target.value as TaskType)}
+                >
+                  {taskTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {humanize(type)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="task-form-field">
+                <span className="label">Priority</span>
+                <select
+                  className="field mt-1"
+                  value={taskForm.priority}
+                  onChange={(event) => updateTaskField('priority', event.target.value as TaskPriority)}
+                >
+                  {taskPriorities.map((priority) => (
+                    <option key={priority} value={priority}>
+                      {humanize(priority)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="task-form-field">
+                <span className="label">Status</span>
+                <select
+                  className="field mt-1"
+                  value={taskForm.status}
+                  onChange={(event) => updateTaskField('status', event.target.value as TaskStatus)}
+                >
+                  {taskStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {humanize(status)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="task-form-field">
+                <span className="label">Estimated hours</span>
+                <input
+                  className="field mt-1"
+                  min="0"
+                  type="number"
+                  value={taskForm.estimated_hours}
+                  onChange={(event) => updateTaskField('estimated_hours', event.target.value)}
+                />
+              </label>
+              <label className="task-form-field">
+                <span className="label">Description</span>
+                <textarea
+                  className="field task-form-textarea mt-1"
+                  value={taskForm.description}
+                  onChange={(event) => updateTaskField('description', event.target.value)}
+                />
+              </label>
+              <label className="task-form-field">
+                <span className="label">GitHub URL</span>
+                <input
+                  className="field mt-1"
+                  value={taskForm.github_url}
+                  onChange={(event) => updateTaskField('github_url', event.target.value)}
+                />
+              </label>
+              <label className="task-form-field">
+                <span className="label">Moodle URL</span>
+                <input
+                  className="field mt-1"
+                  value={taskForm.moodle_url}
+                  onChange={(event) => updateTaskField('moodle_url', event.target.value)}
+                />
+              </label>
+              <label className="task-form-field">
+                <span className="label">Report file</span>
+                <input
+                  className="field mt-1"
+                  value={taskForm.report_file}
+                  onChange={(event) => updateTaskField('report_file', event.target.value)}
+                />
+              </label>
+            </div>
+          )}
+
+          <button className="btn-primary mt-5 w-full" disabled={isSubmitting || (createMode === 'task' && !subjects.length)}>
+            {isSubmitting ? 'Creating...' : createMode === 'subject' ? 'Create subject' : 'Create task'}
           </button>
         </form>
 

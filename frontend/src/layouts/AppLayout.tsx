@@ -7,7 +7,7 @@ import {
   Settings,
   Shield,
 } from 'lucide-react'
-import { type CSSProperties, useState } from 'react'
+import { type CSSProperties, useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { PageTransition } from '../components/PageTransition'
@@ -38,11 +38,17 @@ function getBackgroundConfig(pathname: string) {
 
 const SIDEBAR_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
 const SIDEBAR_TRANSITION = `width 0.34s ${SIDEBAR_EASE}, margin-left 0.34s ${SIDEBAR_EASE}`
+const COMPACT_VIEWPORT_QUERY = '(max-width: 1279px)'
+
+function getIsCompactViewport() {
+  return typeof window !== 'undefined' && window.matchMedia(COMPACT_VIEWPORT_QUERY).matches
+}
 
 export function AppLayout() {
   const { user, logout } = useAuth()
   const location = useLocation()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isCompactViewport, setIsCompactViewport] = useState(getIsCompactViewport)
   const background = getBackgroundConfig(location.pathname)
   const sidebarToggleLabel = isSidebarCollapsed ? 'Открыть боковую панель' : 'Свернуть боковую панель'
   const sidebarTextStyle: CSSProperties = {
@@ -54,6 +60,15 @@ export function AppLayout() {
     whiteSpace: 'nowrap',
     pointerEvents: isSidebarCollapsed ? 'none' : 'auto',
   }
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(COMPACT_VIEWPORT_QUERY)
+    const updateViewportState = () => setIsCompactViewport(mediaQuery.matches)
+
+    updateViewportState()
+    mediaQuery.addEventListener('change', updateViewportState)
+    return () => mediaQuery.removeEventListener('change', updateViewportState)
+  }, [])
 
   return (
     <div className="app-shell">
@@ -68,7 +83,7 @@ export function AppLayout() {
           borderRadius: 'var(--r-xl)',
           boxShadow: 'var(--shadow-lg)',
           border: '1px solid rgba(255,255,255,0.05)',
-          display: 'flex',
+          display: isCompactViewport ? 'none' : 'flex',
           flexDirection: 'column',
           transition: SIDEBAR_TRANSITION,
           transform: 'translateZ(0)',
@@ -217,7 +232,7 @@ export function AppLayout() {
       <div
         className="app-frame"
         style={{
-          marginLeft: isSidebarCollapsed ? '92px' : '248px',
+          marginLeft: isCompactViewport ? '0' : isSidebarCollapsed ? '92px' : '248px',
           transition: SIDEBAR_TRANSITION,
           minHeight: '100vh',
           background: 'var(--bg)',

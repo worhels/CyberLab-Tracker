@@ -65,7 +65,7 @@ export function CrisisPage() {
         <p style={{ color: 'var(--accent-debt)', marginBottom: '16px', fontSize: '13px' }}>{error}</p>
       ) : null}
 
-      {!isLoading && crisisData && crisisData.total_tasks > 0 ? (
+      {!isLoading && crisisData ? (
         <div
           style={{
             background: 'var(--surface)',

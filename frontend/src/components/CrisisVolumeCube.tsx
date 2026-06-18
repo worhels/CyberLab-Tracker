@@ -15,8 +15,15 @@ const CUBE_SCALE = 1.35
 
 const COUNT_EDGE = 8000
 const COUNT_MID = 6000
-const COUNT_CORE = 4000
+const COUNT_CORE = 12000
 const MIN_CORE = 300
+
+const START_ROTATION_X = -0.18
+const START_ROTATION_Y = 0.62
+const START_ROTATION_Z = 0.03
+const AUTO_ROTATION_SPEED = 0.08
+const DRAG_YAW_SPEED = 0.006
+const DRAG_PITCH_SPEED = 0.004
 
 const CUBE_CORNERS = [
   [-0.5, -0.5, -0.5],
@@ -53,6 +60,7 @@ const PRIORITY_CELLS = [
 
 interface CubeParams {
   assembly: number
+  progress: number
   pressure: number
   instability: number
   scatter: number
@@ -141,10 +149,25 @@ void main() {
   float speed = aParams.z;
   float phase = aParams.w;
   float assembly = cubicSmooth(clamp(uAssembly, 0.0, 1.0));
+  float pressure = clamp(uPressure, 0.0, 1.0);
 
   vec3 pos = mix(aScatter * uScatter, aBase, assembly);
 
-  float pressure = clamp(uPressure, 0.0, 1.0);
+  vec3 orbitAxis = normalize(vec3(
+    sin(aSeed * 37.0 + phase),
+    cos(aSeed * 29.0 - phase),
+    sin(aSeed * 53.0)
+  ));
+  vec3 orbitTangent = cross(orbitAxis, vec3(0.0, 1.0, 0.0));
+  if (length(orbitTangent) < 0.001) {
+    orbitTangent = cross(orbitAxis, vec3(1.0, 0.0, 0.0));
+  }
+  orbitTangent = normalize(orbitTangent);
+  vec3 orbitBitangent = normalize(cross(orbitAxis, orbitTangent));
+  float orbitPhase = uTime * (0.75 + speed * 1.65) + phase + aSeed * 6.28318;
+  float orbitRadius = (mix(0.04, 0.012, assembly) + pressure * 0.012 + uJitter * 0.4) * (0.55 + aSeed * 0.9);
+  pos += (cos(orbitPhase) * orbitTangent + sin(orbitPhase) * orbitBitangent) * orbitRadius;
+
   float turbulence = (1.0 - assembly) * 0.12 + pressure * 0.07 + uJitter;
   pos.x += sin(uTime * 0.33 + phase + pos.y * 3.8) * turbulence;
   pos.y += cos(uTime * 0.27 + phase + pos.z * 3.2) * turbulence;
@@ -159,9 +182,10 @@ void main() {
 
   float perspective = clamp(2.35 / max(0.72, -mvPos.z), 0.55, 1.7);
   float sizeScale = mix(0.45, 1.0, assembly);
-  gl_PointSize = clamp(size * sizeScale * uDpr * perspective, 0.5, 9.0);
+  float pulse = 1.0 + sin(uTime * (1.4 + speed) + phase) * 0.12;
+  gl_PointSize = clamp(size * pulse * sizeScale * uDpr * perspective, 0.5, 9.0);
 
-  vAlpha = baseAlpha * mix(0.18, 1.0, assembly) * mix(0.5, 1.0, uFill);
+  vAlpha = baseAlpha * mix(0.48, 1.0, assembly) * mix(0.68, 1.0, uFill);
 }
 `
 
@@ -323,31 +347,35 @@ function deriveCubeParams(
   instabilityScore: number,
 ): CubeParams {
   const completion = clamp(completionRatio, 0, 1)
-  const assembly = clamp(cohesionScore || completion, 0, 1)
+  const progress = clamp(cohesionScore || completion, 0, 1)
+  const assembly = smoothstep(0.04, 0.78, progress)
   const pressure = clamp(pressureScore, 0, 1)
   const instability = clamp(instabilityScore, 0, 1)
-  const scatter = lerp(2.8, 0.18, assembly) + pressure * 0.9
+  const pressureScatter = pressure * lerp(0.42, 0.06, assembly)
+  const scatter = lerp(1.55, 0.2, assembly) + pressureScatter
   const jitter = 0.01 + pressure * 0.05
-  const edgeStrength = smoothstep(0.45, 0.9, assembly)
-  const faceStrength = smoothstep(0.2, 0.75, assembly)
-  const coreStrength = 1 - edgeStrength * 0.7
+  const edgeStrength = smoothstep(0.2, 0.86, assembly)
+  const faceStrength = smoothstep(0.12, 0.74, assembly)
+  const coreStrength = 1 - edgeStrength
+  const chaosFill = lerp(0.74, 0.16, assembly)
 
   return {
     assembly,
+    progress,
     pressure,
     instability,
     scatter,
     jitter,
     edgeFill: edgeStrength,
     midFill: faceStrength,
-    coreFill: clamp(pressure * (0.35 + coreStrength * 0.65) + instability * 0.15, 0, 1),
+    coreFill: clamp(chaosFill + pressure * coreStrength * 0.14 + instability * 0.06, 0.16, 0.86),
   }
 }
 
 function getStageLabel(assembly: number) {
-  if (assembly < 0.25) return 'DISPERSED / CHAOTIC MASS'
-  if (assembly < 0.65) return 'PARTIAL COHESION'
-  if (assembly < 0.9) return 'STRUCTURED VOLUME'
+  if (assembly < 0.22) return 'DISPERSED / CHAOTIC MASS'
+  if (assembly < 0.55) return 'PARTIAL COHESION'
+  if (assembly < 0.88) return 'STRUCTURED VOLUME'
   return 'STABLE CUBE'
 }
 
@@ -427,6 +455,9 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
   const pressureRef = useRef(params.pressure)
   const pointerTarget = useRef(new THREE.Vector2(0, 0))
   const pointerSmooth = useRef(new THREE.Vector2(0, 0))
+  const rotationTarget = useRef(new THREE.Vector2(START_ROTATION_Y, START_ROTATION_X))
+  const rotationSmooth = useRef(new THREE.Vector2(START_ROTATION_Y, START_ROTATION_X))
+  const dragRef = useRef({ active: false, lastX: 0, lastY: 0, pointerId: -1 })
 
   const sharedRef = useRef<UniformBundle>({
     uTime: { value: 0 },
@@ -444,7 +475,7 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
   useEffect(() => {
     const canvas = document.querySelector('.crisis-cube-canvas') as HTMLElement | null
 
-    const onMouseMove = (event: MouseEvent) => {
+    const updatePointerTarget = (event: PointerEvent) => {
       const wrap = canvas?.closest('.crisis-cube-wrap') as HTMLElement | null
       const rect = (wrap ?? canvas)?.getBoundingClientRect()
       if (!rect) return
@@ -455,14 +486,57 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
       )
     }
 
-    const onMouseLeave = () => pointerTarget.current.set(0, 0)
+    const onPointerDown = (event: PointerEvent) => {
+      dragRef.current.active = true
+      dragRef.current.lastX = event.clientX
+      dragRef.current.lastY = event.clientY
+      dragRef.current.pointerId = event.pointerId
+      canvas?.setPointerCapture?.(event.pointerId)
+      if (canvas) canvas.style.cursor = 'grabbing'
+      event.preventDefault()
+    }
 
-    canvas?.addEventListener('mousemove', onMouseMove)
-    canvas?.addEventListener('mouseleave', onMouseLeave)
+    const onPointerMove = (event: PointerEvent) => {
+      updatePointerTarget(event)
+
+      if (!dragRef.current.active) return
+
+      const deltaX = event.clientX - dragRef.current.lastX
+      const deltaY = event.clientY - dragRef.current.lastY
+      rotationTarget.current.x += deltaX * DRAG_YAW_SPEED
+      rotationTarget.current.y = clamp(
+        rotationTarget.current.y + deltaY * DRAG_PITCH_SPEED,
+        -0.95,
+        0.55,
+      )
+      dragRef.current.lastX = event.clientX
+      dragRef.current.lastY = event.clientY
+      event.preventDefault()
+    }
+
+    const onPointerUp = (event: PointerEvent) => {
+      if (dragRef.current.pointerId === event.pointerId) {
+        canvas?.releasePointerCapture?.(event.pointerId)
+      }
+      dragRef.current.active = false
+      dragRef.current.pointerId = -1
+      if (canvas) canvas.style.cursor = 'grab'
+    }
+
+    const onPointerLeave = () => pointerTarget.current.set(0, 0)
+
+    canvas?.addEventListener('pointerdown', onPointerDown)
+    canvas?.addEventListener('pointermove', onPointerMove)
+    canvas?.addEventListener('pointerup', onPointerUp)
+    canvas?.addEventListener('pointercancel', onPointerUp)
+    canvas?.addEventListener('pointerleave', onPointerLeave)
 
     return () => {
-      canvas?.removeEventListener('mousemove', onMouseMove)
-      canvas?.removeEventListener('mouseleave', onMouseLeave)
+      canvas?.removeEventListener('pointerdown', onPointerDown)
+      canvas?.removeEventListener('pointermove', onPointerMove)
+      canvas?.removeEventListener('pointerup', onPointerUp)
+      canvas?.removeEventListener('pointercancel', onPointerUp)
+      canvas?.removeEventListener('pointerleave', onPointerLeave)
     }
   }, [])
 
@@ -489,22 +563,30 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
     midFillRef.current.value = params.midFill
     coreFillRef.current.value = params.coreFill
 
+    if (!dragRef.current.active) {
+      rotationTarget.current.x += dt * AUTO_ROTATION_SPEED
+    }
+
+    rotationSmooth.current.x += (rotationTarget.current.x - rotationSmooth.current.x) * (1 - Math.exp(-dt * 8))
+    rotationSmooth.current.y += (rotationTarget.current.y - rotationSmooth.current.y) * (1 - Math.exp(-dt * 8))
+
     if (groupRef.current) {
-      groupRef.current.rotation.y += dt * 0.15
-      groupRef.current.rotation.x = Math.sin(timeRef.current * 0.06) * 0.1
+      groupRef.current.rotation.y = rotationSmooth.current.x
+      groupRef.current.rotation.x = rotationSmooth.current.y + Math.sin(timeRef.current * 0.06) * 0.04
+      groupRef.current.rotation.z = START_ROTATION_Z
     }
   })
 
   return (
     <>
-      <group ref={groupRef}>
+      <group ref={groupRef} rotation={[START_ROTATION_X, START_ROTATION_Y, START_ROTATION_Z]}>
         <ParticleLayer
           geometry={edgeGeo}
-          color="#9a9690"
-          glow={0}
+          color="#f0ede4"
+          glow={0.85}
           sharedRef={sharedRef}
           fillRef={edgeFillRef}
-          renderOrder={1}
+          renderOrder={3}
         />
         <ParticleLayer
           geometry={midGeo}
@@ -517,10 +599,10 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
         <ParticleLayer
           geometry={coreGeo}
           color="#f0ede4"
-          glow={0.95}
+          glow={0.78}
           sharedRef={sharedRef}
           fillRef={coreFillRef}
-          renderOrder={3}
+          renderOrder={1}
         />
       </group>
       <BloomComposer assemblyRef={assemblyRef} pressureRef={pressureRef} />
@@ -560,24 +642,24 @@ export function CrisisVolumeCube({
         (layerRandom) => (layerRandom() < 0.55 ? sampleEdge(layerRandom) : sampleCorner(layerRandom)),
         CUBE_SCALE,
         (random() * 0xfffff) | 0,
-        0.45,
-        1.8,
+        0.72,
+        2.45,
       ),
       midGeo: buildLayerGeometry(
         COUNT_MID,
         sampleFace,
         CUBE_SCALE * 0.97,
         (random() * 0xfffff) | 0,
-        0.58,
-        2.4,
+        0.34,
+        1.65,
       ),
       coreGeo: buildLayerGeometry(
         Math.max(COUNT_CORE, MIN_CORE),
         sampleInterior,
         CUBE_SCALE * 0.75,
         (random() * 0xfffff) | 0,
-        0.72,
-        3,
+        0.86,
+        2.85,
       ),
     }
   }, [seed])
@@ -603,7 +685,7 @@ export function CrisisVolumeCube({
             gl.setClearColor(0x000000, 0)
             gl.setPixelRatio(Math.min(gl.getPixelRatio(), MAX_DPR))
           }}
-          style={{ background: 'transparent' }}
+          style={{ background: 'transparent', cursor: 'grab', touchAction: 'none' }}
         >
           <CubeScene params={params} tick={tick} edgeGeo={edgeGeo} midGeo={midGeo} coreGeo={coreGeo} />
         </Canvas>
@@ -622,7 +704,7 @@ export function CrisisVolumeCube({
             whiteSpace: 'nowrap',
           }}
         >
-          {getStageLabel(params.assembly)}
+          {getStageLabel(params.progress)}
         </div>
 
         <div
@@ -639,7 +721,7 @@ export function CrisisVolumeCube({
         >
           <div
             style={{
-              width: `${params.assembly * 100}%`,
+              width: `${params.progress * 100}%`,
               height: '100%',
               background: 'var(--active)',
               borderRadius: '1px',

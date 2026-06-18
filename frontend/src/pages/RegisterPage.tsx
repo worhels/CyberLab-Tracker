@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { AuthShell } from '../components/auth/AuthShell'
-import { AuthGenerativeVisual } from '../components/auth/AuthGenerativeVisual'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/errors'
+
+const AuthGenerativeVisual = lazy(() =>
+  import('../components/auth/AuthGenerativeVisual').then((module) => ({ default: module.AuthGenerativeVisual })),
+)
 
 export function RegisterPage() {
   const { register, isAuthenticated } = useAuth()
@@ -30,7 +33,14 @@ export function RegisterPage() {
   }
 
   return (
-    <AuthShell mode="register" visual={<AuthGenerativeVisual mode="register" />}>
+    <AuthShell
+      mode="register"
+      visual={
+        <Suspense fallback={<div className="auth-visual-fallback" />}>
+          <AuthGenerativeVisual mode="register" />
+        </Suspense>
+      }
+    >
       <form onSubmit={onSubmit} className="auth-card">
         <div className="auth-card-heading">
           <p className="auth-brand">CyberLab Tracker</p>
