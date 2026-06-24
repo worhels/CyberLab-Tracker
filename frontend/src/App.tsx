@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { PageTransition } from './components/PageTransition'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
+import { SettingsProvider } from './context/SettingsContext'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 
@@ -34,7 +35,7 @@ export function App() {
             <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
             <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
             <Route element={<ProtectedRoute />}>
-              <Route element={<AppLayout />}>
+              <Route element={<SettingsProvider><AppLayout /></SettingsProvider>}>
                 <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/subjects" element={<SubjectsPage />} />

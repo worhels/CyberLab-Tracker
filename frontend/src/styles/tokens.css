@@ -16,11 +16,15 @@
   --active:       #eeebe2;
   --active-text:  #0d0d0b;
 
-  /* Accent colors for badges only */
+  /* Accent colors */
+  --accent-primary: #4b8ec8;
+  --accent-primary-rgb: 75, 142, 200;
   --accent-high:  #c8a84b;
   --accent-debt:  #c85050;
   --accent-ok:    #4fc87a;
   --accent-info:  #4b8ec8;
+  --panel-border: rgba(255, 255, 255, 0.07);
+  --surface-blur: none;
 
   /* Border radii */
   --r-xs:   8px;
@@ -59,4 +63,116 @@
 
   /* Transition */
   --transition: 0.18s ease;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+:root.light {
+  color-scheme: light;
+  --bg:           #f4f2ec;
+  --surface:      #ebe8df;
+  --surface-soft: #f6f4ef;
+  --surface-hover:#dedad0;
+  --text-main:    #191713;
+  --text-muted:   #5d594f;
+  --text-faint:   #8f887b;
+  --active:       #191713;
+  --active-text:  #f8f6f1;
+  --panel-border: rgba(25, 23, 19, 0.1);
+  --shadow-lg:
+    10px 10px 28px rgba(119, 111, 98, 0.24),
+    -5px -5px 16px rgba(255, 255, 255, 0.72);
+  --shadow-md:
+    6px 6px 18px rgba(119, 111, 98, 0.2),
+    -4px -4px 12px rgba(255, 255, 255, 0.68);
+  --shadow-sm:
+    3px 3px 10px rgba(119, 111, 98, 0.18),
+    -2px -2px 7px rgba(255, 255, 255, 0.64);
+  --shadow-active:
+    5px 5px 14px rgba(119, 111, 98, 0.22),
+    -3px -3px 10px rgba(255, 255, 255, 0.7);
+  --shadow-inset:
+    inset 4px 4px 10px rgba(119, 111, 98, 0.2),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.68);
+  --shadow-inset-sm:
+    inset 2px 2px 6px rgba(119, 111, 98, 0.18),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.62);
+}
+
+:root.zerkalo {
+  color-scheme: dark;
+  --bg:
+    radial-gradient(ellipse at 88% 18%, rgba(245, 226, 212, 0.9), transparent 34rem),
+    radial-gradient(ellipse at 92% 74%, rgba(126, 168, 183, 0.52), transparent 30rem),
+    radial-gradient(ellipse at 12% 16%, rgba(13, 22, 20, 0.92), transparent 26rem),
+    linear-gradient(135deg, #0a0f0e 0%, #29302d 43%, #877e73 70%, #d9c6b8 100%);
+  --surface: rgba(30, 30, 28, 0.46);
+  --surface-soft: rgba(10, 11, 10, 0.38);
+  --surface-hover: rgba(255, 255, 255, 0.12);
+  --text-main: #f6f3eb;
+  --text-muted: rgba(246, 243, 235, 0.72);
+  --text-faint: rgba(246, 243, 235, 0.44);
+  --active: rgba(var(--accent-primary-rgb), 0.95);
+  --active-text: #ffffff;
+  --panel-border: rgba(255, 255, 255, 0.14);
+  --surface-blur: blur(26px) saturate(1.08);
+  --shadow-lg:
+    0 28px 80px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  --shadow-md:
+    0 18px 46px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-sm:
+    0 10px 28px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-active:
+    0 12px 34px rgba(var(--accent-primary-rgb), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --shadow-inset:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 38px rgba(0, 0, 0, 0.12);
+  --shadow-inset-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -10px 22px rgba(0, 0, 0, 0.1);
+}
+
+:root[data-accent="blue"] {
+  --accent-info: #4b8ec8;
+  --accent-primary: #4b8ec8;
+  --accent-primary-rgb: 75, 142, 200;
+}
+
+:root[data-accent="purple"] {
+  --accent-info: #8b5cf6;
+  --accent-primary: #8b5cf6;
+  --accent-primary-rgb: 139, 92, 246;
+}
+
+:root[data-accent="green"] {
+  --accent-info: #4fc87a;
+  --accent-primary: #4fc87a;
+  --accent-primary-rgb: 79, 200, 122;
+}
+
+:root[data-accent="orange"] {
+  --accent-info: #f97316;
+  --accent-primary: #f97316;
+  --accent-primary-rgb: 249, 115, 22;
+}
+
+:root[data-accent="red"] {
+  --accent-info: #c85050;
+  --accent-primary: #c85050;
+  --accent-primary-rgb: 200, 80, 80;
+}
+
+:root.reduced-motion *,
+:root.reduced-motion *::before,
+:root.reduced-motion *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 0.001ms !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
 }

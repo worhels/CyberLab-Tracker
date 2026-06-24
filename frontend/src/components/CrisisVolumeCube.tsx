@@ -95,6 +95,11 @@ interface CubeSceneProps {
   edgeGeo: THREE.BufferGeometry
   midGeo: THREE.BufferGeometry
   coreGeo: THREE.BufferGeometry
+  colors: {
+    edge: string
+    mid: string
+    core: string
+  }
 }
 
 interface BloomComposerProps {
@@ -379,6 +384,21 @@ function getStageLabel(assembly: number) {
   return 'STABLE CUBE'
 }
 
+function useIsLightTheme() {
+  const [isLightTheme, setIsLightTheme] = useState(false)
+
+  useEffect(() => {
+    const updateTheme = () => setIsLightTheme(document.documentElement.classList.contains('light'))
+    const observer = new MutationObserver(updateTheme)
+
+    updateTheme()
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  return isLightTheme
+}
+
 function ParticleLayer({ geometry, color, glow, sharedRef, fillRef, renderOrder }: LayerProps) {
   const uniforms = useMemo(
     () => ({
@@ -447,7 +467,7 @@ function BloomComposer({ assemblyRef, pressureRef }: BloomComposerProps) {
   return null
 }
 
-function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
+function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo, colors }: CubeSceneProps) {
   const { invalidate } = useThree()
   const groupRef = useRef<THREE.Group>(null)
   const timeRef = useRef(0)
@@ -582,7 +602,7 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
       <group ref={groupRef} rotation={[START_ROTATION_X, START_ROTATION_Y, START_ROTATION_Z]}>
         <ParticleLayer
           geometry={edgeGeo}
-          color="#f0ede4"
+          color={colors.edge}
           glow={0.85}
           sharedRef={sharedRef}
           fillRef={edgeFillRef}
@@ -590,7 +610,7 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
         />
         <ParticleLayer
           geometry={midGeo}
-          color="#c8c4bc"
+          color={colors.mid}
           glow={0.22}
           sharedRef={sharedRef}
           fillRef={midFillRef}
@@ -598,7 +618,7 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo }: CubeSceneProps) {
         />
         <ParticleLayer
           geometry={coreGeo}
-          color="#f0ede4"
+          color={colors.core}
           glow={0.78}
           sharedRef={sharedRef}
           fillRef={coreFillRef}
@@ -621,12 +641,16 @@ export function CrisisVolumeCube({
   severityCounts,
 }: CrisisVolumeCubeProps) {
   const [tick, setTick] = useState(0)
+  const isLightTheme = useIsLightTheme()
   const params = useMemo(
     () => deriveCubeParams(completionRatio, pressureScore, cohesionScore, instabilityScore),
     [cohesionScore, completionRatio, instabilityScore, pressureScore],
   )
   const seed = useMemo(() => stableSeed(totalTasks, activeTasks, acceptedTasks), [acceptedTasks, activeTasks, totalTasks])
   const dprMax = Math.min(MAX_DPR, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
+  const colors = isLightTheme
+    ? { edge: '#141414', mid: '#4d4a43', core: '#161616' }
+    : { edge: '#f0ede4', mid: '#c8c4bc', core: '#f0ede4' }
 
   useEffect(() => {
     const id = window.setInterval(() => setTick((current) => current + 1), 1000 / TARGET_FPS)
@@ -687,7 +711,7 @@ export function CrisisVolumeCube({
           }}
           style={{ background: 'transparent', cursor: 'grab', touchAction: 'none' }}
         >
-          <CubeScene params={params} tick={tick} edgeGeo={edgeGeo} midGeo={midGeo} coreGeo={coreGeo} />
+          <CubeScene params={params} tick={tick} edgeGeo={edgeGeo} midGeo={midGeo} coreGeo={coreGeo} colors={colors} />
         </Canvas>
 
         <div

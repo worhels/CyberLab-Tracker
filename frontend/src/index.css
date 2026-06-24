@@ -9,6 +9,10 @@
   color-scheme: dark;
 }
 
+:root.light {
+  color-scheme: light;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -57,7 +61,8 @@ textarea {
 @layer components {
   .card {
     position: relative;
-    backdrop-filter: none;
+    border-color: var(--panel-border);
+    backdrop-filter: var(--surface-blur);
   }
 
   .card::before {
@@ -75,7 +80,7 @@ textarea {
     width: 100%;
     min-height: 44px;
     padding: 0.62rem 0.78rem;
-    color: #e8e5da;
+    color: var(--text-main);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     outline: none;
@@ -103,13 +108,13 @@ textarea {
   }
 
   select.field option {
-    color: #e8e5da;
-    background-color: #1a1a17;
+    color: var(--text-main);
+    background-color: var(--surface);
   }
 
   select.field option:checked {
-    color: #f2f0ea;
-    background-color: #302f2d;
+    color: var(--text-main);
+    background-color: var(--surface-hover);
   }
 
   select.field option:disabled {
@@ -137,10 +142,10 @@ textarea {
     justify-content: center;
     gap: 0.5rem;
     padding: 0.62rem 1rem;
-    color: #151411;
-    border: 1px solid rgba(242, 240, 234, 0.76);
+    color: var(--active-text);
+    border: 1px solid rgba(var(--accent-primary-rgb), 0.58);
     border-radius: 8px;
-    background: linear-gradient(180deg, #f2f0ea, #c9c5bb);
+    background: linear-gradient(180deg, rgba(var(--accent-primary-rgb), 0.98), rgba(var(--accent-primary-rgb), 0.72));
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
     font-size: 0.9rem;
     font-weight: 700;
@@ -153,8 +158,8 @@ textarea {
 
   .btn-primary:hover:not(:disabled) {
     transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.92);
-    background: linear-gradient(180deg, #ffffff, #dfdcd3);
+    border-color: rgba(var(--accent-primary-rgb), 0.78);
+    background: linear-gradient(180deg, rgba(var(--accent-primary-rgb), 1), rgba(var(--accent-primary-rgb), 0.84));
   }
 
   .btn-primary:disabled {
@@ -170,7 +175,7 @@ textarea {
     gap: 0.5rem;
     padding: 0.55rem 0.8rem;
     color: #d7d3ca;
-    border: 1px solid rgba(69, 68, 65, 0.9);
+    border: 1px solid var(--panel-border);
     border-radius: 8px;
     background: rgba(37, 36, 33, 0.28);
     font-size: 0.88rem;
@@ -198,7 +203,7 @@ textarea {
     min-height: 100vh;
     overflow: hidden;
     color: #f2f0ea;
-    background: #030303;
+    background: var(--bg);
     isolation: isolate;
   }
 
@@ -263,7 +268,7 @@ textarea {
     z-index: 40;
     padding: 8px 10px;
     color: var(--text-main);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--panel-border);
     border-radius: 8px;
     background: rgba(29, 29, 27, 0.98);
     box-shadow: var(--shadow-sm);
@@ -328,7 +333,7 @@ textarea {
     z-index: 1;
     min-height: 100vh;
     overflow: hidden;
-    background: #030303;
+    background: var(--bg);
     isolation: isolate;
   }
 
@@ -353,7 +358,7 @@ textarea {
     box-shadow:
       10px 0 30px rgba(0, 0, 0, 0.22),
       inset -1px 0 0 rgba(0, 0, 0, 0.35);
-    backdrop-filter: none;
+    backdrop-filter: var(--surface-blur);
     transition:
       width 200ms ease,
       background 200ms ease,
@@ -585,9 +590,9 @@ textarea {
 
   .app-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-    background: rgba(7, 7, 7, 0.58);
+    background: rgba(7, 7, 7, 0.42);
     box-shadow: none;
-    backdrop-filter: none;
+    backdrop-filter: var(--surface-blur);
   }
 
   .app-main {
@@ -658,19 +663,19 @@ textarea {
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 24px;
-    background: #000;
+    background: rgba(0, 0, 0, 0.5);
   }
 
   .task-create-panel,
   .tasks-panel {
     position: relative;
     z-index: 10;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--panel-border);
     border-radius: 18px;
     box-shadow:
       0 12px 32px rgba(0, 0, 0, 0.26),
       inset 0 1px 0 rgba(242, 240, 231, 0.035);
-    backdrop-filter: none;
+    backdrop-filter: var(--surface-blur);
   }
 
   .task-create-panel {
@@ -678,7 +683,7 @@ textarea {
     top: 104px;
     width: 100%;
     padding: 24px;
-    background: rgba(18, 18, 16, 0.72);
+    background: var(--surface);
   }
 
   .task-create-panel .app-section-title {
@@ -711,8 +716,8 @@ textarea {
   }
 
   .create-mode-button--active {
-    color: #151411;
-    background: #f2f0ea;
+    color: var(--active-text);
+    background: var(--active);
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
   }
 
@@ -742,7 +747,8 @@ textarea {
   .tasks-panel {
     min-width: 0;
     overflow: hidden;
-    background: rgba(18, 18, 16, 0.68);
+    background: var(--surface);
+    backdrop-filter: var(--surface-blur);
   }
 
   .tasks-panel__toolbar {
@@ -751,7 +757,7 @@ textarea {
     gap: 12px;
     align-items: center;
     padding: 18px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+    border-bottom: 1px solid var(--panel-border);
   }
 
   .tasks-view-switch {
@@ -760,7 +766,7 @@ textarea {
     gap: 4px;
     min-height: 44px;
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--panel-border);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.04);
   }
@@ -780,8 +786,8 @@ textarea {
   }
 
   .tasks-view-button--active {
-    color: #151411;
-    background: #f2f0ea;
+    color: var(--active-text);
+    background: var(--active);
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
   }
 
@@ -879,7 +885,27 @@ textarea {
     opacity: var(--pressure-field-opacity, 0.2);
     background:
       radial-gradient(ellipse at 52% 45%, rgba(242, 240, 234, 0.055), transparent 33rem),
-      linear-gradient(135deg, #050505 0%, #10100f 48%, #030303 100%);
+      var(--bg);
+  }
+
+  .zerkalo .pressure-field-background {
+    opacity: var(--pressure-field-opacity, 0.2);
+    background:
+      radial-gradient(ellipse at 88% 22%, rgba(244, 219, 203, 0.7), transparent 28rem),
+      radial-gradient(ellipse at 83% 82%, rgba(116, 161, 181, 0.42), transparent 26rem),
+      radial-gradient(ellipse at 13% 12%, rgba(3, 9, 8, 0.88), transparent 24rem),
+      linear-gradient(135deg, #0a100f 0%, #29302d 44%, #7d786f 70%, #dac8bb 100%);
+  }
+
+  .zerkalo .pressure-field-background__canvas {
+    opacity: 0.34;
+  }
+
+  .zerkalo .app-readability-overlay {
+    background:
+      radial-gradient(ellipse at 34% 18%, rgba(0, 0, 0, 0.28), transparent 26rem),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.2) 28%, rgba(0, 0, 0, 0.08) 72%, rgba(255, 255, 255, 0.1) 100%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.36));
   }
 
   .pressure-field-background__canvas,

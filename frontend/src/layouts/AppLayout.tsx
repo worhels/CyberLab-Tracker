@@ -14,14 +14,17 @@ import { PageTransition } from '../components/PageTransition'
 import { PressureFieldBackground } from '../components/visual/PressureFieldBackground'
 import type { PressureFieldVariant } from '../components/visual/PressureFieldBackground'
 import { useAuth } from '../context/AuthContext'
+import { useSettings } from '../context/SettingsContext'
+import { translate } from '../utils/i18n'
+import type { TranslationKey } from '../utils/i18n'
 
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: Gauge },
-  { to: '/subjects', label: 'Subjects', icon: BookOpen },
-  { to: '/tasks', label: 'Tasks', icon: ListChecks },
-  { to: '/crisis', label: 'Crisis Mode', icon: Activity },
-  { to: '/settings', label: 'Settings', icon: Settings },
-]
+  { to: '/dashboard', labelKey: 'dashboard', icon: Gauge },
+  { to: '/subjects', labelKey: 'navSubjects', icon: BookOpen },
+  { to: '/tasks', labelKey: 'navTasks', icon: ListChecks },
+  { to: '/crisis', labelKey: 'crisisMode', icon: Activity },
+  { to: '/settings', labelKey: 'settings', icon: Settings },
+] satisfies Array<{ to: string; labelKey: TranslationKey; icon: typeof Gauge }>
 
 const routeBackgrounds: Record<string, { variant: PressureFieldVariant; intensity: number; opacity: number; speed: number }> = {
   '/dashboard': { variant: 'dashboard', intensity: 0.72, opacity: 0.24, speed: 0.44 },
@@ -46,11 +49,14 @@ function getIsCompactViewport() {
 
 export function AppLayout() {
   const { user, logout } = useAuth()
+  const { settings } = useSettings()
   const location = useLocation()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isCompactViewport, setIsCompactViewport] = useState(getIsCompactViewport)
   const background = getBackgroundConfig(location.pathname)
-  const sidebarToggleLabel = isSidebarCollapsed ? 'Открыть боковую панель' : 'Свернуть боковую панель'
+  const language = settings?.language ?? 'en'
+  const t = (key: TranslationKey) => translate(language, key)
+  const sidebarToggleLabel = isSidebarCollapsed ? 'Open sidebar' : 'Collapse sidebar'
   const sidebarTextStyle: CSSProperties = {
     maxWidth: isSidebarCollapsed ? 0 : '150px',
     opacity: isSidebarCollapsed ? 0 : 1,
@@ -82,7 +88,8 @@ export function AppLayout() {
           background: 'var(--surface)',
           borderRadius: 'var(--r-xl)',
           boxShadow: 'var(--shadow-lg)',
-          border: '1px solid rgba(255,255,255,0.05)',
+          border: '1px solid var(--panel-border)',
+          backdropFilter: 'var(--surface-blur)',
           display: isCompactViewport ? 'none' : 'flex',
           flexDirection: 'column',
           transition: SIDEBAR_TRANSITION,
@@ -100,7 +107,7 @@ export function AppLayout() {
               alignItems: 'center',
               gap: isSidebarCollapsed ? '0px' : '12px',
               justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              borderBottom: '1px solid var(--panel-border)',
               transition: `gap 0.3s ${SIDEBAR_EASE}, padding 0.34s ${SIDEBAR_EASE}`,
               flexShrink: 0,
             }}
@@ -172,7 +179,7 @@ export function AppLayout() {
                   <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                     <Icon size={18} />
                   </span>
-                  <span style={{ ...sidebarTextStyle, textOverflow: 'ellipsis' }}>{item.label}</span>
+                  <span style={{ ...sidebarTextStyle, textOverflow: 'ellipsis' }}>{t(item.labelKey)}</span>
                 </NavLink>
               )
             })}
@@ -181,7 +188,7 @@ export function AppLayout() {
           <div
             style={{
               padding: isSidebarCollapsed ? '14px 0' : '14px 14px',
-              borderTop: '1px solid rgba(255,255,255,0.05)',
+              borderTop: '1px solid var(--panel-border)',
               flexShrink: 0,
               display: 'flex',
               flexDirection: 'column',
@@ -213,7 +220,7 @@ export function AppLayout() {
                 borderRadius: 'var(--r-full)',
                 background: 'var(--surface-soft)',
                 boxShadow: 'var(--shadow-sm)',
-                border: '1px solid rgba(255,255,255,0.04)',
+                border: '1px solid var(--panel-border)',
                 color: 'var(--text-muted)',
                 fontSize: '12px',
                 fontWeight: 600,
@@ -245,13 +252,13 @@ export function AppLayout() {
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <p className="app-brand-kicker">CyberLab Tracker</p>
-              <p className="app-brand-subtitle">Study control center</p>
+              <p className="app-brand-subtitle">{t('studyControlCenter')}</p>
             </div>
             <div className="system-status">
-              <span className="system-status__label">API Connected</span>
+              <span className="system-status__label">{t('apiConnected')}</span>
               <span className="system-status__meta">
                 <span className="system-status__light" aria-hidden="true" />
-                System online
+                {t('systemOnline')}
               </span>
             </div>
             <nav className="flex gap-2 overflow-x-auto xl:hidden">
@@ -269,7 +276,7 @@ export function AppLayout() {
                     }
                   >
                     <Icon size={16} />
-                    {item.label}
+                    {t(item.labelKey)}
                   </NavLink>
                 )
               })}

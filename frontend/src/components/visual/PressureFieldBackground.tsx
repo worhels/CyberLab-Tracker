@@ -409,11 +409,18 @@ function usePrefersReducedMotion() {
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const updatePreference = () => setPrefersReducedMotion(media.matches)
+    const updatePreference = () => {
+      setPrefersReducedMotion(media.matches || document.documentElement.classList.contains('reduced-motion'))
+    }
+    const observer = new MutationObserver(updatePreference)
 
     updatePreference()
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     media.addEventListener('change', updatePreference)
-    return () => media.removeEventListener('change', updatePreference)
+    return () => {
+      observer.disconnect()
+      media.removeEventListener('change', updatePreference)
+    }
   }, [])
 
   return prefersReducedMotion

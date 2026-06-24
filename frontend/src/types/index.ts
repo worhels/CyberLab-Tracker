@@ -26,6 +26,10 @@ export interface Subject {
 export type TaskType = 'lab' | 'practice' | 'coursework' | 'exam' | 'other'
 export type TaskStatus = 'not_started' | 'in_progress' | 'submitted' | 'accepted' | 'debt'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
+export type Language = 'ru' | 'uk' | 'en'
+export type Theme = 'light' | 'dark' | 'system' | 'zerkalo'
+export type AccentColor = 'blue' | 'purple' | 'green' | 'orange' | 'red'
+export type DashboardView = 'compact' | 'comfortable'
 
 export interface Task {
   id: number
@@ -78,6 +82,28 @@ export interface CrisisDashboard {
   instability_score: number
   severity_counts: CrisisSeverityCounts
   tasks: CrisisTask[]
+}
+
+export interface UserSettings {
+  id: number
+  user_id: number
+  language: Language
+  theme: Theme
+  accent_color: AccentColor
+  dashboard_view: DashboardView
+  show_crisis_cube: boolean
+  reduced_motion: boolean
+  deadline_reminders: boolean
+}
+
+export interface UserSettingsPayload {
+  language?: Language
+  theme?: Theme
+  accent_color?: AccentColor
+  dashboard_view?: DashboardView
+  show_crisis_cube?: boolean
+  reduced_motion?: boolean
+  deadline_reminders?: boolean
 }
 
 export interface SubjectPayload {

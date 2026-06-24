@@ -5,6 +5,7 @@ interface StatCardProps {
   value: ReactNode
   description?: string
   accent?: 'ivory' | 'success' | 'red' | 'amber'
+  density?: 'compact' | 'comfortable'
 }
 
 const VALUE_COLOR: Record<string, string> = {
@@ -14,21 +15,24 @@ const VALUE_COLOR: Record<string, string> = {
   amber: 'var(--accent-high)',
 }
 
-export function StatCard({ label, value, description, accent = 'ivory' }: StatCardProps) {
+export function StatCard({ label, value, description, accent = 'ivory', density = 'comfortable' }: StatCardProps) {
+  const isCompact = density === 'compact'
+
   return (
     <div
       style={{
         background: 'var(--surface)',
         borderRadius: 'var(--r-lg)',
         boxShadow: 'var(--shadow-lg)',
-        border: '1px solid rgba(255,255,255,0.045)',
-        padding: '22px 24px 20px',
+        border: '1px solid var(--panel-border)',
+        padding: isCompact ? '14px 16px' : '22px 24px 20px',
         display: 'flex',
         flexDirection: 'column',
         gap: '0',
-        minHeight: '130px',
+        minHeight: isCompact ? '96px' : '130px',
         justifyContent: 'space-between',
         transition: 'box-shadow var(--transition)',
+        backdropFilter: 'var(--surface-blur)',
       }}
     >
       <div>
@@ -46,7 +50,7 @@ export function StatCard({ label, value, description, accent = 'ivory' }: StatCa
         </p>
         <div
           style={{
-            fontSize: '32px',
+            fontSize: isCompact ? '24px' : '32px',
             fontWeight: 700,
             lineHeight: 1,
             color: VALUE_COLOR[accent],
@@ -57,7 +61,7 @@ export function StatCard({ label, value, description, accent = 'ivory' }: StatCa
           {value}
         </div>
       </div>
-      {description && (
+      {description && !isCompact && (
         <p
           style={{
             fontSize: '12px',

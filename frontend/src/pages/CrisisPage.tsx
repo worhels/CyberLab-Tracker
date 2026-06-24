@@ -4,16 +4,23 @@ import { getSubjects } from '../api/subjects'
 import { Badge } from '../components/Badge'
 import { CrisisVolumeCube } from '../components/CrisisVolumeCube'
 import { EmptyState } from '../components/EmptyState'
+import { useSettings } from '../context/SettingsContext'
 import type { CrisisDashboard, Subject } from '../types'
 import { getErrorMessage } from '../utils/errors'
 import { formatDate } from '../utils/format'
+import { translate } from '../utils/i18n'
+import type { TranslationKey } from '../utils/i18n'
 
 export function CrisisPage() {
+  const { settings } = useSettings()
   const [crisisData, setCrisisData] = useState<CrisisDashboard | null>(null)
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const tasks = crisisData?.tasks ?? []
+  const showCrisisCube = settings?.show_crisis_cube ?? true
+  const language = settings?.language ?? 'en'
+  const t = (key: TranslationKey) => translate(language, key)
 
   const subjectById = useMemo(() => {
     return new Map(subjects.map((subject) => [subject.id, subject]))
@@ -42,7 +49,7 @@ export function CrisisPage() {
             marginBottom: '8px',
           }}
         >
-          WORKSPACE
+          {t('workspace')}
         </p>
         <h1
           style={{
@@ -54,10 +61,10 @@ export function CrisisPage() {
             marginBottom: '8px',
           }}
         >
-          Crisis Mode
+          {t('crisisMode')}
         </h1>
         <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          Highest-risk tasks sorted by crisis score.
+          {t('crisisModeSubtitle')}
         </p>
       </div>
 
@@ -65,13 +72,14 @@ export function CrisisPage() {
         <p style={{ color: 'var(--accent-debt)', marginBottom: '16px', fontSize: '13px' }}>{error}</p>
       ) : null}
 
-      {!isLoading && crisisData ? (
+      {!isLoading && crisisData && showCrisisCube ? (
         <div
           style={{
             background: 'var(--surface)',
             borderRadius: 'var(--r-lg)',
             boxShadow: 'var(--shadow-lg)',
-            border: '1px solid rgba(255,255,255,0.045)',
+            border: '1px solid var(--panel-border)',
+            backdropFilter: 'var(--surface-blur)',
             padding: '20px 24px 0',
             marginBottom: '20px',
             overflow: 'hidden',
@@ -94,7 +102,7 @@ export function CrisisPage() {
                 color: 'var(--text-faint)',
               }}
             >
-              Crisis Volume - {crisisData.active_tasks} active / {crisisData.total_tasks} total
+              Crisis Volume - {crisisData.active_tasks} {t('active')} / {crisisData.total_tasks} {t('all')}
             </p>
             <p style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
               {crisisData.accepted_tasks} accepted - {Math.round(crisisData.completion_ratio * 100)}% assembled
@@ -135,7 +143,8 @@ export function CrisisPage() {
                 background: 'var(--surface)',
                 borderRadius: 'var(--r-lg)',
                 boxShadow: 'var(--shadow-lg)',
-                border: '1px solid rgba(255,255,255,0.045)',
+                border: '1px solid var(--panel-border)',
+                backdropFilter: 'var(--surface-blur)',
                 padding: '18px 22px',
               }}
             >

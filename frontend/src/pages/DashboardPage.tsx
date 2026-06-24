@@ -5,9 +5,12 @@ import { getTasks } from '../api/tasks'
 import { Badge } from '../components/Badge'
 import { EmptyState } from '../components/EmptyState'
 import { StatCard } from '../components/StatCard'
+import { useSettings } from '../context/SettingsContext'
 import type { DashboardSummary, Subject, Task } from '../types'
 import { getErrorMessage } from '../utils/errors'
 import { formatDate } from '../utils/format'
+import { translate } from '../utils/i18n'
+import type { TranslationKey } from '../utils/i18n'
 
 const priorityWeight: Record<Task['priority'], number> = {
   critical: 4,
@@ -21,6 +24,7 @@ function getDeadlineTime(value: string | null) {
 }
 
 export function DashboardPage() {
+  const { settings } = useSettings()
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
@@ -86,10 +90,14 @@ export function DashboardPage() {
       .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
       .slice(0, 5)
   }, [tasks])
+  const language = settings?.language ?? 'en'
+  const t = (key: TranslationKey) => translate(language, key)
+  const dashboardDensity = settings?.dashboard_view ?? 'comfortable'
+  const isCompactDashboard = dashboardDensity === 'compact'
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: '1400px' }}>
-      <div style={{ marginBottom: '32px' }}>
+    <div style={{ padding: isCompactDashboard ? '20px 28px' : '32px 36px', maxWidth: '1400px' }}>
+      <div style={{ marginBottom: isCompactDashboard ? '20px' : '32px' }}>
         <p
           style={{
             fontSize: '10px',
@@ -100,7 +108,7 @@ export function DashboardPage() {
             marginBottom: '8px',
           }}
         >
-          WORKSPACE
+          {t('workspace')}
         </p>
         <h1
           style={{
@@ -112,10 +120,10 @@ export function DashboardPage() {
             marginBottom: '8px',
           }}
         >
-          Dashboard
+          {t('dashboard')}
         </h1>
         <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          Workload, progress, and near-term risk in one control surface.
+          {t('dashboardSubtitle')}
         </p>
       </div>
 
@@ -142,23 +150,25 @@ export function DashboardPage() {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '16px',
-              marginBottom: '20px',
+              gap: isCompactDashboard ? '10px' : '16px',
+              marginBottom: isCompactDashboard ? '12px' : '20px',
             }}
           >
-            <StatCard label="Subjects" value={summary.total_subjects} description="Active study lanes in this workspace." />
-            <StatCard label="Tasks" value={summary.total_tasks} description="Total tracked deliverables and checkpoints." />
-            <StatCard label="Accepted" value={summary.accepted_tasks} accent="success" description="Work already cleared from the queue." />
-            <StatCard label="In Progress" value={summary.in_progress_tasks} description="Current active execution surface." />
-            <StatCard label="Debt" value={summary.debt_tasks} accent="red" description="Items that need recovery attention." />
-            <StatCard label="Overdue" value={summary.overdue_tasks} accent="amber" description="Deadline pressure above baseline." />
+            <StatCard density={dashboardDensity} label="Subjects" value={summary.total_subjects} description="Active study lanes in this workspace." />
+            <StatCard density={dashboardDensity} label="Tasks" value={summary.total_tasks} description="Total tracked deliverables and checkpoints." />
+            <StatCard density={dashboardDensity} label="Accepted" value={summary.accepted_tasks} accent="success" description="Work already cleared from the queue." />
+            <StatCard density={dashboardDensity} label="In Progress" value={summary.in_progress_tasks} description="Current active execution surface." />
+            <StatCard density={dashboardDensity} label="Debt" value={summary.debt_tasks} accent="red" description="Items that need recovery attention." />
+            <StatCard density={dashboardDensity} label="Overdue" value={summary.overdue_tasks} accent="amber" description="Deadline pressure above baseline." />
             <StatCard
+              density={dashboardDensity}
               label="Progress"
               value={`${summary.progress_percent}%`}
               accent="success"
               description="Accepted work against total tracked work."
             />
             <StatCard
+              density={dashboardDensity}
               label="Nearest Deadline"
               value={formatDate(summary.nearest_deadline)}
               description="Closest visible point on the timeline."
@@ -170,7 +180,8 @@ export function DashboardPage() {
               background: 'var(--surface)',
               borderRadius: 'var(--r-lg)',
               boxShadow: 'var(--shadow-lg)',
-              border: '1px solid rgba(255,255,255,0.045)',
+              border: '1px solid var(--panel-border)',
+              backdropFilter: 'var(--surface-blur)',
               padding: '22px 26px',
               marginBottom: '20px',
             }}
@@ -261,7 +272,8 @@ export function DashboardPage() {
                 background: 'var(--surface)',
                 borderRadius: 'var(--r-lg)',
                 boxShadow: 'var(--shadow-lg)',
-                border: '1px solid rgba(255,255,255,0.045)',
+                border: '1px solid var(--panel-border)',
+                backdropFilter: 'var(--surface-blur)',
                 padding: '24px',
               }}
             >
@@ -398,7 +410,8 @@ export function DashboardPage() {
                 background: 'var(--surface)',
                 borderRadius: 'var(--r-lg)',
                 boxShadow: 'var(--shadow-lg)',
-                border: '1px solid rgba(255,255,255,0.045)',
+                border: '1px solid var(--panel-border)',
+                backdropFilter: 'var(--surface-blur)',
                 padding: '24px',
               }}
             >
@@ -506,7 +519,8 @@ export function DashboardPage() {
               background: 'var(--surface)',
               borderRadius: 'var(--r-lg)',
               boxShadow: 'var(--shadow-lg)',
-              border: '1px solid rgba(255,255,255,0.045)',
+              border: '1px solid var(--panel-border)',
+              backdropFilter: 'var(--surface-blur)',
               padding: '24px',
             }}
           >
