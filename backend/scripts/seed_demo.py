@@ -46,14 +46,15 @@ SUBJECTS = [
 
 
 def demo_tasks(now: datetime) -> list[dict]:
-    return [
+    accepted_at = now - timedelta(hours=1)
+    tasks = [
         {
             "subject_name": "Основи криптографічного захисту інформації",
             "title": "Лабораторна: шифр Цезаря та частотний аналіз",
             "description": "Підготувати код, README та короткий звіт.",
             "deadline": now + timedelta(days=1),
             "type": TaskType.LAB,
-            "status": TaskStatus.IN_PROGRESS,
+            "status": TaskStatus.ACCEPTED,
             "priority": TaskPriority.HIGH,
             "estimated_hours": 6,
             "github_url": "https://github.com/worhels/CyberLab-Tracker",
@@ -66,7 +67,7 @@ def demo_tasks(now: datetime) -> list[dict]:
             "description": "Описати сутності, зв'язки та базові сценарії.",
             "deadline": now + timedelta(days=3),
             "type": TaskType.COURSEWORK,
-            "status": TaskStatus.NOT_STARTED,
+            "status": TaskStatus.ACCEPTED,
             "priority": TaskPriority.CRITICAL,
             "estimated_hours": 12,
             "github_url": "https://github.com/worhels/CyberLab-Tracker",
@@ -79,7 +80,7 @@ def demo_tasks(now: datetime) -> list[dict]:
             "description": "Скласти позитивні та негативні тест-кейси.",
             "deadline": now + timedelta(days=7),
             "type": TaskType.PRACTICE,
-            "status": TaskStatus.SUBMITTED,
+            "status": TaskStatus.ACCEPTED,
             "priority": TaskPriority.MEDIUM,
             "estimated_hours": 3,
             "submitted_at": now - timedelta(hours=2),
@@ -92,7 +93,7 @@ def demo_tasks(now: datetime) -> list[dict]:
             "description": "Доробити сервіс, логування та автозапуск.",
             "deadline": now - timedelta(days=2),
             "type": TaskType.LAB,
-            "status": TaskStatus.DEBT,
+            "status": TaskStatus.ACCEPTED,
             "priority": TaskPriority.HIGH,
             "estimated_hours": 8,
             "github_url": "https://github.com/worhels/CyberLab-Tracker",
@@ -105,11 +106,17 @@ def demo_tasks(now: datetime) -> list[dict]:
             "description": "Підготувати конспект по основних визначеннях.",
             "deadline": now + timedelta(days=14),
             "type": TaskType.EXAM,
-            "status": TaskStatus.NOT_STARTED,
+            "status": TaskStatus.ACCEPTED,
             "priority": TaskPriority.MEDIUM,
             "estimated_hours": 5,
         },
     ]
+
+    for task in tasks:
+        task.setdefault("submitted_at", accepted_at - timedelta(hours=2))
+        task["accepted_at"] = accepted_at
+
+    return tasks
 
 
 def migrate_old_demo_user(db: Session) -> None:
