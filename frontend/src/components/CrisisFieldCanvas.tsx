@@ -270,7 +270,7 @@ export function CrisisFieldCanvas({ tasks, subjectById }: CrisisFieldCanvasProps
       gridMaterial.dispose()
       renderer.dispose()
     }
-  }, [tasks])
+  }, [tasks, subjectById])
 
   return (
     <div

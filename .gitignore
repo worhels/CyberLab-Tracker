@@ -9,6 +9,10 @@ __pycache__/
 *.log
 postgres_data/
 
+# Local generated database workbench files
+.vscode/db-schema-live.sql
+.vscode/db-tables-live.txt
+
 # Accidental root drops
 /package-lock.json
 /telegram-*.png

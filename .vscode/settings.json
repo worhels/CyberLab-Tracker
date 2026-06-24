@@ -7,5 +7,6 @@
     "**/.venv/**",
     "**/__pycache__/**"
   ],
-  "python.analysis.typeCheckingMode": "basic"
+  "python.analysis.typeCheckingMode": "basic",
+  "css.lint.unknownAtRules": "ignore"
 }
