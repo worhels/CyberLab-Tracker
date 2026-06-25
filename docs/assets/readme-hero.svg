@@ -1,0 +1,89 @@
+<svg width="1280" height="420" viewBox="0 0 1280 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">CyberLab Tracker hero banner</title>
+  <desc id="desc">A dark monochrome GitHub-style banner for CyberLab Tracker with terminal typography and abstract workload terrain.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050609"/>
+      <stop offset="0.42" stop-color="#0c0d12"/>
+      <stop offset="1" stop-color="#040405"/>
+    </linearGradient>
+    <linearGradient id="haze" x1="230" y1="42" x2="1030" y2="332" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="core" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(884 164) rotate(109) scale(346 187)">
+      <stop stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="0.46" stop-color="#b8b8b8" stop-opacity="0.09"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+    <pattern id="scan" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 0H8" stroke="#ffffff" stroke-opacity="0.045"/>
+      <path d="M0 4H8" stroke="#ffffff" stroke-opacity="0.018"/>
+    </pattern>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" stroke="#ffffff" stroke-opacity="0.055"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="420" rx="18" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1278" height="418" rx="17" stroke="#ffffff" stroke-opacity="0.12"/>
+  <rect width="1280" height="420" rx="18" fill="url(#grid)"/>
+  <rect width="1280" height="420" rx="18" fill="url(#scan)"/>
+  <ellipse cx="840" cy="168" rx="360" ry="182" fill="url(#core)" filter="url(#blur)"/>
+  <path d="M0 298C98 276 143 235 238 252C334 269 355 319 462 291C569 264 601 194 704 206C807 219 830 291 944 274C1057 257 1097 199 1198 221C1232 229 1257 242 1280 258V420H0V298Z" fill="#0e0f13"/>
+  <path d="M0 303C98 281 143 240 238 257C334 274 355 324 462 296C569 269 601 199 704 211C807 224 830 296 944 279C1057 262 1097 204 1198 226C1232 234 1257 247 1280 263" stroke="#ffffff" stroke-opacity="0.56" stroke-width="2"/>
+  <path d="M222 322C310 301 385 310 462 296C570 276 620 237 704 246C790 256 837 313 944 300C1041 288 1081 246 1198 262" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1.5"/>
+  <path d="M348 346C434 326 540 341 620 314C698 288 739 290 803 316C856 337 926 344 1004 328" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
+
+  <g opacity="0.92">
+    <rect x="64" y="54" width="194" height="64" rx="10" fill="#0b0c10" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="84" y="82" fill="#f3f3f3" font-family="Consolas, Monaco, monospace" font-size="13" font-weight="700">SYSTEM</text>
+    <text x="84" y="102" fill="#9d9fa6" font-family="Consolas, Monaco, monospace" font-size="12">LOCAL-FIRST / ONLINE</text>
+  </g>
+
+  <g opacity="0.9">
+    <rect x="1012" y="286" width="198" height="70" rx="12" fill="#0b0c10" stroke="#ffffff" stroke-opacity="0.13"/>
+    <text x="1032" y="315" fill="#f5f5f5" font-family="Consolas, Monaco, monospace" font-size="13" font-weight="700">CRISIS MODE</text>
+    <text x="1032" y="337" fill="#9d9fa6" font-family="Consolas, Monaco, monospace" font-size="12">pressure / cohesion / risk</text>
+  </g>
+
+  <g opacity="0.86">
+    <circle cx="1034" cy="78" r="4" fill="#ffffff"/>
+    <circle cx="1072" cy="88" r="3" fill="#ffffff" opacity="0.6"/>
+    <circle cx="1114" cy="70" r="2.5" fill="#ffffff" opacity="0.52"/>
+    <circle cx="1148" cy="96" r="3.5" fill="#ffffff" opacity="0.42"/>
+    <path d="M1034 78L1072 88L1114 70L1148 96" stroke="#ffffff" stroke-opacity="0.18"/>
+  </g>
+
+  <text x="86" y="180" fill="#ffffff" font-family="Consolas, Monaco, monospace" font-size="18" letter-spacing="4">CYBERLAB TRACKER</text>
+  <text x="86" y="228" fill="#f5f5f5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="54" font-weight="800" letter-spacing="-1.5">study pressure system</text>
+  <text x="90" y="264" fill="#b8bac2" font-family="Consolas, Monaco, monospace" font-size="16">auth / tasks / deadlines / visual workload / calm control</text>
+
+  <g transform="translate(90 308)">
+    <rect width="108" height="28" rx="14" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="18" y="19" fill="#ffffff" font-family="Consolas, Monaco, monospace" font-size="12">FASTAPI</text>
+  </g>
+  <g transform="translate(210 308)">
+    <rect width="112" height="28" rx="14" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="18" y="19" fill="#ffffff" font-family="Consolas, Monaco, monospace" font-size="12">REACT TS</text>
+  </g>
+  <g transform="translate(334 308)">
+    <rect width="122" height="28" rx="14" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="18" y="19" fill="#ffffff" font-family="Consolas, Monaco, monospace" font-size="12">POSTGRES</text>
+  </g>
+  <g transform="translate(468 308)">
+    <rect width="112" height="28" rx="14" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="18" y="19" fill="#ffffff" font-family="Consolas, Monaco, monospace" font-size="12">ZERKALO</text>
+  </g>
+
+  <path d="M706 92H900" stroke="#ffffff" stroke-opacity="0.26"/>
+  <path d="M706 105H842" stroke="#ffffff" stroke-opacity="0.14"/>
+  <path d="M706 118H876" stroke="#ffffff" stroke-opacity="0.08"/>
+  <text x="706" y="79" fill="#dadce2" font-family="Consolas, Monaco, monospace" font-size="12">README.md</text>
+  <text x="706" y="152" fill="#f2f2f2" font-family="Consolas, Monaco, monospace" font-size="13">task noise becomes signal</text>
+  <text x="706" y="174" fill="#9d9fa6" font-family="Consolas, Monaco, monospace" font-size="12">quiet interface, hard backend, visible pressure</text>
+</svg>

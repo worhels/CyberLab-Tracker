@@ -1,89 +1,102 @@
 # CyberLab Tracker
 
-[![CI](https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml/badge.svg)](https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml)
+<p align="center">
+  <img src="./docs/assets/readme-hero.svg" alt="CyberLab Tracker dark hero banner" width="100%" />
+</p>
 
-CyberLab Tracker is a full-stack local-first academic workload tracker built
-with FastAPI, PostgreSQL, React, TypeScript, Docker, and GitHub Actions.
+<p align="center">
+  <a href="https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml">
+    <img src="https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml/badge.svg" alt="CI status" />
+  </a>
+  <a href="https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml">
+    <img src="https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml/badge.svg" alt="CodeQL status" />
+  </a>
+  <img src="https://img.shields.io/badge/FastAPI-0b0c10?style=flat-square&amp;logo=fastapi&amp;logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/React-0b0c10?style=flat-square&amp;logo=react&amp;logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/PostgreSQL-0b0c10?style=flat-square&amp;logo=postgresql&amp;logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Docker-0b0c10?style=flat-square&amp;logo=docker&amp;logoColor=white" alt="Docker" />
+</p>
 
-The project is now a practical daily-use study control center with a hardened
-backend, a themeable React workspace, persisted user settings, workload
-visualizations, and portfolio-grade documentation. It tracks subjects, academic
-tasks, deadlines, debts, workload pressure, completion progress, and
-crisis-level task priority.
+<p align="center">
+  <strong>Local-first academic workload tracker with a security-minded backend and a dark visual control-room interface.</strong>
+</p>
 
-## Overview
+<p align="center">
+  <a href="#quick-start">Quick Start</a>
+  |
+  <a href="#system-map">System Map</a>
+  |
+  <a href="#security-posture">Security</a>
+  |
+  <a href="#roadmap">Roadmap</a>
+</p>
 
-CyberLab Tracker helps organize academic work by showing:
+> A quiet control room for labs, deadlines, debts, and the moment everything starts blinking red.
 
-- active subjects and their study metadata
-- pending labs, coursework, reports, and checkpoints
-- overdue tasks and nearest deadline pressure
-- task priority, type, status, estimates, and external links
-- completion progress across the whole workspace
-- subject progress and recent activity
-- crisis-level workload with ranked active tasks
-- visual workload state through the Crisis Volume Cube and workload hotspots
-- a persisted interface profile with language, theme, accent, density, and
-  motion preferences
+## Signal
 
-This is not positioned as a generic cybersecurity product. The security scope is
-application hardening for a realistic full-stack productivity app.
+CyberLab Tracker is a full-stack local-first study workspace built with
+FastAPI, PostgreSQL, React, TypeScript, Docker, and GitHub Actions.
 
-## Why This Project Exists
+The app turns academic noise into a readable pressure map: subjects, tasks,
+deadlines, debt, progress, crisis priority, and visual workload state all live in
+one place. The current UI direction is Zerkalo-first: dark, restrained,
+monochrome-heavy, slightly strange, and made to feel like a personal command
+center instead of a generic dashboard.
 
-The goal is to show a complete engineering workflow rather than only a UI demo:
+```txt
+STATUS      local-first / portfolio-ready / daily-use capable
+BACKEND     FastAPI + SQLAlchemy + Alembic + JWT ownership checks
+FRONTEND    React + TypeScript + Vite + visual workload scenes
+DATABASE    PostgreSQL 16
+VIBE        graphite UI, pressure fields, soft motion, crisis mode
+```
 
-- backend API design with authenticated ownership checks
-- database schema and migrations
-- local Docker development environment
-- frontend application workflow with protected routes and persisted settings
-- themeable UI system with route-aware visual backgrounds
-- security policy and threat model
-- CI quality gates
-- maintainable repository structure
+## What It Does
 
-## Features
+| Surface | Built |
+| --- | --- |
+| Auth | Email/password login, JWT access tokens, protected routes |
+| Subjects | CRUD with teacher, semester, color, and description |
+| Tasks | CRUD with status, priority, type, deadline, estimates, links, and reports |
+| Dashboard | Progress, nearest deadline, priority queue, subject progress, recent activity |
+| Tasks Workspace | Search, priority/type filters, list modes, pagination, animated rows |
+| Crisis Mode | Ranked active tasks, pressure score, cohesion score, instability score |
+| Visuals | Crisis Volume Cube, workload sphere, subject hotspots, pressure-field backgrounds |
+| Settings | Language, theme, accent, dashboard density, reduced motion, visual toggles |
 
-- Email/password authentication with JWT access tokens and protected routes
-- Subject CRUD with teacher, semester, color, and description fields
-- Task CRUD with status, priority, type, deadlines, estimates, GitHub/Moodle
-  links, report references, and status updates
-- Unified subject/task intake page
-- Tasks workspace with search, priority/type filters, list modes, pagination,
-  animated rows, and subject cards
-- Dashboard summary with progress, nearest deadline, priority queue, subject
-  progress, and recent activity
-- Crisis Mode ranking for high-risk active tasks
-- Crisis Volume Cube with active/accepted pressure metrics
-- Workload sphere/hotspot visualization for task distribution by subject
-- Persistent user settings for language, theme, accent color, dashboard density,
-  Crisis Cube visibility, reduced motion, and deadline reminder preference
-- Zerkalo, dark, light, and system theme support with normalized light-theme UI
-- Route-aware pressure-field backgrounds, collapsible sidebar, and mobile nav
+## Current Build
+
+As of June 25, 2026, the project includes:
+
+- Authenticated app shell with collapsible desktop sidebar and mobile navigation
+- Dashboard, Subjects, Tasks, Crisis Mode, and Settings pages
+- Persisted user settings API and frontend settings context
+- Russian, Ukrainian, and English labels for the app shell/settings flow
+- Zerkalo, dark, light, and system theme support
+- Light-theme normalization so the dark scene layer does not leak into light UI
 - Demo seed data for local review
-- Docker Compose setup for PostgreSQL and backend
-- One-command local development script for Windows
+- Unit coverage for JWT claims, token validation behavior, crisis metrics, and
+  user settings defaults/updates
 
-## Security Focus
+Fresh screenshots are still pending. The screenshot pass should happen after the
+current UI polish is visually verified on desktop and mobile.
 
-CyberLab Tracker is intentionally not designed as an enterprise SaaS. The
-security scope is focused on practical application hardening:
+## System Map
 
-- JWT validation with explicit algorithm and required claims
-- bcrypt password hashing
-- generic authentication errors
-- login/register rate limiting
-- CORS hardening
-- Docker secret handling
-- IDOR prevention through per-user data access checks
-- local-first data safety
-- documented threat model and known boundaries
+```mermaid
+flowchart LR
+    Browser["Browser"] --> Frontend["React + Vite frontend"]
+    Frontend --> API["FastAPI backend"]
+    API --> Auth["JWT auth + ownership checks"]
+    API --> DB["PostgreSQL"]
+    API --> Settings["User settings"]
+    API --> Crisis["Crisis metrics"]
+```
 
-See [SECURITY.md](SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md),
-and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+More detail lives in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Tech Stack
+## Stack
 
 | Area | Stack |
 | --- | --- |
@@ -94,39 +107,25 @@ and [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 | Tooling | Docker Compose, PowerShell scripts, GitHub Actions |
 | Security | JWT auth, bcrypt hashing, CORS policy, auth rate limiting, ownership checks |
 
-## Current Project State
+## Security Posture
 
-As of June 25, 2026, the implemented product surface includes:
+CyberLab Tracker is intentionally not framed as an enterprise SaaS. The security
+scope is practical hardening for a realistic full-stack productivity app:
 
-- Login and registration flows with a generative auth visual
-- Authenticated app shell with desktop sidebar, mobile navigation, and route
-  transitions
-- Dashboard, Subjects, Tasks, Crisis Mode, and Settings pages
-- Persisted settings API and frontend settings context
-- Multilingual UI labels for Russian, Ukrainian, and English in the settings
-  flow and app shell
-- Zerkalo-first theme system with dark, light, and system modes
-- Light-theme normalization so the dark visual layer no longer leaks into the
-  light UI
-- Backend tests for JWT claims, token validation behavior, crisis metrics, and
-  user settings defaults/updates
+- JWT validation with explicit algorithm and required claims
+- bcrypt password hashing
+- generic authentication errors
+- login/register rate limiting
+- explicit CORS configuration
+- Docker secret handling
+- API docs disabled outside debug mode
+- IDOR prevention through per-user data access checks
+- documented threat model and known boundaries
 
-## Screenshots
-
-Fresh screenshots are still pending. Capture them after the current UI pass is
-visually verified on desktop and mobile.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    Browser["Browser"] --> Frontend["React + Vite frontend"]
-    Frontend --> API["FastAPI backend"]
-    API --> DB["PostgreSQL"]
-    API --> Auth["JWT auth + ownership checks"]
-```
-
-More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Read more:
+[SECURITY.md](SECURITY.md),
+[docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md),
+[docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
 ## Quick Start
 
@@ -162,7 +161,7 @@ Demo account:
 - Email: `demo@cyberlab.dev`
 - Password: `password123`
 
-## Environment Variables
+## Environment
 
 Root `.env` is created from `.env.example`.
 
@@ -184,7 +183,7 @@ Frontend `.env` is created from `frontend/.env.example` and contains:
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
-## Development Workflow
+## Development
 
 Useful local commands:
 
@@ -231,18 +230,6 @@ GitHub Actions runs:
 - CodeQL analysis
 - dependency review on pull requests
 
-## Roadmap
-
-Current focus:
-
-- finish destructive-action confirmations and deadline quick filters
-- add broader auth/ownership integration tests
-- capture final screenshots for the repository
-- continue small UI polish and performance fallback work
-- keep documentation aligned with implemented behavior
-
-See [ROADMAP.md](ROADMAP.md).
-
 ## API Docs
 
 API docs are only enabled when `DEBUG=true`.
@@ -264,19 +251,27 @@ Then open:
 - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 - OpenAPI JSON: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
-## Branching Model
+## Roadmap
 
-- `main` is stable and release-ready.
-- `develop` is the integration branch.
-- `feature/<scope>` is for product work.
-- `fix/<scope>` is for bug fixes.
-- `chore/<scope>` is for tooling, documentation, and maintenance.
+Current focus:
 
-See [docs/BRANCHING.md](docs/BRANCHING.md).
+- destructive-action confirmations
+- deadline quick filters
+- broader auth/ownership integration tests
+- final screenshots for the repository
+- small UI polish and visual performance fallback work
 
-## Security Policy
+See [ROADMAP.md](ROADMAP.md).
 
-See [SECURITY.md](SECURITY.md).
+## Repository Docs
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [API overview](docs/API_OVERVIEW.md)
+- [Development guide](docs/DEVELOPMENT.md)
+- [Branching model](docs/BRANCHING.md)
+- [GitHub setup](docs/GITHUB_SETUP.md)
+- [Security model](docs/SECURITY_MODEL.md)
+- [Threat model](docs/THREAT_MODEL.md)
 
 ## License
 
