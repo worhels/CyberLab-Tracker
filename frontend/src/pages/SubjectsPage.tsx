@@ -357,8 +357,8 @@ export function SubjectsPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="mb-2 flex items-center gap-3">
-                      <span className="h-3 w-3 rounded-sm border border-white/20" style={{ backgroundColor: subject.color }} />
-                      <h2 className="truncate text-lg font-semibold text-[#F2F0EA]">{subject.name}</h2>
+                      <span className="h-3 w-3 rounded-sm border border-[var(--panel-border)]" style={{ backgroundColor: subject.color }} />
+                      <h2 className="truncate text-lg font-semibold text-[var(--text-main)]">{subject.name}</h2>
                     </div>
                     <div className="app-muted flex flex-wrap gap-2 text-xs">
                       {subject.teacher ? <span>{subject.teacher}</span> : null}

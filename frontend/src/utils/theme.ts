@@ -8,8 +8,11 @@ export function resolveTheme(theme: Theme): 'light' | 'dark' | 'zerkalo' {
 
 export function applyTheme(theme: Theme) {
   const root = document.documentElement
+  const resolvedTheme = resolveTheme(theme)
+
   root.classList.remove('light', 'dark', 'zerkalo')
-  root.classList.add(resolveTheme(theme))
+  root.classList.add(resolvedTheme)
+  root.dataset.theme = resolvedTheme
   root.dataset.themePreference = theme
 }
 

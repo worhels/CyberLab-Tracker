@@ -1,52 +1,57 @@
 :root.light {
   color-scheme: light;
 
-  --bg: #f4f2ec;
-  --surface: #ebe8df;
-  --surface-soft: #f6f4ef;
-  --surface-hover: #dedad0;
+  --bg:
+    radial-gradient(ellipse at 68% 12%, rgba(255, 255, 255, 0.92), transparent 31rem),
+    radial-gradient(ellipse at 12% 78%, rgba(232, 226, 214, 0.72), transparent 30rem),
+    linear-gradient(135deg, #f7f3ea 0%, #ece6d9 52%, #e3dccd 100%);
+  --surface: #f5f1e8;
+  --surface-soft: #fffaf1;
+  --surface-hover: #ebe3d5;
 
-  --text-main: #191713;
-  --text-muted: #5d594f;
-  --text-faint: #8f887b;
+  --text-main: #17140f;
+  --text-muted: #5f584d;
+  --text-faint: #82786a;
 
   --active: var(--accent-primary);
   --active-text: var(--accent-contrast);
-  --panel-border: rgba(25, 23, 19, 0.1);
+  --panel-border: rgba(43, 36, 27, 0.13);
   --surface-blur: none;
-  --workload-hotspot-empty: #8f887d;
-  --workload-hotspot-active: #343029;
-  --workload-hotspot-warning: #9d7553;
-  --workload-hotspot-critical: #9f624d;
-  --workload-hotspot-done: #68745f;
-  --workload-hotspot-selected: #a96f4f;
-  --workload-particle-core: #5b554c;
-  --workload-particle-shell: #2f2c27;
+
+  --workload-hotspot-empty: #8e8576;
+  --workload-hotspot-active: #3d372e;
+  --workload-hotspot-warning: #a47443;
+  --workload-hotspot-critical: #a75743;
+  --workload-hotspot-done: #63745a;
+  --workload-hotspot-selected: #b46f46;
+  --workload-particle-core: #514a40;
+  --workload-particle-shell: #2f2a23;
   --workload-scene-bg:
-    radial-gradient(ellipse at 74% 26%, rgba(169, 111, 79, 0.13), transparent 20rem),
-    linear-gradient(135deg, rgba(246, 244, 239, 0.92), rgba(226, 222, 212, 0.86));
+    radial-gradient(ellipse at 58% 34%, rgba(255, 255, 255, 0.94), transparent 21rem),
+    radial-gradient(ellipse at 72% 20%, rgba(180, 111, 70, 0.12), transparent 22rem),
+    linear-gradient(135deg, #fffaf1 0%, #f3eee4 48%, #e8dfd1 100%);
   --workload-scene-overlay:
-    radial-gradient(ellipse at 48% 50%, transparent 18%, rgba(244, 242, 236, 0.25) 72%),
-    linear-gradient(90deg, rgba(25, 23, 19, 0.045), transparent 30%, rgba(255, 255, 255, 0.18));
-  --workload-card-bg: rgba(244, 242, 236, 0.82);
-  --workload-card-soft: rgba(25, 23, 19, 0.08);
+    radial-gradient(ellipse at 50% 50%, transparent 24%, rgba(43, 36, 27, 0.055) 76%),
+    linear-gradient(90deg, rgba(43, 36, 27, 0.035), transparent 32%, rgba(255, 255, 255, 0.34));
+  --workload-card-bg: rgba(255, 250, 241, 0.92);
+  --workload-card-soft: rgba(43, 36, 27, 0.075);
 
   --shadow-lg:
-    10px 10px 28px rgba(119, 111, 98, 0.24),
-    -5px -5px 16px rgba(255, 255, 255, 0.72);
+    0 20px 46px rgba(71, 61, 47, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.72);
   --shadow-md:
-    6px 6px 18px rgba(119, 111, 98, 0.2),
-    -4px -4px 12px rgba(255, 255, 255, 0.68);
+    0 14px 30px rgba(71, 61, 47, 0.13),
+    0 0 0 1px rgba(255, 255, 255, 0.62);
   --shadow-sm:
-    3px 3px 10px rgba(119, 111, 98, 0.18),
-    -2px -2px 7px rgba(255, 255, 255, 0.64);
+    0 8px 18px rgba(71, 61, 47, 0.11),
+    0 0 0 1px rgba(255, 255, 255, 0.56);
   --shadow-active:
-    0 12px 28px rgba(var(--accent-primary-rgb), 0.22),
-    -3px -3px 10px rgba(255, 255, 255, 0.7);
+    0 12px 28px rgba(var(--accent-primary-rgb), 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
   --shadow-inset:
-    inset 4px 4px 10px rgba(119, 111, 98, 0.2),
-    inset -3px -3px 8px rgba(255, 255, 255, 0.68);
+    inset 0 1px 2px rgba(71, 61, 47, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.72);
   --shadow-inset-sm:
-    inset 2px 2px 6px rgba(119, 111, 98, 0.18),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.62);
+    inset 0 1px 2px rgba(71, 61, 47, 0.11),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.66);
 }

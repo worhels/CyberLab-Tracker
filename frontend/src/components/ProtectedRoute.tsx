@@ -7,7 +7,7 @@ export function ProtectedRoute() {
 
   if (isLoading) {
     return (
-      <div className="app-shell flex min-h-screen items-center justify-center text-[#F2F0EA]">
+      <div className="app-shell flex min-h-screen items-center justify-center text-[var(--text-main)]">
         Loading workspace...
       </div>
     )

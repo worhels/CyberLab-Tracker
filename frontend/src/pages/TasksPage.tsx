@@ -256,7 +256,7 @@ export function TasksPage() {
                         <article key={subject.id} className="tasks-subject-card">
                           <div className="min-w-0">
                             <div className="mb-2 flex items-center gap-3">
-                              <span className="h-3 w-3 rounded-sm border border-white/20" style={{ backgroundColor: subject.color }} />
+                              <span className="h-3 w-3 rounded-sm border border-[var(--panel-border)]" style={{ backgroundColor: subject.color }} />
                               <h2 className="tasks-subject-card__title">{subject.name}</h2>
                             </div>
                             <div className="app-muted flex flex-wrap gap-2 text-xs">

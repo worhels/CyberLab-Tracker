@@ -6,6 +6,8 @@ security hardening path and portfolio-grade repository presentation.
 
 ## Current Status
 
+Last updated: June 25, 2026.
+
 ### Done
 
 - FastAPI backend
@@ -16,9 +18,22 @@ security hardening path and portfolio-grade repository presentation.
 - Docker Compose setup
 - Authentication base flow
 - Dashboard, Subjects, Tasks, Settings, and Crisis Mode pages
-- Dark soft UI redesign
+- Soft UI redesign with Zerkalo, dark, light, and system theme support
+- Light-theme normalization across shell, cards, forms, badges, tables, and task views
+- Route-aware pressure-field visual backgrounds
+- Collapsible desktop sidebar and responsive mobile navigation
+- Page transitions and route fallback
 - Crisis Volume 3D visualization
+- Workload sphere and subject hotspot visualization
+- Unified subject/task creation surface
 - Basic CRUD for subjects and tasks
+- Task status updates
+- Task search, priority/type filters, list modes, and pagination
+- Dashboard priority queue, subject progress, and recent activity widgets
+- User settings model, migration, CRUD layer, API endpoint, and frontend context
+- Persisted language, theme, accent color, dashboard density, Crisis Cube,
+  reduced motion, and deadline-reminder preferences
+- Russian, Ukrainian, and English labels for the settings/app-shell flow
 - JWT required claims
 - Generic authentication errors
 - Auth endpoint rate limiting
@@ -26,6 +41,8 @@ security hardening path and portfolio-grade repository presentation.
 - Explicit CORS configuration
 - API docs disabled outside debug mode
 - Completed-task filtering in Crisis Mode
+- Crisis metrics unit coverage
+- User settings unit coverage
 - Repository CI, docs, issue templates, and security docs
 
 ## Phase 0: Security Hardening
@@ -86,20 +103,30 @@ predictable security baseline before adding larger workflows.
 
 ## Phase 1: UI Completion
 
-- [ ] Unify spacing, card radius, shadows, buttons, forms, and hover states
-- [ ] Add loading states across all pages
-- [ ] Add empty states across all pages
-- [ ] Add error states across all pages
-- [ ] Improve Tasks page card layout
-- [ ] Improve Subjects page cards and progress preview
-- [ ] Improve Settings page form structure
+- [x] Unify spacing, card radius, shadows, buttons, forms, and hover states
+- [x] Add loading states across all main pages
+- [x] Add empty states across all main data pages
+- [x] Add error states across all main data pages
+- [x] Improve Tasks page card/table layout
+- [x] Improve Subjects page cards and creation flow
+- [x] Add subject progress preview on Dashboard
+- [x] Improve Settings page form structure
+- [x] Add dashboard compact/comfortable density setting
+- [x] Add user-controlled visual fallback for Crisis Mode
+- [x] Add reduced-motion preference plumbing
+- [x] Normalize light theme so dark-scene styles do not leak into light UI
 - [ ] Add confirmation for destructive actions
-- [ ] Add fallback behavior for lower-performance devices in Crisis Mode
+- [ ] Add automated lower-performance device detection for visual effects
 
 ## Phase 2: Daily-use Features
 
 ### Quick Filters
 
+- [x] Search by task title/description
+- [x] Filter by priority
+- [x] Filter by task type
+- [x] Switch between all/tasks/subjects list modes
+- [x] Paginate task results
 - [ ] Due today
 - [ ] This week
 - [ ] Overdue
@@ -109,6 +136,9 @@ predictable security baseline before adding larger workflows.
 
 ### Deadline Signals
 
+- [x] Dashboard overdue count
+- [x] Dashboard nearest deadline
+- [x] Crisis scoring accounts for overdue, today, tomorrow, and 3-day pressure
 - [ ] Deadline in 3 days badge
 - [ ] Due today badge
 - [ ] Overdue badge
@@ -116,11 +146,13 @@ predictable security baseline before adding larger workflows.
 
 ### Subject Statistics
 
-- [ ] Total tasks per subject
-- [ ] Completed tasks per subject
+- [x] Dashboard subject progress preview
+- [x] Accepted/total ratio for top subjects
+- [ ] Total tasks per subject in dedicated subject detail view
+- [ ] Completed tasks per subject in dedicated subject detail view
 - [ ] Active tasks per subject
 - [ ] Overdue tasks per subject
-- [ ] Accepted/completed ratio
+- [ ] Accepted/completed ratio in full subject statistics
 
 ### Export
 
@@ -140,6 +172,7 @@ predictable security baseline before adding larger workflows.
 ## Phase 3: Portfolio Packaging
 
 - [x] README overview and project positioning
+- [x] README update for settings, themes, workload visuals, and current UI state
 - [x] Architecture docs
 - [x] Branching docs
 - [x] Contributing guide
@@ -161,6 +194,11 @@ predictable security baseline before adding larger workflows.
 
 ## Phase 4: Tests And Maintainability
 
+- [x] JWT required-claim unit tests
+- [x] JWT wrong-token-type rejection test
+- [x] JWT missing-claim rejection test
+- [x] Crisis metrics unit test
+- [x] User settings default/update tests
 - [ ] Auth integration tests
 - [ ] Task CRUD integration tests
 - [ ] Subject CRUD integration tests
@@ -168,7 +206,9 @@ predictable security baseline before adding larger workflows.
 - [ ] Subject ownership denial tests
 - [ ] Standardize API error responses
 - [ ] Split large frontend components
-- [ ] Consolidate reusable UI primitives
+- [x] Add shared PageHeader and EmptyState primitives
+- [x] Add reusable Badge and StatCard primitives
+- [ ] Consolidate remaining reusable UI primitives
 - [ ] Review dead code and unused styles
 
 ## Backlog

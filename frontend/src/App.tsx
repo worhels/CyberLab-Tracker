@@ -17,7 +17,7 @@ const TasksPage = lazy(() => import('./pages/TasksPage').then((module) => ({ def
 
 function RouteFallback() {
   return (
-    <div className="app-shell route-fallback flex min-h-screen items-center justify-center text-[#F2F0EA]">
+    <div className="app-shell route-fallback flex min-h-screen items-center justify-center text-[var(--text-main)]">
       Loading workspace...
     </div>
   )

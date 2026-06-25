@@ -43,7 +43,7 @@ interface ToggleRowProps {
 
 function ToggleRow({ checked, description, disabled, label, onChange }: ToggleRowProps) {
   return (
-    <label className="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3">
+    <label className="settings-toggle-row flex items-center justify-between gap-4 rounded-lg px-4 py-3">
       <span>
         <span className="block text-sm font-semibold text-[var(--text-main)]">{label}</span>
         <span className="app-muted mt-1 block text-xs">{description}</span>

@@ -1701,3 +1701,306 @@ textarea {
     font-size: 0.72rem;
   }
 }
+
+/* =========================================================
+   LIGHT THEME NORMALIZATION
+   Fixes the old dark-scene engine leaking into the light UI.
+   ========================================================= */
+
+@layer components {
+  :root.light,
+  :root.light body,
+  :root.light #root {
+    background: var(--bg);
+    color: var(--text-main);
+  }
+
+  :root.light .app-shell,
+  :root.light .app-frame {
+    color: var(--text-main);
+    background: var(--bg) !important;
+  }
+
+  :root.light .app-readability-overlay {
+    display: none;
+    background: none;
+  }
+
+  :root.light .pressure-field-background {
+    opacity: 1 !important;
+    background:
+      radial-gradient(ellipse at 67% 14%, rgba(255, 255, 255, 0.88), transparent 32rem),
+      radial-gradient(ellipse at 19% 83%, rgba(216, 207, 190, 0.44), transparent 30rem),
+      linear-gradient(135deg, #f7f3ea 0%, #ece6d9 52%, #e3dccd 100%);
+  }
+
+  :root.light .pressure-field-background__canvas,
+  :root.light .pressure-field-background__soft-mask,
+  :root.light .pressure-field-background__vignette,
+  :root.light .pressure-field-background__reduced {
+    display: none !important;
+  }
+
+  :root.light .pressure-field-background__grain {
+    opacity: 0.035;
+    mix-blend-mode: multiply;
+  }
+
+  :root.light .app-header {
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(245, 241, 232, 0.9);
+    box-shadow: 0 10px 28px rgba(71, 61, 47, 0.07);
+    backdrop-filter: blur(16px);
+  }
+
+  :root.light .app-brand-kicker,
+  :root.light .system-status__label {
+    color: var(--text-main);
+  }
+
+  :root.light .app-brand-subtitle,
+  :root.light .system-status__meta {
+    color: var(--text-muted);
+  }
+
+  :root.light .system-status {
+    color: var(--text-muted);
+    border: 1px solid var(--panel-border);
+    background: rgba(255, 250, 241, 0.82);
+    box-shadow: var(--shadow-sm);
+  }
+
+  :root.light .system-status__light {
+    background: var(--accent-primary);
+    box-shadow: 0 0 14px rgba(var(--accent-primary-rgb), 0.28);
+  }
+
+  :root.light .app-sidebar-brand-button {
+    color: var(--text-main);
+    border: 1px solid var(--panel-border);
+    background: var(--surface-soft);
+    box-shadow: var(--shadow-sm);
+  }
+
+  :root.light .app-sidebar-brand-button:hover,
+  :root.light .app-sidebar-brand-button:focus-visible {
+    color: var(--text-main);
+    border-color: rgba(var(--accent-primary-rgb), 0.34);
+    background: var(--surface-hover);
+  }
+
+  :root.light .app-sidebar-brand-tooltip {
+    color: var(--text-main);
+    border: 1px solid var(--panel-border);
+    background: var(--surface-soft);
+    box-shadow: var(--shadow-md);
+  }
+
+  :root.light .card,
+  :root.light .task-create-panel,
+  :root.light .tasks-panel,
+  :root.light .tasks-visual-section {
+    border-color: var(--panel-border);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: none;
+  }
+
+  :root.light .card::before {
+    content: none;
+  }
+
+  :root.light .app-title,
+  :root.light .app-section-title,
+  :root.light .item-title,
+  :root.light .tasks-table__title,
+  :root.light .tasks-subject-card__title,
+  :root.light .app-empty-title {
+    color: var(--text-main);
+  }
+
+  :root.light .app-subtitle,
+  :root.light .app-muted,
+  :root.light .item-meta,
+  :root.light .tasks-table__subject-cell,
+  :root.light .tasks-pagination-summary,
+  :root.light .tasks-pagination-page,
+  :root.light .app-empty,
+  :root.light .app-empty-text {
+    color: var(--text-muted);
+  }
+
+  :root.light .app-soft,
+  :root.light .label,
+  :root.light .page-header__label,
+  :root.light .app-section-kicker {
+    color: var(--text-faint);
+  }
+
+  :root.light .page-header__rule {
+    background: linear-gradient(90deg, rgba(43, 36, 27, 0.22), rgba(43, 36, 27, 0.055), transparent);
+  }
+
+  :root.light .field {
+    color: var(--text-main);
+    border: 1px solid rgba(43, 36, 27, 0.14);
+    background: rgba(255, 250, 241, 0.86);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64);
+  }
+
+  :root.light .field::placeholder {
+    color: var(--text-faint);
+    opacity: 0.82;
+  }
+
+  :root.light .field:focus {
+    border-color: rgba(var(--accent-primary-rgb), 0.48);
+    background: #fffaf1;
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.15);
+  }
+
+  :root.light select.field {
+    color-scheme: light;
+  }
+
+  :root.light select.field option {
+    color: var(--text-main);
+    background-color: #fffaf1;
+  }
+
+  :root.light .btn-secondary {
+    color: var(--text-muted);
+    border: 1px solid var(--panel-border);
+    background: var(--surface-soft);
+    box-shadow: var(--shadow-sm);
+  }
+
+  :root.light .btn-secondary:hover:not(:disabled) {
+    color: var(--text-main);
+    border-color: rgba(var(--accent-primary-rgb), 0.28);
+    background: var(--surface-hover);
+  }
+
+  :root.light .btn-primary,
+  :root.light .create-mode-button--active,
+  :root.light .tasks-view-button--active {
+    color: var(--active-text);
+    border-color: rgba(var(--accent-primary-rgb), 0.42);
+    background: linear-gradient(180deg, rgba(var(--accent-primary-rgb), 0.98), rgba(var(--accent-primary-rgb), 0.82));
+    box-shadow: 0 12px 28px rgba(var(--accent-primary-rgb), 0.24);
+  }
+
+  :root.light .create-mode-switch,
+  :root.light .tasks-view-switch {
+    border: 1px solid var(--panel-border);
+    background: rgba(43, 36, 27, 0.045);
+  }
+
+  :root.light .create-mode-button,
+  :root.light .tasks-view-button {
+    color: var(--text-muted);
+  }
+
+  :root.light .create-mode-button--active,
+  :root.light .tasks-view-button--active {
+    color: var(--active-text);
+  }
+
+  :root.light .tasks-panel__toolbar,
+  :root.light .tasks-panel__footer,
+  :root.light .tasks-subject-list {
+    border-color: var(--panel-border);
+  }
+
+  :root.light .tasks-panel__footer {
+    background: rgba(255, 250, 241, 0.52);
+  }
+
+  :root.light .tasks-subject-card {
+    border: 1px solid var(--panel-border);
+    background: rgba(255, 250, 241, 0.66);
+  }
+
+  :root.light .app-table thead {
+    color: var(--text-faint);
+    background: rgba(43, 36, 27, 0.045);
+  }
+
+  :root.light .app-table th,
+  :root.light .app-table td {
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  :root.light .app-table tbody tr:hover {
+    background: rgba(255, 250, 241, 0.72);
+  }
+
+  :root.light .badge {
+    color: var(--text-muted);
+    border-color: var(--panel-border);
+    background: rgba(43, 36, 27, 0.045);
+  }
+
+  :root.light .badge--quiet {
+    color: var(--text-muted);
+    border-color: rgba(43, 36, 27, 0.1);
+    background: rgba(43, 36, 27, 0.045);
+  }
+
+  :root.light .badge--ivory {
+    color: var(--text-main);
+    border-color: rgba(43, 36, 27, 0.12);
+    background: rgba(43, 36, 27, 0.065);
+  }
+
+  :root.light .badge--amber {
+    color: #8f6112;
+    border-color: rgba(200, 168, 75, 0.28);
+    background: rgba(200, 168, 75, 0.15);
+  }
+
+  :root.light .badge--red {
+    color: #b83f3f;
+    border-color: rgba(200, 80, 80, 0.28);
+    background: rgba(200, 80, 80, 0.13);
+  }
+
+  :root.light .meta-pill {
+    color: var(--text-muted);
+    border: 1px solid var(--panel-border);
+    background: rgba(255, 250, 241, 0.72);
+  }
+
+  :root.light .app-empty {
+    border: 1px dashed rgba(43, 36, 27, 0.22);
+    background: rgba(255, 250, 241, 0.5);
+    box-shadow: none;
+  }
+
+  :root.light .app-link {
+    color: var(--text-main);
+  }
+
+  :root.light .app-link:hover {
+    color: var(--accent-primary);
+  }
+
+  :root.light .settings-toggle-row {
+    color: var(--text-main);
+    border: 1px solid var(--panel-border);
+    background: rgba(255, 250, 241, 0.56);
+  }
+
+  :root.light .task-delete-button {
+    color: var(--text-muted);
+    background: var(--surface-soft);
+  }
+
+  :root.light .tasks-visual-section {
+    background: var(--workload-scene-bg);
+  }
+
+  :root.light canvas {
+    color-scheme: light;
+  }
+}
