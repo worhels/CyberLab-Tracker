@@ -4,6 +4,8 @@
     "backend/alembic"
   ],
   "exclude": [
+    "**/node_modules",
+    "**/.git",
     "**/__pycache__",
     "backend/.venv"
   ],
