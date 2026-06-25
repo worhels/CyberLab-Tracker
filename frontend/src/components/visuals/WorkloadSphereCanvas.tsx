@@ -21,6 +21,8 @@ const defaultHotspotPalette: WorkloadHotspotPalette = {
   critical: '#c27a59',
   done: '#8d9b86',
   selected: '#d69a68',
+  particleCore: '#d8d2c7',
+  particleShell: '#f0ede4',
 }
 
 function readThemeColor(name: string, fallback: string) {
@@ -40,6 +42,8 @@ function useWorkloadHotspotPalette() {
         critical: readThemeColor('--workload-hotspot-critical', defaultHotspotPalette.critical),
         done: readThemeColor('--workload-hotspot-done', defaultHotspotPalette.done),
         selected: readThemeColor('--workload-hotspot-selected', defaultHotspotPalette.selected),
+        particleCore: readThemeColor('--workload-particle-core', defaultHotspotPalette.particleCore),
+        particleShell: readThemeColor('--workload-particle-shell', defaultHotspotPalette.particleShell),
       })
     }
 
@@ -118,11 +122,22 @@ export function WorkloadSphereCanvas({ tasks, subjects, className }: WorkloadSph
         width: '100%',
         height: '100%',
         minHeight: 420,
-        background: '#000',
+        background: 'var(--workload-scene-bg)',
         overflow: 'hidden',
         borderRadius: 24,
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)',
       }}
     >
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          background: 'var(--workload-scene-overlay)',
+          pointerEvents: 'none',
+        }}
+      />
       <Canvas
         dpr={[1, WORKLOAD_SPHERE_CONFIG.dprCap]}
         camera={{
@@ -133,13 +148,12 @@ export function WorkloadSphereCanvas({ tasks, subjects, className }: WorkloadSph
         }}
         gl={{
           antialias: false,
-          alpha: false,
+          alpha: true,
           powerPreference: 'high-performance',
         }}
         onPointerMissed={() => setSelectedHotspotId(null)}
+        style={{ position: 'relative', zIndex: 2 }}
       >
-        <color attach="background" args={['#000000']} />
-
         <ResponsiveWorkloadCamera />
         <SelectedWorkloadCamera selectedHotspot={selectedHotspot} />
         <WorkloadOrbitSphere
@@ -163,8 +177,8 @@ export function WorkloadSphereCanvas({ tasks, subjects, className }: WorkloadSph
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          color: 'rgba(247,243,234,0.58)',
-          fontSize: 11,
+          color: 'var(--text-faint)',
+          fontSize: 10,
           fontWeight: 800,
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
@@ -177,7 +191,7 @@ export function WorkloadSphereCanvas({ tasks, subjects, className }: WorkloadSph
             height: 7,
             borderRadius: 999,
             background: 'var(--workload-hotspot-selected)',
-            boxShadow: '0 0 18px color-mix(in srgb, var(--workload-hotspot-selected) 42%, transparent)',
+            boxShadow: '0 0 14px rgba(var(--accent-primary-rgb), 0.18)',
           }}
         />
         subject hotspots

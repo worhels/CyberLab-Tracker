@@ -41,17 +41,17 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
               left: 22,
               bottom: 22,
               zIndex: 4,
-              minWidth: 180,
-              borderRadius: 12,
+              minWidth: 168,
+              borderRadius: 10,
               border: '1px solid var(--panel-border)',
               background: 'var(--workload-card-bg)',
               boxShadow: 'var(--shadow-md)',
               backdropFilter: 'var(--surface-blur)',
-              padding: '12px 14px',
+              padding: '10px 12px',
               pointerEvents: 'none',
             }}
           >
-            <p style={{ margin: 0, color: 'var(--text-main)', fontSize: 13, fontWeight: 800 }}>{previewHotspot.label}</p>
+            <p style={{ margin: 0, color: 'var(--text-main)', fontSize: 12, fontWeight: 760 }}>{previewHotspot.label}</p>
             <p style={{ margin: '5px 0 0', color: 'var(--text-muted)', fontSize: 11 }}>
               {previewHotspot.activeTasksCount} active / {previewHotspot.deadlineTasksCount} deadline
             </p>
@@ -72,11 +72,11 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
               top: 22,
               right: 22,
               zIndex: 4,
-              width: 'min(310px, calc(100% - 44px))',
-              borderRadius: 16,
+              width: 'min(286px, calc(100% - 44px))',
+              borderRadius: 12,
               border: '1px solid var(--panel-border)',
               background: 'var(--workload-card-bg)',
-              boxShadow: 'var(--shadow-lg)',
+              boxShadow: 'var(--shadow-md)',
               backdropFilter: 'var(--surface-blur)',
               overflow: 'hidden',
             }}
@@ -92,13 +92,13 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
                       : 'var(--workload-hotspot-selected)',
               }}
             />
-            <div style={{ padding: '18px 18px 16px' }}>
+            <div style={{ padding: '15px 16px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                 <div style={{ minWidth: 0 }}>
-                  <p style={{ margin: 0, color: 'var(--text-faint)', fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                  <p style={{ margin: 0, color: 'var(--text-faint)', fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                     selected subject
                   </p>
-                  <h2 style={{ margin: '6px 0 0', color: 'var(--text-main)', fontSize: 20, fontWeight: 820, lineHeight: 1.08 }}>
+                  <h2 style={{ margin: '6px 0 0', color: 'var(--text-main)', fontSize: 16, fontWeight: 780, lineHeight: 1.14 }}>
                     {selectedHotspot.label}
                   </h2>
                 </div>
@@ -109,8 +109,8 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
                     border: '1px solid var(--panel-border)',
                     background: 'var(--workload-card-soft)',
                     color: 'var(--text-main)',
-                    padding: '5px 9px',
-                    fontSize: 10,
+                    padding: '4px 8px',
+                    fontSize: 9,
                     fontWeight: 800,
                     textTransform: 'uppercase',
                   }}
@@ -119,15 +119,25 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 16 }}>
+              <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
                 {[
                   ['Tasks', selectedHotspot.tasksCount],
                   ['Critical', selectedHotspot.criticalTasksCount],
                   ['Deadlines', selectedHotspot.deadlineTasksCount],
                 ].map(([label, value]) => (
-                  <div key={label} style={{ borderRadius: 10, background: 'var(--workload-card-soft)', padding: '10px 8px' }}>
+                  <div
+                    key={label}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      borderBottom: '1px solid var(--panel-border)',
+                      paddingBottom: 7,
+                    }}
+                  >
                     <p style={{ margin: 0, color: 'var(--text-faint)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase' }}>{label}</p>
-                    <p style={{ margin: '5px 0 0', color: 'var(--text-main)', fontSize: 18, fontWeight: 850 }}>{value}</p>
+                    <p style={{ margin: 0, color: 'var(--text-main)', fontSize: 13, fontWeight: 780, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
                   </div>
                 ))}
               </div>
@@ -137,7 +147,7 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
                   <span>Progress</span>
                   <span>{selectedHotspot.progress}%</span>
                 </div>
-                <div style={{ height: 8, marginTop: 8, borderRadius: 999, background: 'var(--workload-card-soft)', overflow: 'hidden' }}>
+                <div style={{ height: 5, marginTop: 8, borderRadius: 999, background: 'var(--workload-card-soft)', overflow: 'hidden' }}>
                   <div
                     style={{
                       width: `${selectedHotspot.progress}%`,
@@ -150,8 +160,8 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
                 </div>
               </div>
 
-              <p style={{ margin: '14px 0 0', color: 'var(--text-muted)', fontSize: 11 }}>
-                Nearest deadline: {formatDate(selectedHotspot.nearestDeadline)}
+              <p style={{ margin: '12px 0 0', color: 'var(--text-muted)', fontSize: 10 }}>
+                Nearest: {formatDate(selectedHotspot.nearestDeadline)}
               </p>
             </div>
           </motion.aside>

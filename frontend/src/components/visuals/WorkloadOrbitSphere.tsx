@@ -142,15 +142,15 @@ export function WorkloadOrbitSphere({
 
   const interiorMaterial = useMemo(() => {
     return createParticleMaterial(
-      '#ffffff',
+      palette.particleCore,
       WORKLOAD_SPHERE_CONFIG.interiorOpacity,
       WORKLOAD_SPHERE_CONFIG.interiorPointScale,
     )
-  }, [])
+  }, [palette.particleCore])
 
   const shellMaterial = useMemo(() => {
-    return createParticleMaterial('#ffffff', WORKLOAD_SPHERE_CONFIG.shellOpacity, WORKLOAD_SPHERE_CONFIG.shellPointScale)
-  }, [])
+    return createParticleMaterial(palette.particleShell, WORKLOAD_SPHERE_CONFIG.shellOpacity, WORKLOAD_SPHERE_CONFIG.shellPointScale)
+  }, [palette.particleShell])
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return
