@@ -32,6 +32,10 @@
   --workload-hotspot-critical: #c27a59;
   --workload-hotspot-done: #8d9b86;
   --workload-hotspot-selected: #d69a68;
+  --workload-particle-core: #d8d2c7;
+  --workload-particle-shell: #f0ede4;
+  --workload-scene-bg: #070706;
+  --workload-scene-overlay: radial-gradient(ellipse at 70% 24%, rgba(216, 154, 104, 0.08), transparent 18rem);
   --workload-card-bg: rgba(18, 18, 16, 0.78);
   --workload-card-soft: rgba(255, 255, 255, 0.07);
 

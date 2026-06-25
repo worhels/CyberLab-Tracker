@@ -13,9 +13,9 @@ const BLOOM_SIZE = 256
 const MAX_DPR = 1.5
 const CUBE_SCALE = 1.35
 
-const COUNT_EDGE = 8000
-const COUNT_MID = 6000
-const COUNT_CORE = 12000
+const COUNT_EDGE = 16000
+const COUNT_MID = 12000
+const COUNT_CORE = 22000
 const MIN_CORE = 300
 
 const START_ROTATION_X = -0.18
@@ -187,8 +187,8 @@ void main() {
 
   float perspective = clamp(2.35 / max(0.72, -mvPos.z), 0.55, 1.7);
   float sizeScale = mix(0.45, 1.0, assembly);
-  float pulse = 1.0 + sin(uTime * (1.4 + speed) + phase) * 0.12;
-  gl_PointSize = clamp(size * pulse * sizeScale * uDpr * perspective, 0.5, 9.0);
+  float pulse = 1.0 + sin(uTime * (1.4 + speed) + phase) * 0.06;
+  gl_PointSize = clamp(size * pulse * sizeScale * uDpr * perspective, 0.3, 5.0);
 
   vAlpha = baseAlpha * mix(0.48, 1.0, assembly) * mix(0.68, 1.0, uFill);
 }
@@ -205,14 +205,21 @@ varying float vAlpha;
 void main() {
   if (vAlpha < 0.005) discard;
 
-  float distanceFromCenter = distance(gl_PointCoord, vec2(0.5));
-  float disc = 1.0 - smoothstep(0.15, 0.5, distanceFromCenter);
-  float soft = smoothstep(0.5, 0.0, distanceFromCenter) * uGlow * 0.22;
-  float alpha = (disc + soft) * vAlpha;
+  vec2 uv = gl_PointCoord - 0.5;
+  float d = length(uv);
+
+  float core = 1.0 - smoothstep(0.0, 0.16, d);
+  float halo = (1.0 - smoothstep(0.16, 0.5, d)) * 0.35;
+
+  float fx = exp(-abs(uv.x) * 22.0) * (1.0 - smoothstep(0.0, 0.48, abs(uv.y)));
+  float fy = exp(-abs(uv.y) * 22.0) * (1.0 - smoothstep(0.0, 0.48, abs(uv.x)));
+  float flare = (fx + fy) * uGlow * 0.28;
+
+  float alpha = (core + halo + flare) * vAlpha;
 
   if (alpha < 0.004) discard;
 
-  gl_FragColor = vec4(uColor + soft, alpha);
+  gl_FragColor = vec4(uColor + flare * 0.12, alpha);
 }
 `
 
@@ -438,7 +445,7 @@ function BloomComposer({ assemblyRef, pressureRef }: BloomComposerProps) {
 
   useEffect(() => {
     const composer = new EffectComposer(gl)
-    const bloom = new UnrealBloomPass(new THREE.Vector2(BLOOM_SIZE, BLOOM_SIZE), 0.45, 0.34, 0.8)
+    const bloom = new UnrealBloomPass(new THREE.Vector2(BLOOM_SIZE, BLOOM_SIZE), 0.28, 0.28, 0.82)
 
     bloom.setSize(BLOOM_SIZE, BLOOM_SIZE)
     composer.addPass(new RenderPass(scene, camera))
@@ -663,11 +670,11 @@ export function CrisisVolumeCube({
     return {
       edgeGeo: buildLayerGeometry(
         COUNT_EDGE,
-        (layerRandom) => (layerRandom() < 0.55 ? sampleEdge(layerRandom) : sampleCorner(layerRandom)),
+        (layerRandom) => (layerRandom() < 0.25 ? sampleCorner(layerRandom) : sampleEdge(layerRandom)),
         CUBE_SCALE,
         (random() * 0xfffff) | 0,
         0.72,
-        2.45,
+        1.55,
       ),
       midGeo: buildLayerGeometry(
         COUNT_MID,
@@ -675,15 +682,15 @@ export function CrisisVolumeCube({
         CUBE_SCALE * 0.97,
         (random() * 0xfffff) | 0,
         0.34,
-        1.65,
+        1.05,
       ),
       coreGeo: buildLayerGeometry(
         Math.max(COUNT_CORE, MIN_CORE),
         sampleInterior,
         CUBE_SCALE * 0.75,
         (random() * 0xfffff) | 0,
-        0.86,
-        2.85,
+        0.52,
+        1.8,
       ),
     }
   }, [seed])
