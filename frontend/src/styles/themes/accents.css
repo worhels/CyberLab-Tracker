@@ -1,0 +1,34 @@
+:root[data-accent="blue"] {
+  --accent-info: #4b8ec8;
+  --accent-primary: #4b8ec8;
+  --accent-primary-rgb: 75, 142, 200;
+  --accent-contrast: #ffffff;
+}
+
+:root[data-accent="purple"] {
+  --accent-info: #8b5cf6;
+  --accent-primary: #8b5cf6;
+  --accent-primary-rgb: 139, 92, 246;
+  --accent-contrast: #ffffff;
+}
+
+:root[data-accent="green"] {
+  --accent-info: #4fc87a;
+  --accent-primary: #4fc87a;
+  --accent-primary-rgb: 79, 200, 122;
+  --accent-contrast: #111111;
+}
+
+:root[data-accent="orange"] {
+  --accent-info: #f97316;
+  --accent-primary: #f97316;
+  --accent-primary-rgb: 249, 115, 22;
+  --accent-contrast: #111111;
+}
+
+:root[data-accent="red"] {
+  --accent-info: #c85050;
+  --accent-primary: #c85050;
+  --accent-primary-rgb: 200, 80, 80;
+  --accent-contrast: #ffffff;
+}

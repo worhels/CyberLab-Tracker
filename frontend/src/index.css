@@ -1,4 +1,9 @@
 @import './styles/tokens.css';
+@import './styles/themes/dark.css';
+@import './styles/themes/light.css';
+@import './styles/themes/zerkalo.css';
+@import './styles/themes/accents.css';
+@import './styles/themes/motion.css';
 @import './styles/neumorphism.css';
 
 @tailwind base;
@@ -7,10 +12,6 @@
 
 :root {
   color-scheme: dark;
-}
-
-:root.light {
-  color-scheme: light;
 }
 
 *, *::before, *::after {
@@ -886,26 +887,6 @@ textarea {
     background:
       radial-gradient(ellipse at 52% 45%, rgba(242, 240, 234, 0.055), transparent 33rem),
       var(--bg);
-  }
-
-  .zerkalo .pressure-field-background {
-    opacity: var(--pressure-field-opacity, 0.2);
-    background:
-      radial-gradient(ellipse at 88% 22%, rgba(244, 219, 203, 0.7), transparent 28rem),
-      radial-gradient(ellipse at 83% 82%, rgba(116, 161, 181, 0.42), transparent 26rem),
-      radial-gradient(ellipse at 13% 12%, rgba(3, 9, 8, 0.88), transparent 24rem),
-      linear-gradient(135deg, #0a100f 0%, #29302d 44%, #7d786f 70%, #dac8bb 100%);
-  }
-
-  .zerkalo .pressure-field-background__canvas {
-    opacity: 0.34;
-  }
-
-  .zerkalo .app-readability-overlay {
-    background:
-      radial-gradient(ellipse at 34% 18%, rgba(0, 0, 0, 0.28), transparent 26rem),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.2) 28%, rgba(0, 0, 0, 0.08) 72%, rgba(255, 255, 255, 0.1) 100%),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.36));
   }
 
   .pressure-field-background__canvas,

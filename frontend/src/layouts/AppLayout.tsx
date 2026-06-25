@@ -230,7 +230,7 @@ export function AppLayout() {
               }}
             >
               <LogOut size={16} />
-              <span style={{ ...sidebarTextStyle, maxWidth: isSidebarCollapsed ? 0 : '70px' }}>Logout</span>
+              <span style={{ ...sidebarTextStyle, maxWidth: isSidebarCollapsed ? 0 : '70px' }}>{t('logout')}</span>
             </button>
           </div>
         </div>

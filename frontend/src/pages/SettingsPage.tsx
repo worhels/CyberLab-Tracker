@@ -71,8 +71,8 @@ export function SettingsPage() {
     setSaveError('')
     setSavedMessage('')
     try {
-      await updateSettings(payload)
-      setSavedMessage(translate(settings?.language ?? 'en', 'settingsSaved'))
+      const nextSettings = await updateSettings(payload)
+      setSavedMessage(translate(nextSettings.language, 'settingsSaved'))
     } catch (err) {
       setSaveError(getErrorMessage(err))
     } finally {

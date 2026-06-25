@@ -24,6 +24,7 @@ export type TranslationKey =
   | 'interface'
   | 'language'
   | 'light'
+  | 'logout'
   | 'name'
   | 'navSubjects'
   | 'navTasks'
@@ -54,7 +55,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     comfortable: 'Обычный',
     compact: 'Компактный',
     crisisCube: 'Кризисный куб',
-    crisisCubeDescription: 'Показывать 3D-объем на странице Crisis Mode.',
+    crisisCubeDescription: 'Показывать 3D-объем на странице кризисного режима.',
     crisisMode: 'Кризисный режим',
     crisisModeSubtitle: 'Задачи с самым высоким риском, отсортированные по кризисному весу.',
     dashboard: 'Дашборд',
@@ -62,12 +63,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     dashboardSubtitle: 'Нагрузка, прогресс и ближайшие риски в одном рабочем экране.',
     dark: 'Темная',
     deadlineReminders: 'Напоминания о дедлайнах',
-    deadlineRemindersDescription: 'Оставить включенными поверхности с напоминаниями по срокам.',
+    deadlineRemindersDescription: 'Показывать поверхности с напоминаниями по срокам.',
     email: 'Email',
     english: 'Английский',
     interface: 'Интерфейс',
     language: 'Язык',
     light: 'Светлая',
+    logout: 'Выйти',
     name: 'Имя',
     navSubjects: 'Предметы',
     navTasks: 'Задачи',
@@ -97,7 +99,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     comfortable: 'Звичайний',
     compact: 'Компактний',
     crisisCube: 'Кризовий куб',
-    crisisCubeDescription: 'Показувати 3D-обсяг на сторінці Crisis Mode.',
+    crisisCubeDescription: 'Показувати 3D-обсяг на сторінці кризового режиму.',
     crisisMode: 'Кризовий режим',
     crisisModeSubtitle: 'Задачі з найвищим ризиком, відсортовані за кризовою вагою.',
     dashboard: 'Дашборд',
@@ -105,13 +107,14 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     dashboardSubtitle: 'Навантаження, прогрес і найближчі ризики в одному робочому екрані.',
     dark: 'Темна',
     deadlineReminders: 'Нагадування про дедлайни',
-    deadlineRemindersDescription: 'Залишити увімкненими поверхні з нагадуваннями про строки.',
+    deadlineRemindersDescription: 'Показувати поверхні з нагадуваннями про строки.',
     email: 'Email',
     english: 'Англійська',
     interface: 'Інтерфейс',
     language: 'Мова',
     light: 'Світла',
-    name: 'Імʼя',
+    logout: 'Вийти',
+    name: "Ім'я",
     navSubjects: 'Предмети',
     navTasks: 'Задачі',
     notSet: 'Не задано',
@@ -154,6 +157,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     interface: 'Interface',
     language: 'Language',
     light: 'Light',
+    logout: 'Logout',
     name: 'Name',
     navSubjects: 'Subjects',
     navTasks: 'Tasks',
