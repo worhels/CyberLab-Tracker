@@ -26,6 +26,15 @@
   --panel-border: rgba(255, 255, 255, 0.07);
   --surface-blur: none;
 
+  --workload-hotspot-empty: #5e5a52;
+  --workload-hotspot-active: #d8d2c7;
+  --workload-hotspot-warning: #bd8b5e;
+  --workload-hotspot-critical: #c27a59;
+  --workload-hotspot-done: #8d9b86;
+  --workload-hotspot-selected: #d69a68;
+  --workload-card-bg: rgba(18, 18, 16, 0.78);
+  --workload-card-soft: rgba(255, 255, 255, 0.07);
+
   --r-xs: 8px;
   --r-sm: 12px;
   --r-md: 18px;

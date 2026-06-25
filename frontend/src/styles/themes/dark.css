@@ -14,6 +14,14 @@
   --active-text: var(--accent-contrast);
   --panel-border: rgba(255, 255, 255, 0.07);
   --surface-blur: none;
+  --workload-hotspot-empty: #55514b;
+  --workload-hotspot-active: #d8d2c7;
+  --workload-hotspot-warning: #b98b62;
+  --workload-hotspot-critical: #bd765a;
+  --workload-hotspot-done: #87927f;
+  --workload-hotspot-selected: #d19a68;
+  --workload-card-bg: rgba(18, 18, 16, 0.82);
+  --workload-card-soft: rgba(255, 255, 255, 0.07);
 
   --shadow-lg:
     10px 10px 28px rgba(0, 0, 0, 0.72),

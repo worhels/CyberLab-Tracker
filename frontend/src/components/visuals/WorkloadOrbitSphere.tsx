@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import type { Subject, Task } from '../../types'
 import {
-  calculateTaskLoad,
   generateInteriorCloud,
-  generateOrbitBand,
   generateOuterShell,
-  stableHash,
   type ParticleGeometryData,
 } from './workloadMath'
+import { WorkloadHotspots } from './WorkloadHotspots'
+import type { WorkloadHotspotPalette } from './WorkloadHotspotPoint'
+import type { WorkloadHotspot } from './workloadHotspotData'
 
 export const WORKLOAD_SPHERE_CONFIG = {
   sphereRadius: 2.5,
@@ -17,29 +16,20 @@ export const WORKLOAD_SPHERE_CONFIG = {
   interiorParticleCount: 140_000,
   shellParticleCount: 42_000,
 
-  minLineParticles: 600,
-  maxLineParticles: 9_000,
-
   interiorPointScale: 0.62,
   shellPointScale: 0.72,
 
-  minLinePointScale: 0.75,
-  maxLinePointScale: 1.85,
-
   interiorOpacity: 0.26,
   shellOpacity: 0.38,
-  lineOpacity: 0.28,
 
   subjectTint: 0.08,
 
   glowStrength: 0.85,
   noiseAmount: 0.026,
-  lineSpread: 0.055,
 
   rotationSpeed: 0.055,
   breathingAmount: 0.003,
 
-  maxRenderedTasks: 14,
   dprCap: 1.25,
 }
 
@@ -120,16 +110,23 @@ function createParticleMaterial(
 }
 
 interface WorkloadOrbitSphereProps {
-  tasks: Task[]
-  subjects: Subject[]
+  hotspots: WorkloadHotspot[]
+  hoveredHotspotId: number | null
+  selectedHotspotId: number | null
+  palette: WorkloadHotspotPalette
+  onHotspotHover: (id: number | null) => void
+  onHotspotSelect: (id: number) => void
 }
 
-export function WorkloadOrbitSphere({ tasks, subjects }: WorkloadOrbitSphereProps) {
+export function WorkloadOrbitSphere({
+  hotspots,
+  hoveredHotspotId,
+  selectedHotspotId,
+  palette,
+  onHotspotHover,
+  onHotspotSelect,
+}: WorkloadOrbitSphereProps) {
   const groupRef = useRef<THREE.Group>(null)
-
-  const subjectsMap = useMemo(() => {
-    return new Map(subjects.map((subject) => [String(subject.id), subject]))
-  }, [subjects])
 
   const interiorGeometry = useMemo(() => {
     return createParticleGeometry(
@@ -155,52 +152,6 @@ export function WorkloadOrbitSphere({ tasks, subjects }: WorkloadOrbitSphereProp
     return createParticleMaterial('#ffffff', WORKLOAD_SPHERE_CONFIG.shellOpacity, WORKLOAD_SPHERE_CONFIG.shellPointScale)
   }, [])
 
-  const visualTasks = useMemo(() => {
-    return tasks
-      .map((task) => ({
-        task,
-        metrics: calculateTaskLoad(task, subjectsMap),
-      }))
-      .sort((a, b) => b.metrics.load - a.metrics.load)
-      .slice(0, WORKLOAD_SPHERE_CONFIG.maxRenderedTasks)
-  }, [tasks, subjectsMap])
-
-  const orbitItems = useMemo(() => {
-    return visualTasks.map(({ task, metrics }) => {
-      const particleCount = Math.round(
-        WORKLOAD_SPHERE_CONFIG.minLineParticles +
-          metrics.load * (WORKLOAD_SPHERE_CONFIG.maxLineParticles - WORKLOAD_SPHERE_CONFIG.minLineParticles),
-      )
-
-      const pointScale =
-        WORKLOAD_SPHERE_CONFIG.minLinePointScale +
-        metrics.load * (WORKLOAD_SPHERE_CONFIG.maxLinePointScale - WORKLOAD_SPHERE_CONFIG.minLinePointScale)
-
-      const opacity = WORKLOAD_SPHERE_CONFIG.lineOpacity * WORKLOAD_SPHERE_CONFIG.glowStrength * (0.22 + metrics.load * 0.42)
-
-      const seed = stableHash(`${task.id}-${task.subject_id}-${task.title}-${task.deadline ?? ''}`)
-
-      const geometry = createParticleGeometry(
-        generateOrbitBand({
-          radius: WORKLOAD_SPHERE_CONFIG.sphereRadius * 1.015,
-          particleCount,
-          load: metrics.load,
-          seed,
-          noiseAmount: WORKLOAD_SPHERE_CONFIG.noiseAmount,
-          lineSpread: WORKLOAD_SPHERE_CONFIG.lineSpread,
-        }),
-      )
-
-      const material = createParticleMaterial('#ffffff', opacity, pointScale)
-
-      return {
-        id: task.id,
-        geometry,
-        material,
-      }
-    })
-  }, [visualTasks])
-
   useFrame(({ clock }) => {
     if (!groupRef.current) return
 
@@ -223,26 +174,20 @@ export function WorkloadOrbitSphere({ tasks, subjects }: WorkloadOrbitSphereProp
     }
   }, [interiorGeometry, shellGeometry, interiorMaterial, shellMaterial])
 
-  useEffect(() => {
-    const currentOrbitItems = orbitItems
-
-    return () => {
-      currentOrbitItems.forEach((item) => {
-        item.geometry.dispose()
-        item.material.dispose()
-      })
-    }
-  }, [orbitItems])
-
   return (
     <group ref={groupRef}>
       <points geometry={interiorGeometry} material={interiorMaterial} frustumCulled={false} />
 
       <points geometry={shellGeometry} material={shellMaterial} frustumCulled={false} />
 
-      {orbitItems.map((item) => (
-        <points key={item.id} geometry={item.geometry} material={item.material} frustumCulled={false} />
-      ))}
+      <WorkloadHotspots
+        hotspots={hotspots}
+        hoveredHotspotId={hoveredHotspotId}
+        selectedHotspotId={selectedHotspotId}
+        palette={palette}
+        onHover={onHotspotHover}
+        onSelect={onHotspotSelect}
+      />
     </group>
   )
 }
