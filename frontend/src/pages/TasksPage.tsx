@@ -4,6 +4,7 @@ import { deleteTask, getTasks, updateTaskStatus } from '../api/tasks'
 import { deleteSubject, getSubjects } from '../api/subjects'
 import { Badge } from '../components/Badge'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { DeadlineBadge } from '../components/DeadlineBadge'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
 import { WorkloadSphereCanvas } from '../components/visuals/WorkloadSphereCanvas'
@@ -11,13 +12,28 @@ import type { Subject, Task, TaskPriority, TaskStatus, TaskType } from '../types
 import { getErrorMessage } from '../utils/errors'
 import { formatDate, humanize } from '../utils/format'
 import { taskPriorities, taskStatuses, taskTypes } from '../utils/options'
+import { getQuickTaskFilterParams } from '../utils/taskFilters'
+import type { TaskQuickFilter } from '../utils/taskFilters'
 
 const TASKS_PER_PAGE = 8
 const taskRowEase = [0.22, 1, 0.36, 1] as const
+const quickFilters: Array<{ value: Exclude<TaskQuickFilter, ''>; label: string }> = [
+  { value: 'due_today', label: 'Due today' },
+  { value: 'this_week', label: 'This week' },
+  { value: 'overdue', label: 'Overdue' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'active', label: 'Active' },
+]
 type ListMode = 'all' | 'tasks' | 'subjects'
 type DeleteTarget =
   | { kind: 'task'; id: number; name: string }
   | { kind: 'subject'; id: number; name: string }
+interface AppliedTaskFilters {
+  search: string
+  priority: TaskPriority | ''
+  type: TaskType | ''
+  quick: TaskQuickFilter
+}
 
 export function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -27,15 +43,17 @@ export function TasksPage() {
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | ''>('')
   const [typeFilter, setTypeFilter] = useState<TaskType | ''>('')
+  const [quickFilter, setQuickFilter] = useState<TaskQuickFilter>('')
   const [listMode, setListMode] = useState<ListMode>('all')
   const [page, setPage] = useState(1)
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [appliedFilters, setAppliedFilters] = useState<{
-    search: string
-    priority: TaskPriority | ''
-    type: TaskType | ''
-  }>({ search: '', priority: '', type: '' })
+  const [appliedFilters, setAppliedFilters] = useState<AppliedTaskFilters>({
+    search: '',
+    priority: '',
+    type: '',
+    quick: '',
+  })
 
   const subjectById = useMemo(() => {
     return new Map(subjects.map((subject) => [subject.id, subject]))
@@ -61,6 +79,7 @@ export function TasksPage() {
           search: appliedFilters.search || undefined,
           priority: appliedFilters.priority || undefined,
           type: appliedFilters.type || undefined,
+          ...getQuickTaskFilterParams(appliedFilters.quick),
         }),
       ])
       setSubjects(subjectsData)
@@ -82,7 +101,43 @@ export function TasksPage() {
 
   const onStatusChange = async (taskId: number, status: TaskStatus) => {
     const updated = await updateTaskStatus(taskId, status)
-    setTasks((current) => current.map((task) => (task.id === taskId ? updated : task)))
+    const activeQuickFilter =
+      appliedFilters.quick !== '' && appliedFilters.quick !== 'completed'
+    const noLongerMatches =
+      (appliedFilters.quick === 'completed' && updated.status !== 'accepted') ||
+      (activeQuickFilter && updated.status === 'accepted')
+
+    setTasks((current) =>
+      noLongerMatches
+        ? current.filter((task) => task.id !== taskId)
+        : current.map((task) => (task.id === taskId ? updated : task)),
+    )
+  }
+
+  const applyFilters = () => {
+    setPage(1)
+    setAppliedFilters({
+      search,
+      priority: priorityFilter,
+      type: typeFilter,
+      quick: quickFilter,
+    })
+  }
+
+  const selectQuickFilter = (value: Exclude<TaskQuickFilter, ''>) => {
+    const nextFilter = quickFilter === value ? '' : value
+    setQuickFilter(nextFilter)
+    setPage(1)
+    setAppliedFilters((current) => ({ ...current, quick: nextFilter }))
+  }
+
+  const resetFilters = () => {
+    setSearch('')
+    setPriorityFilter('')
+    setTypeFilter('')
+    setQuickFilter('')
+    setPage(1)
+    setAppliedFilters({ search: '', priority: '', type: '', quick: '' })
   }
 
   const confirmDelete = async () => {
@@ -152,21 +207,30 @@ export function TasksPage() {
                 </option>
               ))}
             </select>
-            <button
-              className="btn-secondary"
-              type="button"
-              onClick={() => {
-                setPage(1)
-                setAppliedFilters({
-                  search,
-                  priority: priorityFilter,
-                  type: typeFilter,
-                })
-              }}
-            >
-              Apply
-            </button>
-
+            <div className="tasks-filter-actions">
+              <button className="btn-secondary" type="button" onClick={applyFilters}>
+                Apply
+              </button>
+              <button className="tasks-filter-reset" type="button" onClick={resetFilters}>
+                Reset
+              </button>
+            </div>
+          </div>
+          <div className="tasks-quick-filter-bar" aria-label="Quick task filters">
+            <span className="tasks-quick-filter-label">Quick filters</span>
+            <div className="tasks-quick-filter-list">
+              {quickFilters.map((filter) => (
+                <button
+                  key={filter.value}
+                  className={`tasks-quick-filter${quickFilter === filter.value ? ' tasks-quick-filter--active' : ''}`}
+                  type="button"
+                  aria-pressed={quickFilter === filter.value}
+                  onClick={() => selectQuickFilter(filter.value)}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="tasks-panel__body">
             {isLoading ? (
@@ -213,7 +277,10 @@ export function TasksPage() {
                                   </div>
                                 </td>
                                 <td className="tasks-table__subject-cell">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
-                                <td className="app-muted">{formatDate(task.deadline)}</td>
+                                <td className="tasks-table__deadline-cell">
+                                  <span className="app-muted">{formatDate(task.deadline)}</span>
+                                  <DeadlineBadge deadline={task.deadline} status={task.status} />
+                                </td>
                                 <td><Badge value={task.type} variant="type" /></td>
                                 <td><Badge value={task.priority} variant="priority" /></td>
                                 <td>

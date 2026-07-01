@@ -23,6 +23,7 @@ def ensure_subject_exists(db: Session, subject_id: int, user_id: int) -> None:
 @router.get("", response_model=list[TaskRead])
 def list_tasks(
     status_filter: Annotated[TaskStatus | None, Query(alias="status")] = None,
+    active_only: bool = False,
     subject_id: int | None = None,
     priority: TaskPriority | None = None,
     task_type: Annotated[TaskType | None, Query(alias="type")] = None,
@@ -43,6 +44,7 @@ def list_tasks(
         db,
         current_user.id,
         status=status_filter,
+        active_only=active_only,
         subject_id=subject_id,
         priority=priority,
         task_type=task_type,

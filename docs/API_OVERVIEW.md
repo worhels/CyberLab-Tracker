@@ -44,6 +44,7 @@ Authorization: Bearer <access_token>
 Task list filters:
 
 - `status`
+- `active_only` (exclude accepted tasks)
 - `subject_id`
 - `priority`
 - `type`
