@@ -34,6 +34,8 @@ tests, and visible GitHub repository metadata.
 - Task status updates
 - Accessible confirmation dialogs for task and subject deletion
 - Task search, priority/type filters, list modes, and pagination
+- Due-date/status quick filters with one-action reset
+- Task deadline severity badges
 - Dashboard priority queue, subject progress, and recent activity widgets
 - User settings model, migration, CRUD layer, API endpoint, and frontend context
 - Persisted language, theme, accent color, dashboard density, Crisis Cube,
@@ -50,6 +52,7 @@ tests, and visible GitHub repository metadata.
 - Crisis metrics unit coverage
 - User settings unit coverage
 - Automated subject and task ownership coverage
+- Full subject and task CRUD integration coverage
 - Repository CI, docs, issue templates, and security docs
 
 ## Phase 0: Security Hardening
@@ -136,12 +139,12 @@ predictable security baseline before adding larger workflows.
 - [x] Filter by task type
 - [x] Switch between all/tasks/subjects list modes
 - [x] Paginate task results
-- [ ] Due today
-- [ ] This week
-- [ ] Overdue
-- [ ] Completed
-- [ ] Active
-- [ ] Reset filters
+- [x] Due today
+- [x] This week
+- [x] Overdue
+- [x] Completed
+- [x] Active
+- [x] Reset filters
 
 ### Deadline Signals
 
@@ -149,10 +152,10 @@ predictable security baseline before adding larger workflows.
 - [x] Dashboard nearest deadline
 - [x] Crisis scoring accounts for overdue, today, tomorrow, and 3-day pressure
 - [x] Subject workload severity states account for overdue and near-deadline tasks
-- [ ] Deadline in 3 days badge
-- [ ] Due today badge
-- [ ] Overdue badge
-- [ ] Task-level deadline severity styles
+- [x] Deadline in 3 days badge
+- [x] Due today badge
+- [x] Overdue badge
+- [x] Task-level deadline severity styles
 
 ### Subject Statistics
 
@@ -210,8 +213,8 @@ predictable security baseline before adding larger workflows.
 - [x] Crisis metrics unit test
 - [x] User settings default/update tests
 - [x] Auth integration tests
-- [ ] Task CRUD integration tests
-- [ ] Subject CRUD integration tests
+- [x] Task CRUD integration tests
+- [x] Subject CRUD integration tests
 - [x] Task ownership denial tests
 - [x] Subject ownership denial tests
 - [ ] Standardize API error responses

@@ -23,6 +23,10 @@ All notable changes to CyberLab Tracker are documented here.
   rotation documentation.
 - Accessible confirmation dialogs for task and subject deletion, including
   cascade warnings for subjects.
+- Task quick filters for due today, this week, overdue, completed, and active
+  work, with one-action filter reset.
+- Task-level deadline badges for overdue, due-today, and three-day warning states.
+- Full subject and task CRUD integration coverage.
 
 ### Changed
 
@@ -34,6 +38,8 @@ All notable changes to CyberLab Tracker are documented here.
 - Kept task and subject lists synchronized after confirmed subject deletion.
 - Audited roadmap completion markers against the current implementation and
   visible GitHub repository metadata.
+- Added an `active_only` task query filter so deadline views exclude accepted
+  work.
 
 ### Removed
 

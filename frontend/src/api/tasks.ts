@@ -3,6 +3,7 @@ import type { Task, TaskPayload, TaskPriority, TaskStatus, TaskType } from '../t
 
 export interface TaskFilters {
   status?: TaskStatus
+  active_only?: boolean
   subject_id?: number
   priority?: TaskPriority
   type?: TaskType

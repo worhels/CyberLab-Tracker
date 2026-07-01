@@ -901,7 +901,7 @@ textarea {
 
   .tasks-panel__toolbar {
     display: grid;
-    grid-template-columns: 230px minmax(18rem, 1fr) 160px 150px 104px;
+    grid-template-columns: 230px minmax(12rem, 1fr) 130px 120px 146px;
     gap: 12px;
     align-items: center;
     padding: 18px;
@@ -943,8 +943,84 @@ textarea {
     width: 100%;
   }
 
-  .tasks-panel__toolbar .btn-secondary {
-    width: 104px;
+  .tasks-filter-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .tasks-filter-actions .btn-secondary {
+    width: auto;
+  }
+
+  .tasks-filter-reset {
+    min-height: 42px;
+    padding-inline: 0.45rem;
+    color: var(--text-faint);
+    border: 0;
+    background: transparent;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition:
+      color 160ms ease,
+      background 160ms ease;
+  }
+
+  .tasks-filter-reset:hover {
+    color: var(--text-main);
+    background: var(--surface-hover);
+  }
+
+  .tasks-quick-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(255, 255, 255, 0.018);
+  }
+
+  .tasks-quick-filter-label {
+    flex-shrink: 0;
+    color: var(--text-faint);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .tasks-quick-filter-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .tasks-quick-filter {
+    min-height: 32px;
+    padding: 0.38rem 0.66rem;
+    color: var(--text-muted);
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    font-size: 0.7rem;
+    font-weight: 720;
+    transition:
+      transform 160ms ease,
+      color 160ms ease,
+      border-color 160ms ease,
+      background 160ms ease;
+  }
+
+  .tasks-quick-filter:hover {
+    transform: translateY(-1px);
+    color: var(--text-main);
+    border-color: rgba(var(--accent-primary-rgb), 0.32);
+  }
+
+  .tasks-quick-filter--active {
+    color: var(--active-text);
+    border-color: rgba(var(--accent-primary-rgb), 0.48);
+    background: var(--active);
   }
 
   .tasks-panel__body {
@@ -1280,6 +1356,43 @@ textarea {
     color: #b7b4aa;
   }
 
+  .tasks-table__deadline-cell {
+    display: grid;
+    justify-items: start;
+    gap: 0.42rem;
+  }
+
+  .deadline-badge {
+    display: inline-flex;
+    min-height: 1.42rem;
+    align-items: center;
+    padding: 0.18rem 0.46rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 0.61rem;
+    font-weight: 780;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .deadline-badge--overdue {
+    color: #efb4ab;
+    border-color: rgba(227, 102, 91, 0.3);
+    background: rgba(128, 43, 37, 0.22);
+  }
+
+  .deadline-badge--today {
+    color: #ebc66f;
+    border-color: rgba(222, 180, 72, 0.3);
+    background: rgba(123, 91, 24, 0.2);
+  }
+
+  .deadline-badge--soon {
+    color: #d8c48b;
+    border-color: rgba(216, 196, 139, 0.23);
+    background: rgba(134, 102, 35, 0.13);
+  }
+
   .tasks-table__action-cell {
     text-align: right;
   }
@@ -1402,6 +1515,15 @@ textarea {
     .tasks-panel__toolbar .btn-secondary,
     .tasks-filter-select {
       width: 100%;
+    }
+
+    .tasks-filter-actions {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .tasks-quick-filter-bar {
+      align-items: flex-start;
+      flex-direction: column;
     }
   }
 
@@ -2077,9 +2199,27 @@ textarea {
   }
 
   :root.light .tasks-panel__toolbar,
+  :root.light .tasks-quick-filter-bar,
   :root.light .tasks-panel__footer,
   :root.light .tasks-subject-list {
     border-color: var(--panel-border);
+  }
+
+  :root.light .tasks-quick-filter-bar {
+    background: rgba(43, 36, 27, 0.025);
+  }
+
+  :root.light .deadline-badge--overdue {
+    color: #ad3b35;
+    border-color: rgba(181, 68, 60, 0.24);
+    background: rgba(181, 68, 60, 0.1);
+  }
+
+  :root.light .deadline-badge--today,
+  :root.light .deadline-badge--soon {
+    color: #885c10;
+    border-color: rgba(184, 137, 37, 0.24);
+    background: rgba(200, 168, 75, 0.13);
   }
 
   :root.light .tasks-panel__footer {

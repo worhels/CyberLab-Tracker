@@ -23,6 +23,7 @@ def list_tasks(
     db: Session,
     user_id: int,
     status: TaskStatus | None = None,
+    active_only: bool = False,
     subject_id: int | None = None,
     priority: TaskPriority | None = None,
     task_type: TaskType | None = None,
@@ -34,6 +35,9 @@ def list_tasks(
 
     if status is not None:
         statement = statement.where(Task.status == status)
+
+    if active_only:
+        statement = statement.where(Task.status != TaskStatus.ACCEPTED)
 
     if subject_id is not None:
         statement = statement.where(Task.subject_id == subject_id)
