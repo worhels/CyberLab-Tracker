@@ -6,7 +6,10 @@ security hardening path and portfolio-grade repository presentation.
 
 ## Current Status
 
-Last updated: June 25, 2026.
+Last updated: July 2, 2026.
+
+Status markers below were audited against the current implementation, automated
+tests, and visible GitHub repository metadata.
 
 ### Done
 
@@ -21,6 +24,7 @@ Last updated: June 25, 2026.
 - Soft UI redesign with Zerkalo, dark, light, and system theme support
 - Light-theme normalization across shell, cards, forms, badges, tables, and task views
 - Route-aware pressure-field visual backgrounds
+- Automatic viewport/CPU quality tiers for the authentication visual
 - Collapsible desktop sidebar and responsive mobile navigation
 - Page transitions and route fallback
 - Crisis Volume 3D visualization
@@ -28,6 +32,7 @@ Last updated: June 25, 2026.
 - Unified subject/task creation surface
 - Basic CRUD for subjects and tasks
 - Task status updates
+- Accessible confirmation dialogs for task and subject deletion
 - Task search, priority/type filters, list modes, and pagination
 - Dashboard priority queue, subject progress, and recent activity widgets
 - User settings model, migration, CRUD layer, API endpoint, and frontend context
@@ -37,12 +42,14 @@ Last updated: June 25, 2026.
 - JWT required claims
 - Generic authentication errors
 - Auth endpoint rate limiting
+- Auth integration coverage for registration, login, token rejection, and rate limits
 - Dummy password verification for missing users
 - Explicit CORS configuration
 - API docs disabled outside debug mode
 - Completed-task filtering in Crisis Mode
 - Crisis metrics unit coverage
 - User settings unit coverage
+- Automated subject and task ownership coverage
 - Repository CI, docs, issue templates, and security docs
 
 ## Phase 0: Security Hardening
@@ -60,22 +67,22 @@ predictable security baseline before adding larger workflows.
 - [x] Reject tokens with missing or invalid `type`
 - [x] Make token expiration configurable through environment variables
 - [x] Return the same auth error for wrong email and wrong password
-- [ ] Add integration coverage for expired tokens
-- [ ] Add integration coverage for malformed tokens
+- [x] Add integration coverage for expired tokens
+- [x] Add integration coverage for malformed tokens
 
 ### Password Hashing
 
 - [x] Centralize password hashing logic
 - [x] Configure bcrypt rounds
 - [x] Use dummy hash verification for missing users
-- [ ] Document password policy expectations
+- [x] Document password policy expectations
 
 ### Rate Limiting
 
 - [x] Add rate limiting to `/auth/login`
 - [x] Add rate limiting to `/auth/register`
-- [ ] Add tests for rate limit behavior
-- [ ] Consider persistent rate limiting if the app gets deployed beyond local use
+- [x] Add tests for rate limit behavior
+- [x] Consider persistent rate limiting if the app gets deployed beyond local use
 
 ### CORS And API Docs
 
@@ -89,8 +96,8 @@ predictable security baseline before adding larger workflows.
 - [x] Subject endpoints filter by current user
 - [x] Task endpoints filter by current user through subject ownership
 - [x] Dashboard queries filter by current user
-- [ ] Add automated ownership tests for subject access
-- [ ] Add automated ownership tests for task access
+- [x] Add automated ownership tests for subject access
+- [x] Add automated ownership tests for task access
 
 ### Docker And Secrets
 
@@ -99,7 +106,7 @@ predictable security baseline before adding larger workflows.
 - [x] Keep `.env` ignored
 - [x] Provide safe `.env.example`
 - [x] Keep PostgreSQL off the host port by default
-- [ ] Document secret rotation for local development
+- [x] Document secret rotation for local development
 
 ## Phase 1: UI Completion
 
@@ -115,8 +122,10 @@ predictable security baseline before adding larger workflows.
 - [x] Add user-controlled visual fallback for Crisis Mode
 - [x] Add reduced-motion preference plumbing
 - [x] Normalize light theme so dark-scene styles do not leak into light UI
-- [ ] Add confirmation for destructive actions
-- [ ] Add automated lower-performance device detection for visual effects
+- [x] Add confirmation for destructive actions
+- [x] Add automatic viewport/CPU quality selection to the authentication visual
+- [ ] Extend automatic performance-aware quality selection to workload and
+  Crisis visual effects
 
 ## Phase 2: Daily-use Features
 
@@ -139,18 +148,19 @@ predictable security baseline before adding larger workflows.
 - [x] Dashboard overdue count
 - [x] Dashboard nearest deadline
 - [x] Crisis scoring accounts for overdue, today, tomorrow, and 3-day pressure
+- [x] Subject workload severity states account for overdue and near-deadline tasks
 - [ ] Deadline in 3 days badge
 - [ ] Due today badge
 - [ ] Overdue badge
-- [ ] Severity levels
+- [ ] Task-level deadline severity styles
 
 ### Subject Statistics
 
 - [x] Dashboard subject progress preview
 - [x] Accepted/total ratio for top subjects
-- [ ] Total tasks per subject in dedicated subject detail view
+- [x] Total task count per subject in the workload detail card
+- [x] Active task count per subject in the workload hotspot preview
 - [ ] Completed tasks per subject in dedicated subject detail view
-- [ ] Active tasks per subject
 - [ ] Overdue tasks per subject
 - [ ] Accepted/completed ratio in full subject statistics
 
@@ -199,11 +209,11 @@ predictable security baseline before adding larger workflows.
 - [x] JWT missing-claim rejection test
 - [x] Crisis metrics unit test
 - [x] User settings default/update tests
-- [ ] Auth integration tests
+- [x] Auth integration tests
 - [ ] Task CRUD integration tests
 - [ ] Subject CRUD integration tests
-- [ ] Task ownership denial tests
-- [ ] Subject ownership denial tests
+- [x] Task ownership denial tests
+- [x] Subject ownership denial tests
 - [ ] Standardize API error responses
 - [ ] Split large frontend components
 - [x] Add shared PageHeader and EmptyState primitives

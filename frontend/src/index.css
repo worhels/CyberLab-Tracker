@@ -199,6 +199,151 @@ textarea {
     opacity: 0.58;
   }
 
+  .btn-danger {
+    display: inline-flex;
+    min-height: 2.55rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.9rem;
+    color: #fff7f5;
+    border: 1px solid rgba(216, 101, 91, 0.56);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(181, 68, 60, 0.96), rgba(138, 47, 42, 0.92));
+    box-shadow: 0 12px 30px rgba(89, 21, 18, 0.34);
+    font-size: 0.88rem;
+    font-weight: 700;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background 160ms ease,
+      opacity 160ms ease;
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(239, 144, 133, 0.76);
+    background: linear-gradient(180deg, rgba(199, 77, 68, 1), rgba(151, 51, 45, 0.96));
+  }
+
+  .btn-danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .confirm-dialog {
+    width: min(31rem, calc(100vw - 2rem));
+    max-width: none;
+    margin: auto;
+    padding: 0;
+    color: var(--text-main);
+    border: 1px solid rgba(216, 101, 91, 0.24);
+    border-radius: 18px;
+    outline: none;
+    background: rgba(24, 23, 21, 0.98);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.68),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+  }
+
+  .confirm-dialog[open] {
+    animation: confirm-dialog-enter 180ms ease-out;
+  }
+
+  .confirm-dialog::backdrop {
+    background: rgba(5, 5, 4, 0.72);
+    backdrop-filter: blur(7px);
+  }
+
+  .confirm-dialog__body {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1.4rem 1.4rem 1.2rem;
+  }
+
+  .confirm-dialog__icon {
+    display: grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    place-items: center;
+    color: #e19a91;
+    border: 1px solid rgba(216, 101, 91, 0.22);
+    border-radius: 12px;
+    background: rgba(181, 68, 60, 0.12);
+  }
+
+  .confirm-dialog__eyebrow {
+    margin-bottom: 0.32rem;
+    color: #c88880;
+    font-size: 0.65rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .confirm-dialog__title {
+    color: var(--text-main);
+    font-size: 1.16rem;
+    font-weight: 720;
+    line-height: 1.3;
+  }
+
+  .confirm-dialog__description {
+    margin-top: 0.6rem;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.58;
+  }
+
+  .confirm-dialog__description strong {
+    color: var(--text-main);
+    font-weight: 700;
+  }
+
+  .confirm-dialog__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.4rem;
+    border-top: 1px solid var(--panel-border);
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .confirm-dialog__warning {
+    color: var(--text-faint);
+    font-size: 0.72rem;
+  }
+
+  .confirm-dialog__actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.65rem;
+  }
+
+  .confirm-dialog__spinner {
+    animation: confirm-dialog-spin 800ms linear infinite;
+  }
+
+  @keyframes confirm-dialog-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes confirm-dialog-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .app-shell {
     position: relative;
     min-height: 100vh;
@@ -1879,6 +2024,31 @@ textarea {
     color: var(--text-main);
     border-color: rgba(var(--accent-primary-rgb), 0.28);
     background: var(--surface-hover);
+  }
+
+  :root.light .confirm-dialog {
+    border-color: rgba(181, 68, 60, 0.2);
+    background: rgba(255, 250, 241, 0.99);
+    box-shadow: 0 30px 80px rgba(65, 43, 32, 0.28);
+  }
+
+  :root.light .confirm-dialog::backdrop {
+    background: rgba(52, 43, 35, 0.42);
+  }
+
+  :root.light .confirm-dialog__icon {
+    color: #a43e38;
+    border-color: rgba(181, 68, 60, 0.2);
+    background: rgba(181, 68, 60, 0.08);
+  }
+
+  :root.light .confirm-dialog__eyebrow {
+    color: #a43e38;
+  }
+
+  :root.light .confirm-dialog__footer {
+    border-color: var(--panel-border);
+    background: rgba(43, 36, 27, 0.035);
   }
 
   :root.light .btn-primary,

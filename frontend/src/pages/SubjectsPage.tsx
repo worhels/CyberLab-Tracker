@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createSubject, deleteSubject, getSubjects } from '../api/subjects'
 import { createTask } from '../api/tasks'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
 import type { Subject, SubjectPayload, TaskPayload, TaskPriority, TaskStatus, TaskType } from '../types'
@@ -55,6 +56,8 @@ export function SubjectsPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const loadSubjects = async () => {
     setIsLoading(true)
@@ -139,9 +142,26 @@ export function SubjectsPage() {
     }
   }
 
-  const onDelete = async (id: number) => {
-    await deleteSubject(id)
-    setSubjects((current) => current.filter((subject) => subject.id !== id))
+  const confirmDelete = async () => {
+    if (!subjectToDelete) return
+
+    setIsDeleting(true)
+    setError('')
+    try {
+      await deleteSubject(subjectToDelete.id)
+      const remainingSubjects = subjects.filter((subject) => subject.id !== subjectToDelete.id)
+      setSubjects(remainingSubjects)
+      setTaskForm((current) =>
+        current.subject_id === String(subjectToDelete.id)
+          ? { ...current, subject_id: String(remainingSubjects[0]?.id ?? '') }
+          : current,
+      )
+      setSubjectToDelete(null)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -366,7 +386,12 @@ export function SubjectsPage() {
                     </div>
                     {subject.description ? <p className="app-muted mt-3 text-sm">{subject.description}</p> : null}
                   </div>
-                  <button className="btn-secondary" type="button" onClick={() => onDelete(subject.id)}>
+                  <button
+                    className="btn-secondary"
+                    type="button"
+                    aria-label={`Delete subject ${subject.name}`}
+                    onClick={() => setSubjectToDelete(subject)}
+                  >
                     Delete
                   </button>
                 </div>
@@ -377,6 +402,22 @@ export function SubjectsPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={subjectToDelete !== null}
+        title="Delete subject?"
+        description={
+          subjectToDelete ? (
+            <p>
+              <strong>{subjectToDelete.name}</strong> and all tasks assigned to it will be permanently deleted.
+            </p>
+          ) : null
+        }
+        confirmLabel="Delete subject"
+        isPending={isDeleting}
+        onCancel={() => setSubjectToDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </section>
   )
 }

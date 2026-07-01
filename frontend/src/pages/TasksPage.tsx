@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { deleteTask, getTasks, updateTaskStatus } from '../api/tasks'
 import { deleteSubject, getSubjects } from '../api/subjects'
 import { Badge } from '../components/Badge'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
 import { WorkloadSphereCanvas } from '../components/visuals/WorkloadSphereCanvas'
@@ -14,6 +15,9 @@ import { taskPriorities, taskStatuses, taskTypes } from '../utils/options'
 const TASKS_PER_PAGE = 8
 const taskRowEase = [0.22, 1, 0.36, 1] as const
 type ListMode = 'all' | 'tasks' | 'subjects'
+type DeleteTarget =
+  | { kind: 'task'; id: number; name: string }
+  | { kind: 'subject'; id: number; name: string }
 
 export function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -25,6 +29,8 @@ export function TasksPage() {
   const [typeFilter, setTypeFilter] = useState<TaskType | ''>('')
   const [listMode, setListMode] = useState<ListMode>('all')
   const [page, setPage] = useState(1)
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [appliedFilters, setAppliedFilters] = useState<{
     search: string
     priority: TaskPriority | ''
@@ -79,14 +85,26 @@ export function TasksPage() {
     setTasks((current) => current.map((task) => (task.id === taskId ? updated : task)))
   }
 
-  const onDelete = async (taskId: number) => {
-    await deleteTask(taskId)
-    setTasks((current) => current.filter((task) => task.id !== taskId))
-  }
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
 
-  const onSubjectDelete = async (subjectId: number) => {
-    await deleteSubject(subjectId)
-    setSubjects((current) => current.filter((subject) => subject.id !== subjectId))
+    setIsDeleting(true)
+    setError('')
+    try {
+      if (deleteTarget.kind === 'task') {
+        await deleteTask(deleteTarget.id)
+        setTasks((current) => current.filter((task) => task.id !== deleteTarget.id))
+      } else {
+        await deleteSubject(deleteTarget.id)
+        setSubjects((current) => current.filter((subject) => subject.id !== deleteTarget.id))
+        setTasks((current) => current.filter((task) => task.subject_id !== deleteTarget.id))
+      }
+      setDeleteTarget(null)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -208,7 +226,12 @@ export function TasksPage() {
                                   </select>
                                 </td>
                                 <td className="tasks-table__action-cell">
-                                  <button className="btn-secondary task-delete-button" type="button" onClick={() => onDelete(task.id)}>
+                                  <button
+                                    className="btn-secondary task-delete-button"
+                                    type="button"
+                                    aria-label={`Delete task ${task.title}`}
+                                    onClick={() => setDeleteTarget({ kind: 'task', id: task.id, name: task.title })}
+                                  >
                                     Delete
                                   </button>
                                 </td>
@@ -265,7 +288,12 @@ export function TasksPage() {
                             </div>
                             {subject.description ? <p className="app-muted mt-3 text-sm">{subject.description}</p> : null}
                           </div>
-                          <button className="btn-secondary task-delete-button" type="button" onClick={() => onSubjectDelete(subject.id)}>
+                          <button
+                            className="btn-secondary task-delete-button"
+                            type="button"
+                            aria-label={`Delete subject ${subject.name}`}
+                            onClick={() => setDeleteTarget({ kind: 'subject', id: subject.id, name: subject.name })}
+                          >
                             Delete
                           </button>
                         </article>
@@ -288,6 +316,25 @@ export function TasksPage() {
           </div>
         </section>
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete ${deleteTarget?.kind ?? 'item'}?`}
+        description={
+          deleteTarget ? (
+            <p>
+              <strong>{deleteTarget.name}</strong>
+              {deleteTarget.kind === 'subject'
+                ? ' and all tasks assigned to it will be permanently deleted.'
+                : ' will be permanently deleted.'}
+            </p>
+          ) : null
+        }
+        confirmLabel={`Delete ${deleteTarget?.kind ?? 'item'}`}
+        isPending={isDeleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </section>
   )
 }
