@@ -27,6 +27,8 @@ All notable changes to CyberLab Tracker are documented here.
   work, with one-action filter reset.
 - Task-level deadline badges for overdue, due-today, and three-day warning states.
 - Full subject and task CRUD integration coverage.
+- Selected-subject statistics for active, completed, overdue, critical, and
+  near-deadline work.
 
 ### Changed
 
@@ -40,6 +42,7 @@ All notable changes to CyberLab Tracker are documented here.
   visible GitHub repository metadata.
 - Added an `active_only` task query filter so deadline views exclude accepted
   work.
+- Replaced compressed mobile task-table rows with labeled, readable task cards.
 
 ### Removed
 

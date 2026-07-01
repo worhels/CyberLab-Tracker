@@ -36,6 +36,8 @@ tests, and visible GitHub repository metadata.
 - Task search, priority/type filters, list modes, and pagination
 - Due-date/status quick filters with one-action reset
 - Task deadline severity badges
+- Responsive task cards for small screens
+- Selected-subject active, completed, overdue, and progress statistics
 - Dashboard priority queue, subject progress, and recent activity widgets
 - User settings model, migration, CRUD layer, API endpoint, and frontend context
 - Persisted language, theme, accent color, dashboard density, Crisis Cube,
@@ -163,9 +165,9 @@ predictable security baseline before adding larger workflows.
 - [x] Accepted/total ratio for top subjects
 - [x] Total task count per subject in the workload detail card
 - [x] Active task count per subject in the workload hotspot preview
-- [ ] Completed tasks per subject in dedicated subject detail view
-- [ ] Overdue tasks per subject
-- [ ] Accepted/completed ratio in full subject statistics
+- [x] Completed task count per subject in the workload detail card
+- [x] Overdue task count per subject in the workload detail card
+- [x] Completed/total ratio in the workload detail card
 
 ### Export
 

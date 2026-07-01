@@ -53,7 +53,8 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
           >
             <p style={{ margin: 0, color: 'var(--text-main)', fontSize: 12, fontWeight: 760 }}>{previewHotspot.label}</p>
             <p style={{ margin: '5px 0 0', color: 'var(--text-muted)', fontSize: 11 }}>
-              {previewHotspot.activeTasksCount} active / {previewHotspot.deadlineTasksCount} deadline
+              {previewHotspot.activeTasksCount} active · {previewHotspot.completedTasksCount} completed
+              {previewHotspot.overdueTasksCount ? ` · ${previewHotspot.overdueTasksCount} overdue` : ''}
             </p>
           </motion.div>
         ) : null}
@@ -119,33 +120,28 @@ export function WorkloadSubjectCard({ hoveredHotspot, selectedHotspot }: Workloa
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
+              <div className="workload-subject-stats">
                 {[
                   ['Tasks', selectedHotspot.tasksCount],
+                  ['Active', selectedHotspot.activeTasksCount],
+                  ['Completed', selectedHotspot.completedTasksCount],
+                  ['Overdue', selectedHotspot.overdueTasksCount],
                   ['Critical', selectedHotspot.criticalTasksCount],
-                  ['Deadlines', selectedHotspot.deadlineTasksCount],
+                  ['Due ≤3d', selectedHotspot.deadlineTasksCount],
                 ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 12,
-                      borderBottom: '1px solid var(--panel-border)',
-                      paddingBottom: 7,
-                    }}
-                  >
-                    <p style={{ margin: 0, color: 'var(--text-faint)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase' }}>{label}</p>
-                    <p style={{ margin: 0, color: 'var(--text-main)', fontSize: 13, fontWeight: 780, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+                  <div key={label} className="workload-subject-stat">
+                    <p className="workload-subject-stat__label">{label}</p>
+                    <p className="workload-subject-stat__value">{value}</p>
                   </div>
                 ))}
               </div>
 
               <div style={{ marginTop: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, color: 'var(--text-muted)', fontSize: 11, fontWeight: 750 }}>
-                  <span>Progress</span>
-                  <span>{selectedHotspot.progress}%</span>
+                  <span>Completed</span>
+                  <span>
+                    {selectedHotspot.completedTasksCount}/{selectedHotspot.tasksCount} · {selectedHotspot.progress}%
+                  </span>
                 </div>
                 <div style={{ height: 5, marginTop: 8, borderRadius: 999, background: 'var(--workload-card-soft)', overflow: 'hidden' }}>
                   <div
