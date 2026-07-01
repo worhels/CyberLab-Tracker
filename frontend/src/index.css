@@ -814,6 +814,38 @@ textarea {
     backdrop-filter: var(--surface-blur);
   }
 
+  .workload-subject-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .workload-subject-stat {
+    min-width: 0;
+    padding: 8px 9px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    background: var(--workload-card-soft);
+  }
+
+  .workload-subject-stat__label {
+    margin: 0;
+    color: var(--text-faint);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .workload-subject-stat__value {
+    margin: 5px 0 0;
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 780;
+    font-variant-numeric: tabular-nums;
+  }
+
   .task-create-panel,
   .tasks-panel {
     position: relative;
@@ -1362,6 +1394,10 @@ textarea {
     gap: 0.42rem;
   }
 
+  .tasks-table__deadline-cell > .app-muted {
+    white-space: nowrap;
+  }
+
   .deadline-badge {
     display: inline-flex;
     min-height: 1.42rem;
@@ -1548,6 +1584,100 @@ textarea {
       grid-column: auto;
     }
 
+    .tasks-table-scroll {
+      overflow: visible;
+    }
+
+    .tasks-table {
+      display: block;
+      min-width: 0;
+      table-layout: auto;
+    }
+
+    .tasks-table thead {
+      display: none;
+    }
+
+    .tasks-table tbody {
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .tasks-table tbody tr {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 12px;
+      padding: 14px;
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      background: var(--surface-soft);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    }
+
+    .tasks-table tbody tr:hover {
+      background: var(--surface-hover);
+    }
+
+    .tasks-table tbody tr:last-child td,
+    .tasks-table td {
+      display: grid;
+      min-width: 0;
+      width: auto !important;
+      gap: 6px;
+      padding: 0;
+      border: 0;
+      text-align: left;
+    }
+
+    .tasks-table td::before {
+      color: var(--text-faint);
+      content: attr(data-label);
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tasks-table .tasks-table__task-cell,
+    .tasks-table .tasks-table__action-cell {
+      grid-column: 1 / -1;
+    }
+
+    .tasks-table .tasks-table__task-cell {
+      gap: 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .tasks-table .tasks-table__task-cell::before,
+    .tasks-table .tasks-table__action-cell::before {
+      display: none;
+    }
+
+    .tasks-table__title {
+      max-width: none;
+      font-size: 0.96rem;
+    }
+
+    .tasks-table__subject-cell {
+      overflow-wrap: anywhere;
+    }
+
+    .tasks-table__deadline-cell {
+      align-content: start;
+    }
+
+    .task-status-select {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .task-delete-button {
+      width: 100%;
+      border-color: rgba(216, 101, 91, 0.18);
+    }
+
     .tasks-panel__footer {
       align-items: stretch;
       flex-direction: column;
@@ -1555,6 +1685,16 @@ textarea {
 
     .tasks-pagination-controls {
       justify-content: space-between;
+    }
+  }
+
+  @media (max-width: 359px) {
+    .tasks-table tbody tr {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .tasks-table td {
+      grid-column: 1 / -1;
     }
   }
 }

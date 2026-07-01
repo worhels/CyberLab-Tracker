@@ -267,7 +267,7 @@ export function TasksPage() {
                                 }}
                                 exit={{ opacity: 0, y: -6, transition: { duration: 0.14, ease: taskRowEase } }}
                               >
-                                <td className="tasks-table__task-cell">
+                                <td className="tasks-table__task-cell" data-label="Task">
                                   <p className="tasks-table__title">{task.title}</p>
                                   {task.description ? <p className="app-muted mt-1 max-w-md text-xs">{task.description}</p> : null}
                                   <div className="app-muted mt-2 flex flex-wrap gap-2 text-xs">
@@ -276,14 +276,14 @@ export function TasksPage() {
                                     {task.moodle_url ? <a className="app-link" href={task.moodle_url} target="_blank">Moodle</a> : null}
                                   </div>
                                 </td>
-                                <td className="tasks-table__subject-cell">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
-                                <td className="tasks-table__deadline-cell">
+                                <td className="tasks-table__subject-cell" data-label="Subject">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
+                                <td className="tasks-table__deadline-cell" data-label="Deadline">
                                   <span className="app-muted">{formatDate(task.deadline)}</span>
                                   <DeadlineBadge deadline={task.deadline} status={task.status} />
                                 </td>
-                                <td><Badge value={task.type} variant="type" /></td>
-                                <td><Badge value={task.priority} variant="priority" /></td>
-                                <td>
+                                <td data-label="Type"><Badge value={task.type} variant="type" /></td>
+                                <td data-label="Priority"><Badge value={task.priority} variant="priority" /></td>
+                                <td className="tasks-table__status-cell" data-label="Status">
                                   <select className="field task-status-select" value={task.status} onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}>
                                     {taskStatuses.map((status) => (
                                       <option key={status} value={status}>
@@ -292,7 +292,7 @@ export function TasksPage() {
                                     ))}
                                   </select>
                                 </td>
-                                <td className="tasks-table__action-cell">
+                                <td className="tasks-table__action-cell" data-label="Actions">
                                   <button
                                     className="btn-secondary task-delete-button"
                                     type="button"

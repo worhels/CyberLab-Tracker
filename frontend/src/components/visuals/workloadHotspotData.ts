@@ -11,6 +11,8 @@ export interface WorkloadHotspot {
   status: WorkloadHotspotStatus
   tasksCount: number
   activeTasksCount: number
+  completedTasksCount: number
+  overdueTasksCount: number
   criticalTasksCount: number
   deadlineTasksCount: number
   progress: number
@@ -32,6 +34,11 @@ function daysUntil(value: string | null) {
   if (Number.isNaN(time)) return Number.POSITIVE_INFINITY
 
   return (time - Date.now()) / (1000 * 60 * 60 * 24)
+}
+
+function isNearDeadline(task: Task) {
+  const days = daysUntil(task.deadline)
+  return days >= 0 && days <= 3
 }
 
 function getHotspotStatus(tasks: Task[], activeTasks: Task[]): WorkloadHotspotStatus {
@@ -92,8 +99,10 @@ export function createWorkloadHotspots(subjects: Subject[], tasks: Task[]): Work
         status,
         tasksCount: subjectTasks.length,
         activeTasksCount: activeTasks.length,
+        completedTasksCount: acceptedTasksCount,
+        overdueTasksCount: activeTasks.filter((task) => daysUntil(task.deadline) < 0).length,
         criticalTasksCount: activeTasks.filter((task) => task.priority === 'critical' || task.status === 'debt').length,
-        deadlineTasksCount: activeTasks.filter((task) => daysUntil(task.deadline) <= 3).length,
+        deadlineTasksCount: activeTasks.filter(isNearDeadline).length,
         progress: subjectTasks.length ? Math.round((acceptedTasksCount / subjectTasks.length) * 100) : 0,
         nearestDeadline,
         subjectColor: subject.color || '#ffffff',
