@@ -11,12 +11,14 @@ import { type CSSProperties, useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { PageTransition } from '../components/PageTransition'
+import { MentorToggle } from '../components/mentor/MentorToggle'
 import { PressureFieldBackground } from '../components/visual/PressureFieldBackground'
 import type { PressureFieldVariant } from '../components/visual/PressureFieldBackground'
 import { useAuth } from '../context/AuthContext'
 import { useSettings } from '../context/SettingsContext'
 import { translate } from '../utils/i18n'
 import type { TranslationKey } from '../utils/i18n'
+import { getMentorPageContext } from '../utils/mentorContext'
 
 const navItems = [
   { to: '/dashboard', labelKey: 'dashboard', icon: Gauge },
@@ -55,6 +57,7 @@ export function AppLayout() {
   const [isCompactViewport, setIsCompactViewport] = useState(getIsCompactViewport)
   const background = getBackgroundConfig(location.pathname)
   const language = settings?.language ?? 'en'
+  const mentorContext = getMentorPageContext(location.search)
   const t = (key: TranslationKey) => translate(language, key)
   const sidebarToggleLabel = isSidebarCollapsed ? 'Open sidebar' : 'Collapse sidebar'
   const sidebarTextStyle: CSSProperties = {
@@ -292,6 +295,12 @@ export function AppLayout() {
           </AnimatePresence>
         </main>
       </div>
+      <MentorToggle
+        page={location.pathname}
+        language={language}
+        subjectId={mentorContext.subjectId}
+        taskId={mentorContext.taskId}
+      />
     </div>
   )
 }

@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { Download, FileJson, FileSpreadsheet, LoaderCircle } from 'lucide-react'
+import { getWorkspaceExport, saveWorkspaceExport } from '../api/export'
+import type { ExportFormat } from '../api/export'
 import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { useSettings } from '../context/SettingsContext'
@@ -65,6 +68,9 @@ export function SettingsPage() {
   const [saveError, setSaveError] = useState('')
   const [savedMessage, setSavedMessage] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [exportError, setExportError] = useState('')
+  const [exportMessage, setExportMessage] = useState('')
+  const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null)
 
   const saveSettings = async (payload: UserSettingsPayload) => {
     setIsSaving(true)
@@ -84,11 +90,26 @@ export function SettingsPage() {
   const language = settings?.language ?? 'en'
   const t = (key: TranslationKey) => translate(language, key)
 
+  const exportWorkspace = async (format: ExportFormat) => {
+    setExportingFormat(format)
+    setExportError('')
+    setExportMessage('')
+    try {
+      const blob = await getWorkspaceExport(format)
+      saveWorkspaceExport(blob, format)
+      setExportMessage(t('exportStarted'))
+    } catch (err) {
+      setExportError(getErrorMessage(err))
+    } finally {
+      setExportingFormat(null)
+    }
+  }
+
   return (
     <section>
       <PageHeader title={t('settings')} label={t('workspace')} subtitle={t('settingsSubtitle')} />
 
-      {error || saveError ? <p className="app-error mb-4">{error || saveError}</p> : null}
+      {error || saveError || exportError ? <p className="app-error mb-4">{error || saveError || exportError}</p> : null}
       {savedMessage ? <p className="mb-4 text-sm text-[var(--accent-ok)]">{savedMessage}</p> : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
@@ -208,6 +229,53 @@ export function SettingsPage() {
           ) : (
             <p className="app-muted mt-5 text-sm">Loading behavior settings...</p>
           )}
+        </section>
+
+        <section className="card p-5 xl:col-span-2">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[var(--panel-border)] bg-[var(--surface-soft)] text-[var(--text-muted)]">
+                <Download size={18} strokeWidth={1.8} aria-hidden="true" />
+              </span>
+              <div>
+                <h2 className="app-section-title">{t('dataExport')}</h2>
+                <p className="app-muted mt-2 max-w-2xl text-sm">{t('dataExportDescription')}</p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row" aria-busy={exportingFormat !== null}>
+              <button
+                className="btn-secondary"
+                type="button"
+                disabled={exportingFormat !== null}
+                onClick={() => void exportWorkspace('json')}
+              >
+                {exportingFormat === 'json' ? (
+                  <LoaderCircle className="confirm-dialog__spinner" size={16} aria-hidden="true" />
+                ) : (
+                  <FileJson size={16} aria-hidden="true" />
+                )}
+                {exportingFormat === 'json' ? t('exporting') : t('exportJson')}
+              </button>
+              <button
+                className="btn-secondary"
+                type="button"
+                disabled={exportingFormat !== null}
+                onClick={() => void exportWorkspace('csv')}
+              >
+                {exportingFormat === 'csv' ? (
+                  <LoaderCircle className="confirm-dialog__spinner" size={16} aria-hidden="true" />
+                ) : (
+                  <FileSpreadsheet size={16} aria-hidden="true" />
+                )}
+                {exportingFormat === 'csv' ? t('exporting') : t('exportCsv')}
+              </button>
+            </div>
+          </div>
+          {exportMessage ? (
+            <p className="mt-3 text-sm text-[var(--accent-ok)]" role="status">
+              {exportMessage}
+            </p>
+          ) : null}
         </section>
       </div>
     </section>

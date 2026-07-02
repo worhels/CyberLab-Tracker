@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { createSubject, deleteSubject, getSubjects } from '../api/subjects'
 import { createTask } from '../api/tasks'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -8,6 +9,10 @@ import { PageHeader } from '../components/PageHeader'
 import type { Subject, SubjectPayload, TaskPayload, TaskPriority, TaskStatus, TaskType } from '../types'
 import { getErrorMessage } from '../utils/errors'
 import { humanize, toApiDateTime, toInputDateTime } from '../utils/format'
+import {
+  buildMentorContextSearchParams,
+  getMentorPageContext,
+} from '../utils/mentorContext'
 import { taskPriorities, taskStatuses, taskTypes } from '../utils/options'
 
 type CreateMode = 'subject' | 'task'
@@ -49,6 +54,7 @@ const initialTaskForm: TaskFormState = {
 }
 
 export function SubjectsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [subjectForm, setSubjectForm] = useState<SubjectPayload>(initialSubjectForm)
   const [taskForm, setTaskForm] = useState<TaskFormState>(initialTaskForm)
@@ -58,6 +64,7 @@ export function SubjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const mentorContext = getMentorPageContext(searchParams.toString())
 
   const loadSubjects = async () => {
     setIsLoading(true)
@@ -156,12 +163,29 @@ export function SubjectsPage() {
           ? { ...current, subject_id: String(remainingSubjects[0]?.id ?? '') }
           : current,
       )
+      if (mentorContext.subjectId === subjectToDelete.id) {
+        setSearchParams(
+          buildMentorContextSearchParams(searchParams, {}),
+          { replace: true },
+        )
+      }
       setSubjectToDelete(null)
     } catch (err) {
       setError(getErrorMessage(err))
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  const toggleMentorSubject = (subjectId: number) => {
+    const isSelected = mentorContext.subjectId === subjectId && mentorContext.taskId === undefined
+    setSearchParams(
+      buildMentorContextSearchParams(
+        searchParams,
+        isSelected ? {} : { subjectId },
+      ),
+      { replace: true },
+    )
   }
 
   return (
@@ -372,8 +396,18 @@ export function SubjectsPage() {
           {isLoading ? (
             <div className="card app-muted p-6 text-sm">Loading subjects...</div>
           ) : subjects.length ? (
-            subjects.map((subject) => (
-              <article key={subject.id} className="card p-4">
+            subjects.map((subject) => {
+              const isMentorContext = mentorContext.subjectId === subject.id
+                && mentorContext.taskId === undefined
+              return (
+              <article
+                key={subject.id}
+                className="card p-4"
+                style={isMentorContext ? {
+                  borderColor: 'rgba(var(--accent-primary-rgb), 0.48)',
+                  boxShadow: 'var(--shadow-active)',
+                } : undefined}
+              >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="mb-2 flex items-center gap-3">
@@ -386,17 +420,28 @@ export function SubjectsPage() {
                     </div>
                     {subject.description ? <p className="app-muted mt-3 text-sm">{subject.description}</p> : null}
                   </div>
-                  <button
-                    className="btn-secondary"
-                    type="button"
-                    aria-label={`Delete subject ${subject.name}`}
-                    onClick={() => setSubjectToDelete(subject)}
-                  >
-                    Delete
-                  </button>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <button
+                      className="btn-secondary"
+                      type="button"
+                      aria-pressed={isMentorContext}
+                      onClick={() => toggleMentorSubject(subject.id)}
+                    >
+                      {isMentorContext ? 'Mentor selected' : 'Use in Mentor'}
+                    </button>
+                    <button
+                      className="btn-secondary"
+                      type="button"
+                      aria-label={`Delete subject ${subject.name}`}
+                      onClick={() => setSubjectToDelete(subject)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </article>
-            ))
+              )
+            })
           ) : (
             <EmptyState text="No subjects yet." />
           )}

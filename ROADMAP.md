@@ -38,6 +38,7 @@ tests, and visible GitHub repository metadata.
 - Task deadline severity badges
 - Responsive task cards for small screens
 - Selected-subject active, completed, overdue, and progress statistics
+- Per-user JSON and CSV workspace export
 - Dashboard priority queue, subject progress, and recent activity widgets
 - User settings model, migration, CRUD layer, API endpoint, and frontend context
 - Persisted language, theme, accent color, dashboard density, Crisis Cube,
@@ -171,10 +172,10 @@ predictable security baseline before adding larger workflows.
 
 ### Export
 
-- [ ] JSON export endpoint
-- [ ] CSV export endpoint
-- [ ] Frontend export button
-- [ ] Include subjects, tasks, and timestamps
+- [x] JSON export endpoint
+- [x] CSV export endpoint
+- [x] Frontend export button
+- [x] Include subjects, tasks, and timestamps
 
 ### Calendar View
 

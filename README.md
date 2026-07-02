@@ -64,6 +64,7 @@ VIBE        graphite UI, pressure fields, soft motion, crisis mode
 | Crisis Mode | Ranked active tasks, pressure score, cohesion score, instability score |
 | Visuals | Crisis Volume Cube, workload sphere, subject hotspots, pressure-field backgrounds |
 | Settings | Language, theme, accent, dashboard density, reduced motion, visual toggles |
+| Data Export | Authenticated per-user JSON and UTF-8 CSV workspace downloads |
 
 ## Current Build
 
@@ -72,6 +73,7 @@ As of June 25, 2026, the project includes:
 - Authenticated app shell with collapsible desktop sidebar and mobile navigation
 - Dashboard, Subjects, Tasks, Crisis Mode, and Settings pages
 - Persisted user settings API and frontend settings context
+- Per-user JSON and CSV export for subjects, tasks, and timestamps
 - Russian, Ukrainian, and English labels for the app shell/settings flow
 - Zerkalo, dark, light, and system theme support
 - Light-theme normalization so the dark scene layer does not leak into light UI

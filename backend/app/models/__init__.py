@@ -1,3 +1,4 @@
+from app.models.mentor import MentorMessage
 from app.models.subject import Subject
 from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.models.user import User
@@ -7,6 +8,7 @@ __all__ = [
     "AccentColor",
     "DashboardView",
     "Language",
+    "MentorMessage",
     "Subject",
     "Task",
     "TaskPriority",

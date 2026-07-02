@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { deleteTask, getTasks, updateTaskStatus } from '../api/tasks'
 import { deleteSubject, getSubjects } from '../api/subjects'
 import { Badge } from '../components/Badge'
@@ -11,6 +12,10 @@ import { WorkloadSphereCanvas } from '../components/visuals/WorkloadSphereCanvas
 import type { Subject, Task, TaskPriority, TaskStatus, TaskType } from '../types'
 import { getErrorMessage } from '../utils/errors'
 import { formatDate, humanize } from '../utils/format'
+import {
+  buildMentorContextSearchParams,
+  getMentorPageContext,
+} from '../utils/mentorContext'
 import { taskPriorities, taskStatuses, taskTypes } from '../utils/options'
 import { getQuickTaskFilterParams } from '../utils/taskFilters'
 import type { TaskQuickFilter } from '../utils/taskFilters'
@@ -36,6 +41,7 @@ interface AppliedTaskFilters {
 }
 
 export function TasksPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [tasks, setTasks] = useState<Task[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [error, setError] = useState('')
@@ -54,6 +60,7 @@ export function TasksPage() {
     type: '',
     quick: '',
   })
+  const mentorContext = getMentorPageContext(searchParams.toString())
 
   const subjectById = useMemo(() => {
     return new Map(subjects.map((subject) => [subject.id, subject]))
@@ -149,10 +156,22 @@ export function TasksPage() {
       if (deleteTarget.kind === 'task') {
         await deleteTask(deleteTarget.id)
         setTasks((current) => current.filter((task) => task.id !== deleteTarget.id))
+        if (mentorContext.taskId === deleteTarget.id) {
+          setSearchParams(
+            buildMentorContextSearchParams(searchParams, {}),
+            { replace: true },
+          )
+        }
       } else {
         await deleteSubject(deleteTarget.id)
         setSubjects((current) => current.filter((subject) => subject.id !== deleteTarget.id))
         setTasks((current) => current.filter((task) => task.subject_id !== deleteTarget.id))
+        if (mentorContext.subjectId === deleteTarget.id) {
+          setSearchParams(
+            buildMentorContextSearchParams(searchParams, {}),
+            { replace: true },
+          )
+        }
       }
       setDeleteTarget(null)
     } catch (err) {
@@ -160,6 +179,29 @@ export function TasksPage() {
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  const toggleMentorTask = (task: Task) => {
+    const isSelected = mentorContext.taskId === task.id
+    setSearchParams(
+      buildMentorContextSearchParams(
+        searchParams,
+        isSelected ? {} : { subjectId: task.subject_id, taskId: task.id },
+      ),
+      { replace: true },
+    )
+  }
+
+  const toggleMentorSubject = (subjectId: number) => {
+    const isSelected = mentorContext.subjectId === subjectId
+      && mentorContext.taskId === undefined
+    setSearchParams(
+      buildMentorContextSearchParams(
+        searchParams,
+        isSelected ? {} : { subjectId },
+      ),
+      { replace: true },
+    )
   }
 
   return (
@@ -258,6 +300,9 @@ export function TasksPage() {
                               <motion.tr
                                 key={task.id}
                                 className="align-top"
+                                style={mentorContext.taskId === task.id ? {
+                                  background: 'rgba(var(--accent-primary-rgb), 0.08)',
+                                } : undefined}
                                 layout
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{
@@ -268,7 +313,19 @@ export function TasksPage() {
                                 exit={{ opacity: 0, y: -6, transition: { duration: 0.14, ease: taskRowEase } }}
                               >
                                 <td className="tasks-table__task-cell" data-label="Task">
-                                  <p className="tasks-table__title">{task.title}</p>
+                                  <button
+                                    className="tasks-table__title app-link text-left"
+                                    type="button"
+                                    aria-pressed={mentorContext.taskId === task.id}
+                                    onClick={() => toggleMentorTask(task)}
+                                  >
+                                    {task.title}
+                                  </button>
+                                  {mentorContext.taskId === task.id ? (
+                                    <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--accent-primary)]">
+                                      Mentor context
+                                    </span>
+                                  ) : null}
                                   {task.description ? <p className="app-muted mt-1 max-w-md text-xs">{task.description}</p> : null}
                                   <div className="app-muted mt-2 flex flex-wrap gap-2 text-xs">
                                     {task.estimated_hours ? <span>{task.estimated_hours}h</span> : null}
@@ -276,7 +333,19 @@ export function TasksPage() {
                                     {task.moodle_url ? <a className="app-link" href={task.moodle_url} target="_blank">Moodle</a> : null}
                                   </div>
                                 </td>
-                                <td className="tasks-table__subject-cell" data-label="Subject">{subjectById.get(task.subject_id)?.name || 'Unknown'}</td>
+                                <td className="tasks-table__subject-cell" data-label="Subject">
+                                  <button
+                                    className="app-link text-left"
+                                    type="button"
+                                    aria-pressed={
+                                      mentorContext.subjectId === task.subject_id
+                                      && mentorContext.taskId === undefined
+                                    }
+                                    onClick={() => toggleMentorSubject(task.subject_id)}
+                                  >
+                                    {subjectById.get(task.subject_id)?.name || 'Unknown'}
+                                  </button>
+                                </td>
                                 <td className="tasks-table__deadline-cell" data-label="Deadline">
                                   <span className="app-muted">{formatDate(task.deadline)}</span>
                                   <DeadlineBadge deadline={task.deadline} status={task.status} />
@@ -342,8 +411,18 @@ export function TasksPage() {
                 {showSubjects ? (
                   subjects.length ? (
                     <div className="tasks-subject-list">
-                      {subjects.map((subject) => (
-                        <article key={subject.id} className="tasks-subject-card">
+                      {subjects.map((subject) => {
+                        const isMentorContext = mentorContext.subjectId === subject.id
+                          && mentorContext.taskId === undefined
+                        return (
+                        <article
+                          key={subject.id}
+                          className="tasks-subject-card"
+                          style={isMentorContext ? {
+                            borderColor: 'rgba(var(--accent-primary-rgb), 0.48)',
+                            boxShadow: 'var(--shadow-active)',
+                          } : undefined}
+                        >
                           <div className="min-w-0">
                             <div className="mb-2 flex items-center gap-3">
                               <span className="h-3 w-3 rounded-sm border border-[var(--panel-border)]" style={{ backgroundColor: subject.color }} />
@@ -355,16 +434,27 @@ export function TasksPage() {
                             </div>
                             {subject.description ? <p className="app-muted mt-3 text-sm">{subject.description}</p> : null}
                           </div>
-                          <button
-                            className="btn-secondary task-delete-button"
-                            type="button"
-                            aria-label={`Delete subject ${subject.name}`}
-                            onClick={() => setDeleteTarget({ kind: 'subject', id: subject.id, name: subject.name })}
-                          >
-                            Delete
-                          </button>
+                          <div className="flex shrink-0 flex-wrap gap-2">
+                            <button
+                              className="btn-secondary"
+                              type="button"
+                              aria-pressed={isMentorContext}
+                              onClick={() => toggleMentorSubject(subject.id)}
+                            >
+                              {isMentorContext ? 'Mentor selected' : 'Use in Mentor'}
+                            </button>
+                            <button
+                              className="btn-secondary task-delete-button"
+                              type="button"
+                              aria-label={`Delete subject ${subject.name}`}
+                              onClick={() => setDeleteTarget({ kind: 'subject', id: subject.id, name: subject.name })}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </article>
-                      ))}
+                        )
+                      })}
                     </div>
                   ) : (
                     <div className="p-4">

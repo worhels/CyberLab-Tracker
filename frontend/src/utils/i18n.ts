@@ -17,14 +17,46 @@ export type TranslationKey =
   | 'dashboardDensity'
   | 'dashboardSubtitle'
   | 'dark'
+  | 'dataExport'
+  | 'dataExportDescription'
   | 'deadlineReminders'
   | 'deadlineRemindersDescription'
   | 'email'
   | 'english'
+  | 'exportCsv'
+  | 'exporting'
+  | 'exportJson'
+  | 'exportStarted'
   | 'interface'
   | 'language'
   | 'light'
   | 'logout'
+  | 'mentor.action.close'
+  | 'mentor.action.send'
+  | 'mentor.context'
+  | 'mentor.empty'
+  | 'mentor.error.offline'
+  | 'mentor.hint.send'
+  | 'mentor.mode.chat'
+  | 'mentor.mode.chat.description'
+  | 'mentor.mode.code'
+  | 'mentor.mode.code.description'
+  | 'mentor.mode.deadline'
+  | 'mentor.mode.deadline.description'
+  | 'mentor.mode.lab'
+  | 'mentor.mode.lab.description'
+  | 'mentor.mode.report'
+  | 'mentor.mode.report.description'
+  | 'mentor.placeholder'
+  | 'mentor.quick.accepted'
+  | 'mentor.quick.activeLabs'
+  | 'mentor.quick.deadlines'
+  | 'mentor.quick.urgent'
+  | 'mentor.status.offline'
+  | 'mentor.status.ready'
+  | 'mentor.status.thinking'
+  | 'mentor.subtitle'
+  | 'mentor.title'
   | 'name'
   | 'navSubjects'
   | 'navTasks'
@@ -46,6 +78,12 @@ export type TranslationKey =
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ru: {
+    dataExport: 'Экспорт данных',
+    dataExportDescription: 'Скачать предметы, задачи и временные метки рабочей области.',
+    exportCsv: 'Экспорт CSV',
+    exporting: 'Экспорт...',
+    exportJson: 'Экспорт JSON',
+    exportStarted: 'Загрузка экспорта началась.',
     account: 'Аккаунт',
     accentColor: 'Цвет акцента',
     active: 'активно',
@@ -70,6 +108,32 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     language: 'Язык',
     light: 'Светлая',
     logout: 'Выйти',
+    'mentor.action.close': 'Закрыть CyberMentor',
+    'mentor.action.send': 'Отправить сообщение',
+    'mentor.context': 'Контекст',
+    'mentor.empty': 'Спроси о работе: Mentor сам определит intent и учтёт выбранную задачу.',
+    'mentor.error.offline': 'Локальная AI-модель не отвечает. Запусти Ollama и проверь модель qwen2.5-coder:7b.',
+    'mentor.hint.send': 'Enter — отправить',
+    'mentor.mode.chat': 'Чат',
+    'mentor.mode.chat.description': 'Можно просто обсудить идею, интерфейс, код, дедлайн или проект.',
+    'mentor.mode.code': 'Код',
+    'mentor.mode.code.description': 'Конкретный разбор ошибки и минимальный рабочий фикс.',
+    'mentor.mode.deadline': 'Дедлайн',
+    'mentor.mode.deadline.description': 'Короткий план действий, который помогает успеть сдать.',
+    'mentor.mode.lab': 'Лаба',
+    'mentor.mode.lab.description': 'Пошаговая помощь с лабораторной и результатом для сдачи.',
+    'mentor.mode.report': 'Отчёт',
+    'mentor.mode.report.description': 'Готовая структура и формулировки для Word.',
+    'mentor.placeholder': 'Спроси про задачи, код, отчёт, дедлайны или проект...',
+    'mentor.quick.accepted': 'Что уже принято?',
+    'mentor.quick.activeLabs': 'Покажи активные лабы',
+    'mentor.quick.deadlines': 'Покажи ближайшие дедлайны',
+    'mentor.quick.urgent': 'Что сейчас горит?',
+    'mentor.status.offline': 'Offline',
+    'mentor.status.ready': 'Local AI',
+    'mentor.status.thinking': 'Думает',
+    'mentor.subtitle': 'Локальный AI-наставник с автоматическим контекстом запроса.',
+    'mentor.title': 'CyberMentor',
     name: 'Имя',
     navSubjects: 'Предметы',
     navTasks: 'Задачи',
@@ -90,6 +154,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     zerkalo: 'Zerkalo',
   },
   uk: {
+    dataExport: 'Експорт даних',
+    dataExportDescription: 'Завантажити предмети, завдання та часові мітки робочого простору.',
+    exportCsv: 'Експорт CSV',
+    exporting: 'Експорт...',
+    exportJson: 'Експорт JSON',
+    exportStarted: 'Завантаження експорту розпочато.',
     account: 'Акаунт',
     accentColor: 'Колір акценту',
     active: 'активно',
@@ -114,6 +184,32 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     language: 'Мова',
     light: 'Світла',
     logout: 'Вийти',
+    'mentor.action.close': 'Закрити CyberMentor',
+    'mentor.action.send': 'Надіслати повідомлення',
+    'mentor.context': 'Контекст',
+    'mentor.empty': 'Запитай про роботу: Mentor сам визначить intent і врахує вибране завдання.',
+    'mentor.error.offline': 'Локальна AI-модель не відповідає. Запусти Ollama та перевір модель qwen2.5-coder:7b.',
+    'mentor.hint.send': 'Enter — надіслати',
+    'mentor.mode.chat': 'Чат',
+    'mentor.mode.chat.description': 'Можна просто обговорити ідею, інтерфейс, код, дедлайн або проєкт.',
+    'mentor.mode.code': 'Код',
+    'mentor.mode.code.description': 'Конкретний розбір помилки та мінімальне робоче виправлення.',
+    'mentor.mode.deadline': 'Дедлайн',
+    'mentor.mode.deadline.description': 'Короткий план дій, який допомагає встигнути здати.',
+    'mentor.mode.lab': 'Лаба',
+    'mentor.mode.lab.description': 'Покрокова допомога з лабораторною та результатом для здачі.',
+    'mentor.mode.report': 'Звіт',
+    'mentor.mode.report.description': 'Готова структура та формулювання для Word.',
+    'mentor.placeholder': 'Запитай про завдання, код, звіт, дедлайни або проєкт...',
+    'mentor.quick.accepted': 'Що вже прийнято?',
+    'mentor.quick.activeLabs': 'Покажи активні лаби',
+    'mentor.quick.deadlines': 'Покажи найближчі дедлайни',
+    'mentor.quick.urgent': 'Що зараз горить?',
+    'mentor.status.offline': 'Offline',
+    'mentor.status.ready': 'Local AI',
+    'mentor.status.thinking': 'Думає',
+    'mentor.subtitle': 'Локальний AI-наставник з автоматичним контекстом запиту.',
+    'mentor.title': 'CyberMentor',
     name: "Ім'я",
     navSubjects: 'Предмети',
     navTasks: 'Задачі',
@@ -134,6 +230,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     zerkalo: 'Zerkalo',
   },
   en: {
+    dataExport: 'Data export',
+    dataExportDescription: 'Download workspace subjects, tasks, and timestamps.',
+    exportCsv: 'Export CSV',
+    exporting: 'Exporting...',
+    exportJson: 'Export JSON',
+    exportStarted: 'Export download started.',
     account: 'Account',
     accentColor: 'Accent color',
     active: 'active',
@@ -158,6 +260,32 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     language: 'Language',
     light: 'Light',
     logout: 'Logout',
+    'mentor.action.close': 'Close CyberMentor',
+    'mentor.action.send': 'Send message',
+    'mentor.context': 'Context',
+    'mentor.empty': 'Ask about your work. Mentor detects the intent and uses the selected task.',
+    'mentor.error.offline': 'The local AI model is not responding. Start Ollama and check qwen2.5-coder:7b.',
+    'mentor.hint.send': 'Enter to send',
+    'mentor.mode.chat': 'Chat',
+    'mentor.mode.chat.description': 'Discuss an idea, interface, code, deadline, or project freely.',
+    'mentor.mode.code': 'Code',
+    'mentor.mode.code.description': 'A focused error analysis and the smallest working fix.',
+    'mentor.mode.deadline': 'Deadline',
+    'mentor.mode.deadline.description': 'A short action plan focused on getting the work submitted.',
+    'mentor.mode.lab': 'Lab',
+    'mentor.mode.lab.description': 'Step-by-step help with a lab and a submission-ready result.',
+    'mentor.mode.report': 'Report',
+    'mentor.mode.report.description': 'A ready-to-use structure and wording for Word.',
+    'mentor.placeholder': 'Ask about tasks, code, reports, deadlines, or the project...',
+    'mentor.quick.accepted': 'What is already accepted?',
+    'mentor.quick.activeLabs': 'Show active labs',
+    'mentor.quick.deadlines': 'Show nearest deadlines',
+    'mentor.quick.urgent': 'What is urgent?',
+    'mentor.status.offline': 'Offline',
+    'mentor.status.ready': 'Local AI',
+    'mentor.status.thinking': 'Thinking',
+    'mentor.subtitle': 'Local AI guidance with automatic request context.',
+    'mentor.title': 'CyberMentor',
     name: 'Name',
     navSubjects: 'Subjects',
     navTasks: 'Tasks',
