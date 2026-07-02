@@ -52,6 +52,45 @@ Task list filters:
 - `deadline_after`
 - `search`
 
+## Export
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/export/json` | Download the current user's workspace as structured JSON |
+| `GET` | `/export/csv` | Download the current user's workspace as UTF-8 CSV |
+
+Both endpoints require bearer authentication and include only subjects and tasks
+owned by the current user. Responses set `Content-Disposition` download
+filenames.
+
+The JSON response contains:
+
+- `exported_at`
+- `subjects`, including `created_at` and `updated_at`
+- `tasks`, including deadline, submission, acceptance, creation, and update
+  timestamps
+
+The CSV response uses one table for both resource types. The `record_type`
+column distinguishes `subject` and `task` rows, and UTF-8 BOM encoding keeps
+non-Latin subject and task names compatible with spreadsheet applications.
+
+## Mentor
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/mentor/chat` | Return a complete local Ollama response |
+| `POST` | `/mentor/chat/stream` | Stream the local Ollama response as SSE events |
+
+Both endpoints require bearer authentication. Requests accept `lab`, `code`,
+`report`, `deadline`, and `chat` modes, plus `language: auto|ru|uk|en`.
+Optional `subject_id` and `task_id` values are resolved through per-user
+ownership checks before any model request.
+
+The streaming endpoint emits `token` events followed by one `done` event with
+the session ID. Completed user and assistant messages are persisted atomically.
+If Ollama is unavailable before streaming starts, the endpoint returns HTTP
+`503` with a user-safe error.
+
 ## Dashboard
 
 | Method | Path | Description |

@@ -29,6 +29,8 @@ All notable changes to CyberLab Tracker are documented here.
 - Full subject and task CRUD integration coverage.
 - Selected-subject statistics for active, completed, overdue, critical, and
   near-deadline work.
+- Authenticated JSON and UTF-8 CSV workspace exports with subjects, tasks, and
+  timestamps.
 
 ### Changed
 
@@ -43,6 +45,7 @@ All notable changes to CyberLab Tracker are documented here.
 - Added an `active_only` task query filter so deadline views exclude accepted
   work.
 - Replaced compressed mobile task-table rows with labeled, readable task cards.
+- Added localized export controls to Settings.
 
 ### Removed
 
