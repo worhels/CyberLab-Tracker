@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     CORS_ALLOW_HEADERS: list[str] = ["Authorization", "Content-Type"]
     AUTH_RATE_LIMIT_REQUESTS: int = 5
     AUTH_RATE_LIMIT_WINDOW_SECONDS: int = 60
+    OLLAMA_CHAT_URL: str = "http://localhost:11434/api/chat"
+    OLLAMA_MODEL: str = "qwen2.5-coder:7b"
+    OLLAMA_TIMEOUT_SECONDS: float = 120.0
+    OLLAMA_WARMUP_ENABLED: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

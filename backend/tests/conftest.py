@@ -9,6 +9,7 @@ from sqlalchemy.pool import StaticPool
 
 os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
 os.environ["JWT_SECRET_KEY"] = "test-only-secret-key-that-is-longer-than-thirty-two-bytes"
+os.environ["OLLAMA_WARMUP_ENABLED"] = "false"
 
 from app.api.v1.endpoints.auth import _rate_limit_hits  # noqa: E402
 from app.db.base import Base  # noqa: E402

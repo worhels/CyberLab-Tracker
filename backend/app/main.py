@@ -1,14 +1,33 @@
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, suppress
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
+from app.api.v1.endpoints.mentor import warmup_ollama
 from app.core.config import settings
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    warmup_task = asyncio.create_task(warmup_ollama())
+    try:
+        yield
+    finally:
+        if not warmup_task.done():
+            warmup_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await warmup_task
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
     openapi_url="/openapi.json" if settings.DEBUG else None,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
