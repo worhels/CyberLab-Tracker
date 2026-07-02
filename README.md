@@ -1,4 +1,4 @@
-# CyberLab Tracker
+# ???
 
 <p align="center">
   <a href="https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml">
@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Ollama-local_AI-0b0c10?style=flat-square" alt="Ollama local AI" />
 </p>
 
-CyberLab Tracker is a full-stack application for managing academic subjects,
+??? is a full-stack application for managing academic subjects,
 tasks, deadlines, task status, and workload metrics. The backend enforces
 per-user ownership. The frontend provides task workflows, dashboard metrics,
 Crisis Mode, data export, and an Ollama-backed assistant.
