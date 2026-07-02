@@ -1,6 +1,10 @@
 # CyberLab Tracker
 
 <p align="center">
+  <img src="./docs/assets/readme-hero.svg" alt="CyberLab Tracker" width="100%" />
+</p>
+
+<p align="center">
   <a href="https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml">
     <img src="https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml/badge.svg" alt="CI status" />
   </a>
