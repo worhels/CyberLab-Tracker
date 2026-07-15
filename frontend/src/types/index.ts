@@ -106,22 +106,46 @@ export interface UserSettingsPayload {
   deadline_reminders?: boolean
 }
 
-export interface SubjectPayload {
+export interface SubjectCreatePayload {
   name: string
-  color: string
+  color?: string
   teacher?: string | null
   semester?: string | null
   description?: string | null
 }
 
-export interface TaskPayload {
+export interface SubjectUpdatePayload {
+  name?: string
+  color?: string
+  teacher?: string | null
+  semester?: string | null
+  description?: string | null
+}
+
+export interface TaskCreatePayload {
   title: string
   description?: string | null
   deadline?: string | null
   subject_id: number
-  type: TaskType
-  priority: TaskPriority
-  status: TaskStatus
+  type?: TaskType
+  priority?: TaskPriority
+  status?: TaskStatus
+  github_url?: string | null
+  moodle_url?: string | null
+  report_file?: string | null
+  estimated_hours?: number | null
+  submitted_at?: string | null
+  accepted_at?: string | null
+}
+
+export interface TaskUpdatePayload {
+  title?: string
+  description?: string | null
+  deadline?: string | null
+  subject_id?: number
+  type?: TaskType
+  priority?: TaskPriority
+  status?: TaskStatus
   github_url?: string | null
   moodle_url?: string | null
   report_file?: string | null

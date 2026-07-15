@@ -37,6 +37,13 @@ jobs:
         working-directory: backend
         run: ruff check .
 
+      - name: Typecheck backend
+        run: pyright --pythonpath "$(command -v python)"
+
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: pip-audit -r requirements.txt
+
       - name: Test backend
         working-directory: backend
         env:
@@ -67,9 +74,17 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=moderate
+
       - name: Typecheck frontend
         working-directory: frontend
         run: npm run typecheck
+
+      - name: Test frontend
+        working-directory: frontend
+        run: npm test
 
       - name: Lint frontend
         working-directory: frontend
@@ -78,3 +93,55 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+  migrations:
+    name: PostgreSQL migrations
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: cyberlab_tracker_ci
+          POSTGRES_USER: cyberlab
+          POSTGRES_PASSWORD: cyberlab-ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cyberlab -d cyberlab_tracker_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://cyberlab:cyberlab-ci-password@localhost:5432/cyberlab_tracker_ci
+      JWT_SECRET_KEY: ci-only-secret-for-migrations-32-chars
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Apply migrations
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Verify model and migration parity
+        working-directory: backend
+        run: alembic check
+
+      - name: Verify migration reversibility
+        working-directory: backend
+        run: |
+          alembic downgrade base
+          alembic upgrade head

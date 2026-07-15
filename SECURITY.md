@@ -1,66 +1,58 @@
-# Security Policy
+# Security policy
 
-## Project Scope
+## Supported version
 
-CyberLab Tracker is a local-first personal productivity tracker.
-
-It is not designed as a public SaaS, enterprise platform, or multi-tenant
-production system.
-
-The current security focus is:
-
-- safe authentication flow
-- JWT validation
-- password hashing
-- CORS hardening
-- rate limiting for auth endpoints
-- IDOR prevention
-- local secret management
-- predictable Docker development setup
-
-## Supported Versions
-
-| Branch | Status |
+| Version | Supported |
 | --- | --- |
-| `main` | Supported |
-| `develop` | Development |
-| `feature/*` | Not supported |
-| `fix/*` | Not supported |
-| `chore/*` | Not supported |
+| Latest `main` | Yes |
+| Older commits and feature branches | No |
 
-## Reporting A Vulnerability
+## Reporting a vulnerability
 
-This is a portfolio and local-first project.
+Do not open a public issue containing exploit details, credentials, personal
+data, or unreleased vulnerability information.
 
-Do not report security issues through public issues if the report contains
-exploit details, secrets, or sensitive data.
+Use GitHub's **Security -> Report a vulnerability** form for confidential
+reports. Include:
 
-For normal code hardening tasks, use GitHub Issues with the `area: security`
-label.
+- affected commit or version;
+- impacted endpoint/component;
+- reproduction steps or a minimal proof of concept;
+- expected security impact;
+- any suggested mitigation.
 
-## Known Security Boundaries
+Use normal GitHub Issues only for non-sensitive hardening work.
 
-This project currently does not include:
+## Response expectations
 
-- email verification
-- password reset by email
-- two-factor authentication
-- role-based access control
-- public multi-user production deployment
-- payment processing
-- external OAuth providers
+This is a maintainer-run open-source project, not a commercial security program.
+Reports will be acknowledged when maintainer capacity allows. Confirmed issues
+will be fixed on a private branch when practical, then disclosed with an
+appropriate release note or advisory.
 
-These features are intentionally out of scope for the current project phase.
+## Scope
 
-## Security Checklist
+In scope:
 
-Current security hardening priorities:
+- authentication and JWT validation;
+- password hashing and rate-limit bypass;
+- IDOR or cross-user data access;
+- export/settings/Mentor ownership failures;
+- injection or unsafe execution;
+- secret exposure from repository code or workflows;
+- dependency or migration paths that compromise user data.
 
-- keep JWT validation explicit
-- require JWT claims
-- keep login/register rate limiting enabled
-- mitigate login timing attacks
-- enforce per-user ownership checks
-- avoid unsafe Docker defaults
-- disable API docs outside local debug mode
-- document accepted security trade-offs
+Out of scope:
+
+- denial-of-service testing against a maintainer-hosted instance;
+- social engineering;
+- attacks requiring access to the user's already-compromised machine;
+- issues only in optional third-party Ollama models;
+- missing enterprise features already documented as beta limitations.
+
+## Deployment posture
+
+CyberLab Tracker is intended for local use and controlled beta evaluation. It
+does not claim that cloning the repository alone creates a production-safe
+public service. Review [the security model](docs/SECURITY_MODEL.md) and
+[threat model](docs/THREAT_MODEL.md) before any network deployment.

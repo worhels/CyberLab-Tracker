@@ -1,120 +1,149 @@
 # Architecture
 
-CyberLab Tracker is a full-stack local-first study workload tracker. The backend
-owns authentication, task data, dashboard summaries, and crisis ranking. The
-frontend owns navigation, task workflows, visual dashboards, and interactive
-presentation.
+CyberLab Tracker is a local-first full-stack application. The FastAPI backend is
+the authority for identity, ownership, persistence, timestamp normalization,
+dashboard metrics, and Crisis ranking. The React frontend owns interaction,
+local-date presentation, responsive layout, and optional WebGL visuals.
 
-## Runtime View
+## Runtime view
 
-```text
-Browser
-  |
-  | HTTP / JSON
-  v
-React + Vite frontend
-  |
-  | /api/v1/*
-  v
-FastAPI backend
-  |
-  | SQLAlchemy ORM
-  v
-PostgreSQL
+```mermaid
+flowchart LR
+    Web["React + Vite"] -->|"Bearer JWT / JSON"| API["FastAPI /api/v1"]
+    Web -->|"SSE"| Mentor["Mentor endpoints"]
+    API --> ORM["SQLAlchemy"]
+    ORM --> DB[("PostgreSQL 16")]
+    Mentor --> Context["Ownership-bounded context"]
+    Context --> Ollama["Local Ollama"]
 ```
 
-## Backend
+Docker Compose starts PostgreSQL and the API. Vite runs separately for local
+development. The backend reads configuration from environment variables; the
+frontend reads only the public `VITE_API_BASE_URL`.
 
-The FastAPI application lives in `backend/app`.
+## Backend boundaries
 
-- `app/main.py` creates the FastAPI app, CORS middleware, health endpoint, and
-  API router.
-- `app/api/v1/endpoints` contains route handlers for auth, subjects, tasks, and
-  dashboard data.
-- `app/crud` contains persistence operations.
-- `app/models` contains SQLAlchemy models and enums.
-- `app/schemas` contains Pydantic request and response models.
-- `app/core` contains settings and security helpers.
-- `alembic/versions` contains database migrations.
+The backend lives in `backend/app`.
 
-The backend uses `DATABASE_URL` from environment settings. In Docker Compose this
-points to the `postgres` service.
-
-## Frontend
-
-The React application lives in `frontend/src`.
-
-- `api` wraps backend HTTP calls.
-- `pages` contains route-level UI screens.
-- `components` contains shared UI, auth, and visualization components.
-- `layouts` contains application chrome.
-- `context` contains authentication state.
-- `styles` contains design tokens and shared CSS.
-- `utils` contains formatting and error helpers.
-
-The frontend reads `VITE_API_BASE_URL` from `frontend/.env`.
-
-## Data Model
+| Area | Responsibility |
+| --- | --- |
+| `api/v1/endpoints` | HTTP validation, authentication dependencies, status codes |
+| `crud` | Ownership-scoped queries and transaction boundaries |
+| `models` | SQLAlchemy entities, relationships, and persisted enums |
+| `schemas` | Pydantic request/response contracts |
+| `core` | Settings, JWT, and password hashing |
+| `db` | Engine, sessions, and declarative metadata |
+| `alembic/versions` | Forward and reverse PostgreSQL schema changes |
 
 Core entities:
 
-- `User`: account and authentication owner.
-- `Subject`: academic subject owned by a user.
-- `Task`: lab, practice, coursework, exam, or other work item attached to a
-  subject.
+- `User` owns subjects and settings.
+- `Subject` owns tasks and is unique by `(user_id, name)`.
+- `Task` stores study work and references a subject.
+- `UserSettings` stores language, theme, density, motion, and reminder choices.
+- `MentorMessage` stores completed mentor exchanges with optional owned task or
+  subject context.
 
-Task status values:
+Task ownership is indirect: every task read or mutation joins `Subject` and
+filters `Subject.user_id`. A caller cannot gain access by guessing an ID.
 
-- `not_started`
-- `in_progress`
-- `submitted`
-- `accepted`
-- `debt`
+## API contracts
 
-`accepted` is the completed state.
+- Request timestamps must include an offset. They are normalized to UTC before
+  persistence and serialized as offset-aware ISO 8601 values.
+- Local calendar grouping is a frontend presentation concern.
+- Omitted update fields remain unchanged.
+- Nullable metadata can be explicitly cleared with JSON `null`.
+- Required fields may be omitted from an update, but an explicit `null` is
+  rejected with `422`.
+- Delete endpoints return `204`; missing or foreign resources return the same
+  `404` shape.
+
+The update routes retain their existing `PUT` paths for compatibility but use
+patch semantics. The contract is documented explicitly in
+[API_OVERVIEW.md](API_OVERVIEW.md).
+
+## Authentication
+
+Passwords are hashed directly with bcrypt. The configured cost is validated,
+and registration rejects passwords beyond bcrypt's 72-byte input boundary so
+two distinct inputs cannot collapse to the same effective password.
+
+Access tokens use a fixed `HS256` algorithm, a secret of at least 32
+characters, and required `sub`, `exp`, `iat`, and `type` claims. Token
+payloads are not trusted until signature, algorithm, required claims, token
+type, and user state have all been validated.
 
 ## Crisis Mode
 
-Crisis Mode is calculated by the backend dashboard endpoint. It ranks tasks using
-a score derived from:
+The backend ranks unfinished work using:
 
-- overdue or near deadline state
 - debt status
+- overdue and near-deadline windows
 - priority
-- estimated work hours
+- estimated effort
 - task type
 - current progress status
 
-The default Crisis Mode response excludes completed tasks. Passing
-`include_completed=true` returns the full ranked list.
+`debt`, `not_started`, `in_progress`, and `submitted` are active Crisis
+states. `accepted` is complete. Metrics are calculated from the complete owned
+task set while the default ranked response excludes accepted work.
 
-## Security Boundaries
+The visualization is optional. Reduced-motion settings and system preferences
+disable continuous animation; lower-capability/mobile devices use a reduced
+quality tier.
 
-The application uses a local-first security model:
+## Frontend boundaries
 
-- authentication is handled by JWT access tokens
-- passwords are hashed with bcrypt
-- API routes resolve the current user from the bearer token
-- subject queries filter directly by `Subject.user_id`
-- task queries filter through subject ownership
-- CORS is restricted to configured frontend origins
-- API docs are disabled unless `DEBUG=true`
+The frontend lives in `frontend/src`.
 
-See [SECURITY_MODEL.md](SECURITY_MODEL.md) and [THREAT_MODEL.md](THREAT_MODEL.md)
-for details.
+| Area | Responsibility |
+| --- | --- |
+| `api` | Typed HTTP clients and bearer-token transport |
+| `pages` | Route data loading and page composition |
+| `components` | CRUD forms, dialogs, cards, navigation, and visuals |
+| `context` | Auth and persisted settings state |
+| `utils` | Date conversion, calendar grouping, filtering, formatting |
+| `styles` | Design tokens, themes, responsive rules, reduced motion |
 
-## Local Development
+Routes are lazy-loaded behind `ProtectedRoute`: Dashboard, Subjects, Tasks,
+Calendar, Crisis, and Settings. CRUD forms are extracted from route components
+so create/edit state and nullable-field normalization are shared and testable.
 
-`scripts/dev.ps1` is the primary local workflow. It prepares environment files,
-starts Docker services, applies migrations, seeds demo data, installs frontend
-dependencies, and launches Vite.
+Calendar groups tasks by the user's local calendar day, highlights today and
+overdue work, and keeps tasks without a deadline in a separate group. It is not
+an external calendar integration.
 
-## Quality Gates
+## CyberMentor
 
-GitHub Actions runs:
+The browser sends the current page and optional task/subject hints. The backend:
 
-- backend dependency install and Python compile check
-- frontend dependency install, lint, and production build
+1. authenticates the user;
+2. resolves optional IDs through ownership-scoped queries;
+3. detects intent and selects only the required bounded context;
+4. sends that context to the configured local Ollama endpoint;
+5. streams tokens over SSE;
+6. persists only completed exchanges.
 
-Pull requests should also include manual smoke-test notes when UI or data-flow
-behavior changes.
+The model has no database access. Prompt content is untrusted data and does not
+override authorization boundaries.
+
+## Quality and migration gates
+
+Pull requests run:
+
+- Ruff, strict Pyright, pytest, and Python compilation;
+- strict TypeScript, Vitest, ESLint, and a production Vite build;
+- PostgreSQL 16 Alembic upgrade, model parity check, downgrade, and re-upgrade;
+- CodeQL and dependency review.
+
+SQLite remains useful for fast API regression tests, but it is not considered a
+substitute for the PostgreSQL migration job.
+
+## Deployment boundary
+
+The repository is ready for local use and controlled beta evaluation. A public
+internet deployment requires infrastructure not provided here: TLS termination,
+trusted proxy configuration, persistent distributed rate limiting, centralized
+logs/metrics, backups and restore testing, secret management, and a privacy/data
+retention policy.

@@ -9,9 +9,21 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     throw "GitHub CLI was not found. Install gh, authenticate with 'gh auth login', then rerun this script."
 }
 
-gh auth status | Out-Null
+function Invoke-Gh {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
 
-$description = "Full-stack local-first academic workload tracker with FastAPI, PostgreSQL, React, Docker, CI, and security hardening roadmap."
+    & gh @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "GitHub CLI command failed: gh $($Arguments -join ' ')"
+    }
+}
+
+Invoke-Gh @("auth", "status") | Out-Null
+
+$description = "Local-first study workload control center with FastAPI, React, PostgreSQL, Crisis Mode, Calendar, and optional local AI."
 $topics = @(
     "fastapi",
     "react",
@@ -26,12 +38,14 @@ $topics = @(
     "github-actions",
     "portfolio-project",
     "threejs",
-    "react-three-fiber"
+    "react-three-fiber",
+    "calendar",
+    "vitest"
 )
 
-gh repo edit $Repository --description $description
+Invoke-Gh @("repo", "edit", $Repository, "--description", $description)
 foreach ($topic in $topics) {
-    gh repo edit $Repository --add-topic $topic
+    Invoke-Gh @("repo", "edit", $Repository, "--add-topic", $topic)
 }
 
 $labels = @(
@@ -57,30 +71,13 @@ $labels = @(
 )
 
 foreach ($label in $labels) {
-    gh label create $label.Name --repo $Repository --color $label.Color --description $label.Description --force
+    Invoke-Gh @(
+        "label", "create", $label.Name,
+        "--repo", $Repository,
+        "--color", $label.Color,
+        "--description", $label.Description,
+        "--force"
+    )
 }
 
-$issues = @(
-    @{ Title = "[Security] Harden JWT validation"; Labels = "area: security,type: chore,priority: high" },
-    @{ Title = "[Security] Add login/register rate limiting tests"; Labels = "area: security,type: test,priority: medium" },
-    @{ Title = "[Security] Audit IDOR protection for subjects and tasks"; Labels = "area: security,area: backend,type: test,priority: high" },
-    @{ Title = "[Security] Document Docker secret rotation"; Labels = "area: security,area: docs,type: docs,priority: low" },
-    @{ Title = "[Backend] Add auth integration tests"; Labels = "area: backend,type: test,priority: high" },
-    @{ Title = "[Backend] Add task ownership tests"; Labels = "area: backend,type: test,priority: high" },
-    @{ Title = "[Backend] Standardize API error responses"; Labels = "area: backend,type: refactor,priority: medium" },
-    @{ Title = "[Backend] Add export endpoint for JSON/CSV"; Labels = "area: backend,type: feature,priority: low" },
-    @{ Title = "[Frontend] Add loading, empty, and error states"; Labels = "area: frontend,area: ui,type: feature,priority: high" },
-    @{ Title = "[Frontend] Redesign Tasks page cards"; Labels = "area: frontend,area: ui,type: feature,priority: medium" },
-    @{ Title = "[Frontend] Redesign Subjects page cards"; Labels = "area: frontend,area: ui,type: feature,priority: medium" },
-    @{ Title = "[Frontend] Add quick filters for tasks"; Labels = "area: frontend,type: feature,priority: medium" },
-    @{ Title = "[Frontend] Add deadline severity badges"; Labels = "area: frontend,area: ui,type: feature,priority: medium" },
-    @{ Title = "[Docs] Add screenshots to README"; Labels = "area: docs,type: docs,priority: medium" },
-    @{ Title = "[Docs] Add architecture diagram asset"; Labels = "area: docs,type: docs,priority: low" },
-    @{ Title = "[Docs] Expand API examples"; Labels = "area: docs,type: docs,priority: low" }
-)
-
-foreach ($issue in $issues) {
-    gh issue create --repo $Repository --title $issue.Title --body "Tracked from the engineering backlog." --label $issue.Labels
-}
-
-Write-Host "Repository metadata, labels, and backlog issues are configured."
+Write-Host "Repository description, topics, and labels are configured."

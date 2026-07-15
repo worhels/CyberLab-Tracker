@@ -1,266 +1,143 @@
 # Roadmap
 
-CyberLab Tracker is a local-first academic workload tracker. The project is not
-an enterprise platform; it is a practical full-stack application with a clear
-security hardening path and portfolio-grade repository presentation.
+CyberLab Tracker is a local-first academic workload tracker. The roadmap keeps
+security, data contracts, and release quality gates ahead of feature expansion.
 
 ## Current Status
 
-Last updated: July 2, 2026.
+Last updated: July 15, 2026.
 
-Status markers below were audited against the current implementation, automated
-tests, and visible GitHub repository metadata.
+Status markers reflect the implementation and automated checks in this branch.
+Repository metadata, screenshots, and releases remain incomplete until they are
+actually published on GitHub.
 
-### Done
+### Beta-readiness baseline
 
-- FastAPI backend
-- PostgreSQL database
-- SQLAlchemy models
-- Alembic migrations
-- React and TypeScript frontend
-- Docker Compose setup
-- Authentication base flow
-- Dashboard, Subjects, Tasks, Settings, and Crisis Mode pages
-- Soft UI redesign with Zerkalo, dark, light, and system theme support
-- Light-theme normalization across shell, cards, forms, badges, tables, and task views
-- Route-aware pressure-field visual backgrounds
-- Automatic viewport/CPU quality tiers for the authentication visual
-- Collapsible desktop sidebar and responsive mobile navigation
-- Page transitions and route fallback
-- Crisis Volume 3D visualization
-- Workload sphere and subject hotspot visualization
-- Unified subject/task creation surface
-- Basic CRUD for subjects and tasks
-- Task status updates
-- Accessible confirmation dialogs for task and subject deletion
-- Task search, priority/type filters, list modes, and pagination
-- Due-date/status quick filters with one-action reset
-- Task deadline severity badges
-- Responsive task cards for small screens
-- Selected-subject active, completed, overdue, and progress statistics
-- Per-user JSON and CSV workspace export
-- Dashboard priority queue, subject progress, and recent activity widgets
-- User settings model, migration, CRUD layer, API endpoint, and frontend context
-- Persisted language, theme, accent color, dashboard density, Crisis Cube,
-  reduced motion, and deadline-reminder preferences
-- Russian, Ukrainian, and English labels for the settings/app-shell flow
-- JWT required claims
-- Generic authentication errors
-- Auth endpoint rate limiting
-- Auth integration coverage for registration, login, token rejection, and rate limits
-- Dummy password verification for missing users
-- Explicit CORS configuration
-- API docs disabled outside debug mode
-- Completed-task filtering in Crisis Mode
-- Crisis metrics unit coverage
-- User settings unit coverage
-- Automated subject and task ownership coverage
-- Full subject and task CRUD integration coverage
-- Repository CI, docs, issue templates, and security docs
+- [x] FastAPI, PostgreSQL, SQLAlchemy, Alembic, React, and TypeScript stack
+- [x] Authentication, Dashboard, Subjects, Tasks, Calendar, Settings, and Crisis Mode
+- [x] Subject and task create, read, update, and delete workflows
+- [x] Responsive light/dark UI with mobile navigation and reduced-motion support
+- [x] Backend regression suite and frontend unit/component tests
+- [x] Strict Pyright and TypeScript checks in CI
+- [x] PostgreSQL migration upgrade/parity/downgrade/upgrade job
+- [x] Dependency audit, dependency review, CodeQL, and release workflow definitions
+- [x] Architecture, API, development, security, threat-model, and beta-release docs
 
-## Phase 0: Security Hardening
+## Phase 0: Security And Contract Hardening
 
-Security hardening blocks major feature expansion. The project should keep a
-predictable security baseline before adding larger workflows.
+### Authentication And Passwords
 
-### Authentication And JWT
+- [x] Use PyJWT with a fixed `HS256` algorithm and required access-token claims
+- [x] Reject missing claims, invalid token types, expired tokens, and malformed tokens
+- [x] Require a non-placeholder JWT secret with a minimum safe length
+- [x] Make access-token expiration configurable
+- [x] Use direct bcrypt hashing with configurable work factor
+- [x] Enforce bcrypt's 72-byte password boundary at registration and verification
+- [x] Use dummy password verification and generic authentication errors
+- [x] Rate-limit registration and login with regression coverage
+- [ ] Replace the in-process rate limiter before multi-instance public deployment
 
-- [x] Use PyJWT
-- [x] Use a fixed JWT algorithm
-- [x] Add required JWT claims: `sub`, `exp`, `iat`, `type`
-- [x] Validate required claims during token decode
-- [x] Use `type="access"` for access tokens
-- [x] Reject tokens with missing or invalid `type`
-- [x] Make token expiration configurable through environment variables
-- [x] Return the same auth error for wrong email and wrong password
-- [x] Add integration coverage for expired tokens
-- [x] Add integration coverage for malformed tokens
+### API Contracts And Data Isolation
 
-### Password Hashing
+- [x] Normalize accepted task datetimes to timezone-aware UTC
+- [x] Reject timezone-naive task datetimes
+- [x] Reject explicit `null` for required patch fields while preserving documented clears
+- [x] Keep subject, task, dashboard, export, and mentor queries user-scoped
+- [x] Cover cross-user subject and task access with regression tests
+- [x] Include active overdue workload in Crisis debt calculations
+- [ ] Standardize the response envelope for all API errors
 
-- [x] Centralize password hashing logic
-- [x] Configure bcrypt rounds
-- [x] Use dummy hash verification for missing users
-- [x] Document password policy expectations
+### Runtime Security
 
-### Rate Limiting
-
-- [x] Add rate limiting to `/auth/login`
-- [x] Add rate limiting to `/auth/register`
-- [x] Add tests for rate limit behavior
-- [x] Consider persistent rate limiting if the app gets deployed beyond local use
-
-### CORS And API Docs
-
-- [x] Use explicit frontend origins
-- [x] Use explicit methods
-- [x] Use explicit headers
-- [x] Disable `/docs`, `/redoc`, and `/openapi.json` unless `DEBUG=true`
-
-### IDOR Audit
-
-- [x] Subject endpoints filter by current user
-- [x] Task endpoints filter by current user through subject ownership
-- [x] Dashboard queries filter by current user
-- [x] Add automated ownership tests for subject access
-- [x] Add automated ownership tests for task access
-
-### Docker And Secrets
-
-- [x] Require `POSTGRES_PASSWORD`
-- [x] Require `JWT_SECRET_KEY`
-- [x] Keep `.env` ignored
-- [x] Provide safe `.env.example`
+- [x] Use explicit CORS origins, methods, and headers
+- [x] Disable OpenAPI UI and schema endpoints unless `DEBUG=true`
+- [x] Require database and JWT secrets through deployment configuration
 - [x] Keep PostgreSQL off the host port by default
-- [x] Document secret rotation for local development
+- [x] Document secret rotation and the public-beta deployment boundary
+- [ ] Add session revocation and account recovery before a broader hosted beta
 
 ## Phase 1: UI Completion
 
-- [x] Unify spacing, card radius, shadows, buttons, forms, and hover states
-- [x] Add loading states across all main pages
-- [x] Add empty states across all main data pages
-- [x] Add error states across all main data pages
-- [x] Improve Tasks page card/table layout
-- [x] Improve Subjects page cards and creation flow
-- [x] Add subject progress preview on Dashboard
-- [x] Improve Settings page form structure
-- [x] Add dashboard compact/comfortable density setting
-- [x] Add user-controlled visual fallback for Crisis Mode
-- [x] Add reduced-motion preference plumbing
-- [x] Normalize light theme so dark-scene styles do not leak into light UI
-- [x] Add confirmation for destructive actions
-- [x] Add automatic viewport/CPU quality selection to the authentication visual
-- [ ] Extend automatic performance-aware quality selection to workload and
-  Crisis visual effects
+- [x] Complete subject and task CRUD, including edit and destructive confirmation flows
+- [x] Extract reusable form dialogs and subject/task field groups
+- [x] Keep subject and task views synchronized after mutations
+- [x] Add loading, empty, error, filter, and responsive task states
+- [x] Preserve theme tokens across light, dark, and system themes
+- [x] Add reduced-motion behavior that avoids mounting the Crisis WebGL canvas
+- [x] Add mobile-safe Crisis layouts and lower-cost visual quality tiers
+- [x] Refactor the largest Subjects and Crisis page responsibilities into components/hooks
+- [ ] Continue splitting remaining large WebGL renderer modules
+- [ ] Consolidate remaining repeated UI primitives and unused styles
 
 ## Phase 2: Daily-use Features
 
-### Quick Filters
+### Task Workflow
 
-- [x] Search by task title/description
-- [x] Filter by priority
-- [x] Filter by task type
-- [x] Switch between all/tasks/subjects list modes
-- [x] Paginate task results
-- [x] Due today
-- [x] This week
-- [x] Overdue
-- [x] Completed
-- [x] Active
-- [x] Reset filters
+- [x] Search, priority, type, status, deadline, and list-mode filters
+- [x] Pagination and one-action filter reset
+- [x] Deadline severity badges for overdue, due-today, and near-deadline work
+- [x] Dashboard and workload subject statistics
+- [x] Authenticated JSON and CSV workspace export
 
-### Deadline Signals
+### Calendar
 
-- [x] Dashboard overdue count
-- [x] Dashboard nearest deadline
-- [x] Crisis scoring accounts for overdue, today, tomorrow, and 3-day pressure
-- [x] Subject workload severity states account for overdue and near-deadline tasks
-- [x] Deadline in 3 days badge
-- [x] Due today badge
-- [x] Overdue badge
-- [x] Task-level deadline severity styles
+- [x] Add a list-based Calendar route and navigation entry
+- [x] Group tasks by local calendar date
+- [x] Separate past deadlines, today, upcoming work, and tasks without deadlines
+- [x] Keep completed historical tasks visible without counting them as overdue
+- [x] Add localized responsive Calendar cards
 
-### Subject Statistics
+## Phase 3: Quality Gates And Packaging
 
-- [x] Dashboard subject progress preview
-- [x] Accepted/total ratio for top subjects
-- [x] Total task count per subject in the workload detail card
-- [x] Active task count per subject in the workload hotspot preview
-- [x] Completed task count per subject in the workload detail card
-- [x] Overdue task count per subject in the workload detail card
-- [x] Completed/total ratio in the workload detail card
+### Automated Quality
 
-### Export
+- [x] Add backend regression coverage for auth, contracts, ownership, and Crisis debt
+- [x] Add frontend unit/component coverage for calendar grouping, filters, formatting,
+  deadline badges, and nullable form serialization
+- [x] Enable strict TypeScript across application and test configurations
+- [x] Run strict Pyright, Ruff, pytest, frontend tests, lint, typecheck, and build in CI
+- [x] Audit Python and npm dependencies and update vulnerable packages
+- [x] Validate the full Alembic chain against PostgreSQL 16 in CI
 
-- [x] JSON export endpoint
-- [x] CSV export endpoint
-- [x] Frontend export button
-- [x] Include subjects, tasks, and timestamps
+### Repository And Release Preparation
 
-### Calendar View
+- [x] Refresh README, architecture, API, development, security, and threat-model docs
+- [x] Add a public-beta release checklist and MIT license assessment
+- [x] Add Dependabot configuration and stricter dependency review
+- [x] Define a tag-triggered prerelease workflow with frontend artifacts, checksums,
+  backend container publishing, and migration validation
+- [ ] Publish product screenshots
+- [ ] Publish GitHub About description and topics
+- [ ] Create the first tagged GitHub prerelease and verify its artifacts
+- [ ] Create a GitHub Project board and prioritized engineering backlog
 
-- [ ] List-based calendar view
-- [ ] Group tasks by date
-- [ ] Highlight today
-- [ ] Highlight overdue tasks
-- [ ] Separate tasks without deadlines
+## Post-beta Backlog
 
-## Phase 3: Portfolio Packaging
+- Persistent distributed rate limiting and trusted-proxy handling
+- Account recovery, email verification, session revocation, and optional 2FA
+- End-to-end browser tests and visual regression coverage
+- Import from JSON/CSV and archived completed work
+- Bulk operations, task templates, command palette, and keyboard shortcuts
+- Advanced workload charts and accessibility audits
+- Calendar provider integrations after the local Calendar workflow is stable
 
-- [x] README overview and project positioning
-- [x] README update for settings, themes, workload visuals, and current UI state
-- [x] Architecture docs
-- [x] Branching docs
-- [x] Contributing guide
-- [x] Security policy
-- [x] Threat model
-- [x] Security model
-- [x] API overview
-- [x] Development guide
-- [x] Changelog
-- [x] License
-- [x] CI workflow
-- [x] CodeQL workflow
-- [x] Dependency review workflow
-- [ ] Screenshots
-- [ ] GitHub About description
-- [ ] GitHub topics
-- [ ] GitHub Project board
-- [ ] Engineering backlog issues
+## Deliberately Out Of Scope For The Current Beta
 
-## Phase 4: Tests And Maintainability
-
-- [x] JWT required-claim unit tests
-- [x] JWT wrong-token-type rejection test
-- [x] JWT missing-claim rejection test
-- [x] Crisis metrics unit test
-- [x] User settings default/update tests
-- [x] Auth integration tests
-- [x] Task CRUD integration tests
-- [x] Subject CRUD integration tests
-- [x] Task ownership denial tests
-- [x] Subject ownership denial tests
-- [ ] Standardize API error responses
-- [ ] Split large frontend components
-- [x] Add shared PageHeader and EmptyState primitives
-- [x] Add reusable Badge and StatCard primitives
-- [ ] Consolidate remaining reusable UI primitives
-- [ ] Review dead code and unused styles
-
-## Backlog
-
-- Command palette
-- Custom themes
-- Layout density settings
-- Task templates
-- Bulk operations
-- Multi-select tasks
-- Advanced dashboard charts
-- Keyboard shortcuts
-- Local import from JSON/CSV
-- Archive old completed tasks
-
-## Deliberately Out Of Scope
-
-- Public multi-tenant production deployment
-- Email verification
-- Password reset by email
-- Two-factor authentication
-- External OAuth providers
+- Enterprise multi-tenancy
 - Payment processing
-- Admin panel
-- Role-based access control
-- WebSocket real-time sync
-- Google Calendar integration
-- Mobile application
+- Admin panel and role-based access control
+- WebSocket real-time collaboration
+- Native mobile applications
+- External calendar synchronization
 
 ## Definition Of Done
 
-A task is done only when:
+A roadmap item is done only when:
 
-- the behavior works manually
-- relevant automated checks pass
-- loading, empty, and error states are considered
-- sensitive data is not committed
-- documentation is updated when behavior changes
-- the change remains scoped to the project phase
+- behavior is implemented and manually reviewable;
+- relevant automated checks pass;
+- loading, empty, error, responsive, and motion states are considered where applicable;
+- data ownership and nullable API semantics remain explicit;
+- sensitive data is not committed;
+- documentation matches the shipped behavior; and
+- external GitHub or release work is marked complete only after publication.

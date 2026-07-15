@@ -63,6 +63,14 @@ Apply migrations:
 docker compose exec backend alembic upgrade head
 ```
 
+Check model/migration parity and reversibility:
+
+```powershell
+docker compose exec backend alembic check
+docker compose exec backend alembic downgrade base
+docker compose exec backend alembic upgrade head
+```
+
 Create a migration after model changes:
 
 ```powershell
@@ -96,6 +104,7 @@ Run checks:
 
 ```powershell
 ruff check .
+pyright
 pytest
 python -m compileall app scripts alembic
 ```
@@ -106,10 +115,16 @@ python -m compileall app scripts alembic
 cd frontend
 npm ci
 npm run dev
+npm test
 npm run typecheck
 npm run lint
 npm run build
+npm audit
 ```
+
+The API accepts only offset-aware task timestamps. Use `Z` or an explicit
+offset in direct API calls; the frontend converts `datetime-local` values to an
+ISO 8601 instant before submission.
 
 ## Troubleshooting
 

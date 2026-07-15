@@ -1,113 +1,146 @@
-# Threat Model
+# Threat model
+
+## System and trust boundaries
+
+```mermaid
+flowchart LR
+    User["User browser"] -->|"untrusted HTTP input"| Proxy["Deployment proxy"]
+    Proxy --> API["FastAPI"]
+    API --> DB[("PostgreSQL")]
+    API -->|"bounded prompts/context"| Ollama["Ollama endpoint"]
+    API -->|"JSON/CSV"| Export["User download"]
+```
+
+In local development the proxy boundary may be absent. For public hosting it is
+mandatory and must terminate TLS, set security headers, enforce body limits,
+and forward client identity only through a trusted configuration.
 
 ## Assets
 
-| Asset | Risk |
+| Asset | Primary risk |
 | --- | --- |
-| User account | Unauthorized access |
-| JWT access token | Token theft or replay |
-| Task data | IDOR or unauthorized reads |
-| Subject data | IDOR or unauthorized modification |
-| Database credentials | Secret leakage |
-| Local `.env` files | Accidental commit |
-| API docs | Information disclosure |
+| Password hashes | Offline cracking or truncation ambiguity |
+| JWT signing secret | Account impersonation |
+| Bearer token | Theft, replay, or XSS exfiltration |
+| Subject/task/settings data | IDOR, injection, or unintended export |
+| Mentor messages | Sensitive-text disclosure or prompt injection |
+| Database credentials/backups | Full data compromise |
+| CI and release credentials | Supply-chain compromise |
 
 ## Actors
 
-| Actor | Description |
-| --- | --- |
-| Legitimate local user | Uses the app locally |
-| Unauthenticated attacker | Tries auth abuse |
-| Authenticated malicious user | Tries to access another user's data |
-| Repository reviewer | Reads public code and docs |
-| Accidental developer mistake | Commits secrets or weak defaults |
+- unauthenticated internet attacker;
+- authenticated user probing another user's IDs;
+- malicious or compromised dependency;
+- attacker controlling text stored in tasks or Mentor prompts;
+- accidental operator/developer error;
+- compromised browser through XSS or extension access.
 
-## Main Threats
+## Threats and controls
 
-### 1. Broken Authentication
+### Authentication confusion
 
-Risk:
+Threats: weak secret, algorithm substitution, missing claims, malformed subject,
+bcrypt input truncation, or user enumeration.
 
-- weak JWT validation
-- missing claims
-- trusting token-provided algorithm
-- predictable secrets
+Controls:
 
-Mitigation:
+- fixed `HS256` allow-list and minimum 32-character secret;
+- required `sub`, `exp`, `iat`, and `type` claims;
+- active-user lookup after token validation;
+- direct bcrypt with validated cost and a 72-byte registration boundary;
+- dummy verification and generic login errors;
+- regression tests for malformed/expired/wrong-type tokens and password limits.
 
-- fixed JWT algorithm
-- required claims: `sub`, `exp`, `iat`, `type`
-- long random `JWT_SECRET_KEY`
-- no default production secrets
+Residual risk: bearer tokens are replayable until expiry and there is no token
+revocation or recovery flow.
 
-### 2. IDOR
+### Broken object-level authorization (IDOR)
 
-Risk:
+Threat: change a numeric task or subject ID to read or mutate another account.
 
-A user requests another user's task or subject by changing an ID.
+Controls: all task queries join the owned subject; subject, settings, dashboard,
+export, and Mentor queries filter by the current user; missing and foreign IDs
+both return `404`; ownership regressions cover read/write/delete paths.
 
-Mitigation:
+### XSS and token theft
 
-Every entity query must filter through the authenticated user's ownership.
+Threat: script execution reads the access token from `localStorage`.
 
-Correct task pattern:
+Controls: React escaping, no automatic execution of model/task content, typed
+rendering, and development CSP.
 
-```python
-task = db.scalar(
-    select(Task).join(Subject).where(
-        Task.id == task_id,
-        Subject.user_id == current_user.id,
-    )
-)
-```
+Residual risk: localStorage remains reachable to successful XSS and the Vite
+development CSP is not a production policy. Public hosting needs a strict proxy
+CSP and a reviewed cookie/token design.
 
-Incorrect pattern:
+### Brute force and denial of service
 
-```python
-task = db.scalar(select(Task).where(Task.id == task_id))
-```
+Threats: repeated auth attempts, expensive bcrypt work, large API bodies, long
+Mentor streams, or WebGL resource pressure.
 
-### 3. Brute-force Login
+Controls: auth rate limit, bounded schemas/context, Ollama timeout, user/system
+reduced-motion fallback, mobile quality tier, and server-side Crisis limits.
 
-Risk:
+Residual risk: the auth limiter is in-memory and process-local. Distributed
+limiting, reverse-proxy request limits, quotas, and monitoring are required for
+public exposure.
 
-Repeated login attempts against `/auth/login`.
+### Prompt injection and model boundary failure
 
-Mitigation:
+Threat: task text or user prompts instruct the model to reveal unrelated data or
+perform unsafe actions.
 
-- rate limit login endpoint
-- use a generic auth error
-- verify a dummy hash for missing users
+Controls: ownership is enforced before context creation; context is bounded;
+Ollama has no direct database access; output is displayed as text and not
+executed; incomplete streams are not persisted.
 
-### 4. CORS Misconfiguration
+Residual risk: model output can be incorrect or socially persuasive, and a
+remote Ollama-compatible URL would receive prompt data.
 
-Risk:
+### Export/privacy leakage
 
-Overly broad browser access.
+Threat: another user's data appears in an export, a shared proxy caches it, or a
+download is later exposed.
 
-Mitigation:
+Controls: export queries are ownership-scoped and filenames use authenticated
+responses. Public deployment must add `Cache-Control: no-store` at the
+application or proxy boundary and publish data handling/retention rules.
 
-- explicit frontend origins
-- explicit methods
-- explicit headers
-- no wildcard CORS policy
+### Time and nullable contract ambiguity
 
-### 5. Secret Leakage
+Threat: naive timestamps are interpreted differently across machines, or JSON
+`null` corrupts a required database column.
 
-Risk:
+Controls: offset-aware input is required and normalized to UTC; optional
+metadata supports deliberate clearing; required update fields reject explicit
+`null`; PostgreSQL migration and API regression jobs exercise the contract.
 
-Real `.env` values committed to Git.
+### Supply chain and migrations
 
-Mitigation:
+Threats: vulnerable dependencies, malicious package update, schema drift, or an
+irreversible release migration.
 
-- `.env` in `.gitignore`
-- safe `.env.example`
-- required Docker variables
-- no hardcoded JWT or DB passwords
+Controls: lockfile for npm, dependency review, Dependabot, CodeQL, package
+audits, strict type checks, and a PostgreSQL job that upgrades, checks parity,
+downgrades, and upgrades again.
 
-## Accepted Trade-offs
+Residual risk: Python requirements use compatible ranges rather than a
+fully-hashed lock. Release operators should build immutable artifacts and record
+resolved dependencies.
 
-- Local in-memory rate limiting resets when the backend process restarts.
-- There is no email verification or password reset flow.
-- There is no multi-role authorization model.
-- The app is optimized for local review and personal use, not public hosting.
+### Secrets and CI
+
+Threat: real secrets enter Git history, logs, images, or workflow output.
+
+Controls: ignored `.env` files, required runtime variables, test-only CI
+secrets, secret scanning/push protection, and no production secret defaults.
+
+## Accepted beta limitations
+
+- no email verification, password recovery, MFA, or external OAuth;
+- no distributed session revocation;
+- no production reverse-proxy configuration in this repository;
+- no formal privacy/retention policy;
+- no guarantee that optional third-party assets or local model weights share
+  the project's MIT license.

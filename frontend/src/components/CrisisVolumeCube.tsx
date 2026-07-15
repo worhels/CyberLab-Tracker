@@ -6,6 +6,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import type { MutableRefObject } from 'react'
+import type { VisualPerformanceTier } from '../hooks/useVisualPreferences'
 import type { CrisisSeverityCounts } from '../types'
 
 const TARGET_FPS = 60
@@ -17,6 +18,32 @@ const COUNT_EDGE = 16000
 const COUNT_MID = 12000
 const COUNT_CORE = 22000
 const MIN_CORE = 300
+
+const PERFORMANCE_PROFILES = {
+  high: {
+    targetFps: TARGET_FPS,
+    dpr: MAX_DPR,
+    edgeCount: COUNT_EDGE,
+    midCount: COUNT_MID,
+    coreCount: COUNT_CORE,
+    bloom: true,
+  },
+  low: {
+    targetFps: 24,
+    dpr: 1,
+    edgeCount: 5000,
+    midCount: 3500,
+    coreCount: 7000,
+    bloom: false,
+  },
+} as const satisfies Record<VisualPerformanceTier, {
+  targetFps: number
+  dpr: number
+  edgeCount: number
+  midCount: number
+  coreCount: number
+  bloom: boolean
+}>
 
 const START_ROTATION_X = -0.18
 const START_ROTATION_Y = 0.62
@@ -100,6 +127,8 @@ interface CubeSceneProps {
     mid: string
     core: string
   }
+  dprMax: number
+  bloomEnabled: boolean
 }
 
 interface BloomComposerProps {
@@ -116,6 +145,7 @@ interface CrisisVolumeCubeProps {
   cohesionScore: number
   instabilityScore: number
   severityCounts: CrisisSeverityCounts
+  performanceTier: VisualPerformanceTier
 }
 
 const VERT = /* glsl */ `
@@ -474,7 +504,16 @@ function BloomComposer({ assemblyRef, pressureRef }: BloomComposerProps) {
   return null
 }
 
-function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo, colors }: CubeSceneProps) {
+function CubeScene({
+  params,
+  tick,
+  edgeGeo,
+  midGeo,
+  coreGeo,
+  colors,
+  dprMax,
+  bloomEnabled,
+}: CubeSceneProps) {
   const { invalidate } = useThree()
   const groupRef = useRef<THREE.Group>(null)
   const timeRef = useRef(0)
@@ -492,12 +531,16 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo, colors }: CubeScene
     uPressure: { value: params.pressure },
     uScatter: { value: params.scatter },
     uJitter: { value: params.jitter },
-    uDpr: { value: Math.min(window.devicePixelRatio || 1, MAX_DPR) },
+    uDpr: { value: Math.min(window.devicePixelRatio || 1, dprMax) },
     uPointer: { value: new THREE.Vector2(0, 0) },
   })
   const edgeFillRef = useRef<THREE.IUniform<number>>({ value: params.edgeFill })
   const midFillRef = useRef<THREE.IUniform<number>>({ value: params.midFill })
   const coreFillRef = useRef<THREE.IUniform<number>>({ value: params.coreFill })
+
+  useEffect(() => {
+    sharedRef.current.uDpr.value = dprMax
+  }, [dprMax])
 
   useEffect(() => {
     const canvas = document.querySelector('.crisis-cube-canvas') as HTMLElement | null
@@ -632,7 +675,7 @@ function CubeScene({ params, tick, edgeGeo, midGeo, coreGeo, colors }: CubeScene
           renderOrder={1}
         />
       </group>
-      <BloomComposer assemblyRef={assemblyRef} pressureRef={pressureRef} />
+      {bloomEnabled ? <BloomComposer assemblyRef={assemblyRef} pressureRef={pressureRef} /> : null}
     </>
   )
 }
@@ -646,6 +689,7 @@ export function CrisisVolumeCube({
   cohesionScore,
   instabilityScore,
   severityCounts,
+  performanceTier,
 }: CrisisVolumeCubeProps) {
   const [tick, setTick] = useState(0)
   const isLightTheme = useIsLightTheme()
@@ -654,22 +698,23 @@ export function CrisisVolumeCube({
     [cohesionScore, completionRatio, instabilityScore, pressureScore],
   )
   const seed = useMemo(() => stableSeed(totalTasks, activeTasks, acceptedTasks), [acceptedTasks, activeTasks, totalTasks])
-  const dprMax = Math.min(MAX_DPR, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
+  const profile = PERFORMANCE_PROFILES[performanceTier]
+  const dprMax = Math.min(profile.dpr, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
   const colors = isLightTheme
     ? { edge: '#141414', mid: '#4d4a43', core: '#161616' }
     : { edge: '#f0ede4', mid: '#c8c4bc', core: '#f0ede4' }
 
   useEffect(() => {
-    const id = window.setInterval(() => setTick((current) => current + 1), 1000 / TARGET_FPS)
+    const id = window.setInterval(() => setTick((current) => current + 1), 1000 / profile.targetFps)
     return () => window.clearInterval(id)
-  }, [])
+  }, [profile.targetFps])
 
   const { edgeGeo, midGeo, coreGeo } = useMemo(() => {
     const random = makeRng(seed)
 
     return {
       edgeGeo: buildLayerGeometry(
-        COUNT_EDGE,
+        profile.edgeCount,
         (layerRandom) => (layerRandom() < 0.25 ? sampleCorner(layerRandom) : sampleEdge(layerRandom)),
         CUBE_SCALE,
         (random() * 0xfffff) | 0,
@@ -677,7 +722,7 @@ export function CrisisVolumeCube({
         1.55,
       ),
       midGeo: buildLayerGeometry(
-        COUNT_MID,
+        profile.midCount,
         sampleFace,
         CUBE_SCALE * 0.97,
         (random() * 0xfffff) | 0,
@@ -685,7 +730,7 @@ export function CrisisVolumeCube({
         1.05,
       ),
       coreGeo: buildLayerGeometry(
-        Math.max(COUNT_CORE, MIN_CORE),
+        Math.max(profile.coreCount, MIN_CORE),
         sampleInterior,
         CUBE_SCALE * 0.75,
         (random() * 0xfffff) | 0,
@@ -693,7 +738,7 @@ export function CrisisVolumeCube({
         1.8,
       ),
     }
-  }, [seed])
+  }, [profile.coreCount, profile.edgeCount, profile.midCount, seed])
 
   useEffect(() => {
     return () => {
@@ -705,7 +750,7 @@ export function CrisisVolumeCube({
 
   return (
     <div className="crisis-cube-wrap" style={{ width: '100%' }}>
-      <div style={{ position: 'relative', width: '100%', height: '360px', overflow: 'hidden' }}>
+      <div className="crisis-cube-stage">
         <Canvas
           className="crisis-cube-canvas"
           camera={{ position: [0, 0.1, 3.4], fov: 40 }}
@@ -714,11 +759,20 @@ export function CrisisVolumeCube({
           gl={{ alpha: true, antialias: false, powerPreference: 'default' }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0)
-            gl.setPixelRatio(Math.min(gl.getPixelRatio(), MAX_DPR))
+            gl.setPixelRatio(Math.min(gl.getPixelRatio(), dprMax))
           }}
           style={{ background: 'transparent', cursor: 'grab', touchAction: 'none' }}
         >
-          <CubeScene params={params} tick={tick} edgeGeo={edgeGeo} midGeo={midGeo} coreGeo={coreGeo} colors={colors} />
+          <CubeScene
+            params={params}
+            tick={tick}
+            edgeGeo={edgeGeo}
+            midGeo={midGeo}
+            coreGeo={coreGeo}
+            colors={colors}
+            dprMax={dprMax}
+            bloomEnabled={profile.bloom}
+          />
         </Canvas>
 
         <div
@@ -807,22 +861,13 @@ export function CrisisVolumeCube({
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          borderTop: '1px solid rgba(255,255,255,0.05)',
-        }}
-      >
+      <div className="crisis-priority-grid">
         {PRIORITY_CELLS.map(({ key, label, color }) => (
           <div
             key={key}
+            className="crisis-priority-cell"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '5px',
-              padding: '14px 18px',
-              borderRight: '1px solid rgba(255,255,255,0.04)',
+              borderColor: 'var(--panel-border)',
             }}
           >
             <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--text-faint)' }}>

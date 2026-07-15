@@ -138,12 +138,11 @@ def build_workspace_context(
     accepted_tasks = [task for task in tasks if task.status == TaskStatus.ACCEPTED]
     active_tasks = [task for task in tasks if task.status != TaskStatus.ACCEPTED]
     overdue_tasks = [task for task in tasks if is_overdue(task, now)]
-    upcoming_deadlines = [
-        normalize_datetime(task.deadline)
-        for task in active_tasks
-        if normalize_datetime(task.deadline) is not None
-        and normalize_datetime(task.deadline) >= now
-    ]
+    upcoming_deadlines: list[datetime] = []
+    for task in active_tasks:
+        deadline = normalize_datetime(task.deadline)
+        if deadline is not None and deadline >= now:
+            upcoming_deadlines.append(deadline)
     nearest_deadline = min(upcoming_deadlines) if upcoming_deadlines else None
     status_counts = {
         status.value: sum(1 for task in tasks if task.status == status)
@@ -194,15 +193,10 @@ def build_workspace_context(
         active_tasks[:ACTIVE_TASK_LIST_LIMIT]
         + accepted_tasks[:COMPLETED_TASK_LIST_LIMIT]
     )
-    task_summaries = [
-        task_summary(
-            task,
-            subject_by_id.get(task.subject_id).name
-            if subject_by_id.get(task.subject_id) is not None
-            else None,
-        )
-        for task in context_tasks
-    ]
+    task_summaries: list[dict[str, object]] = []
+    for task in context_tasks:
+        subject = subject_by_id.get(task.subject_id)
+        task_summaries.append(task_summary(task, subject.name if subject is not None else None))
 
     normalized_page = page.split("?", maxsplit=1)[0]
     context: dict[str, object] = {
