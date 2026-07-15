@@ -33,16 +33,27 @@ GitHub Container Registry packages owned by a personal account are private on
 first publication. Verify the package visibility before advertising anonymous
 pulls; a public GHCR package cannot later be made private again.
 
+`v0.1.0-beta.1` verification:
+
+- GitHub prerelease: `https://github.com/worhels/CyberLab-Tracker/releases/tag/v0.1.0-beta.1`
+- frontend archive SHA-256: `031378b8098ee52753905207342a4fd92ab3223e5214dd7d1947bb2d63c86c2b`
+- public API image index: `sha256:ee9027e1bd48fd1cda31b60e9c44f4fa373fd02b2c4f2d8971bb70b1dd6018af`
+- published archive contents and checksum verified after download
+
 ## Repository release gate
 
-- [ ] CI, CodeQL, dependency review, and PostgreSQL migration jobs pass
-- [ ] `npm audit` reports zero known vulnerabilities
-- [ ] backend and frontend regression suites pass
-- [ ] README screenshots match the release
-- [ ] roadmap and changelog match shipped behavior
-- [ ] release tag follows SemVer, for example `v0.1.0-beta.1`
+- [x] CI, CodeQL, dependency review, and PostgreSQL migration jobs pass
+- [x] `npm audit` reports zero known vulnerabilities
+- [x] backend and frontend regression suites pass
+- [x] README screenshots match the release
+- [x] roadmap and changelog match shipped behavior
+- [x] release tag follows SemVer, for example `v0.1.0-beta.1`
 - [ ] generated frontend artifact and backend image are reproducible
-- [ ] no `.env`, tokens, private keys, database dumps, or personal exports are tracked
+- [x] no `.env`, tokens, private keys, database dumps, or personal exports are tracked
+
+The published assets are checksummed and digest-addressable, but exact
+reproducibility remains open until Python dependencies and the base image are
+pinned to immutable versions/digests.
 
 ## Controlled self-hosted beta gate
 
@@ -54,7 +65,7 @@ pulls; a public GHCR package cannot later be made private again.
 - [ ] persistent auth rate limiting
 - [ ] monitoring and alerting
 - [ ] documented incident/rollback procedure
-- [ ] private vulnerability reporting enabled
+- [x] private vulnerability reporting enabled
 
 ## Public internet gate
 

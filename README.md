@@ -7,6 +7,7 @@
 <p align="center">
   <a href="https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml"><img src="https://github.com/worhels/CyberLab-Tracker/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
   <a href="https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml"><img src="https://github.com/worhels/CyberLab-Tracker/actions/workflows/codeql.yml/badge.svg" alt="CodeQL status" /></a>
+  <a href="https://github.com/worhels/CyberLab-Tracker/releases"><img src="https://img.shields.io/github/v/release/worhels/CyberLab-Tracker?include_prereleases&amp;sort=semver&amp;style=flat-square" alt="Latest release" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-6f7bf7?style=flat-square" alt="MIT license" /></a>
   <img src="https://img.shields.io/badge/Python-3.12-0b0c10?style=flat-square&amp;logo=python" alt="Python 3.12" />
   <img src="https://img.shields.io/badge/React-19-0b0c10?style=flat-square&amp;logo=react" alt="React 19" />
@@ -99,6 +100,20 @@ To enable CyberMentor:
 ```powershell
 ollama pull qwen2.5-coder:7b
 ```
+
+## Beta packages
+
+The first verified prerelease is
+[v0.1.0-beta.1](https://github.com/worhels/CyberLab-Tracker/releases/tag/v0.1.0-beta.1).
+It includes a checksummed frontend archive and a public Linux API image:
+
+```powershell
+docker pull ghcr.io/worhels/cyberlab-tracker-api:v0.1.0-beta.1
+```
+
+The packaged frontend uses the same-origin `/api/v1` path. Network deployments
+must serve the static files and proxy `/api/v1` to FastAPI behind TLS; the
+repository remains a controlled beta rather than production SaaS.
 
 ## Architecture
 

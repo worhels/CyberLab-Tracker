@@ -8,8 +8,8 @@ security, data contracts, and release quality gates ahead of feature expansion.
 Last updated: July 15, 2026.
 
 Status markers reflect the implementation and automated checks in this branch.
-Repository metadata and product screenshots are published. Tagged releases and
-the optional project board remain incomplete until they exist on GitHub.
+Repository metadata, English product screenshots, and the first tagged
+prerelease are published. The optional project board remains incomplete.
 
 ### Beta-readiness baseline
 
@@ -108,7 +108,7 @@ the optional project board remain incomplete until they exist on GitHub.
   backend container publishing, and migration validation
 - [x] Publish English product screenshots
 - [x] Publish GitHub About description and topics
-- [ ] Create the first tagged GitHub prerelease and verify its artifacts
+- [x] Create the first tagged GitHub prerelease and verify its artifacts
 - [ ] Create a GitHub Project board and prioritized engineering backlog
 
 ## Post-beta Backlog
