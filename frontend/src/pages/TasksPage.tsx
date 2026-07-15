@@ -10,7 +10,9 @@ import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
 import { SubjectEditDialog } from '../components/forms/SubjectEditDialog'
 import { TaskEditDialog } from '../components/forms/TaskEditDialog'
-import { WorkloadSphereCanvas } from '../components/visuals/WorkloadSphereCanvas'
+import { WorkloadVisualization } from '../components/visuals/WorkloadVisualization'
+import { useSettings } from '../context/SettingsContext'
+import { useSystemReducedMotion, useVisualPerformanceTier } from '../hooks/useVisualPreferences'
 import type { Subject, Task, TaskPriority, TaskStatus, TaskType } from '../types'
 import { getErrorMessage } from '../utils/errors'
 import { formatDate, humanize } from '../utils/format'
@@ -43,6 +45,9 @@ interface AppliedTaskFilters {
 }
 
 export function TasksPage() {
+  const { settings } = useSettings()
+  const systemReducedMotion = useSystemReducedMotion()
+  const performanceTier = useVisualPerformanceTier()
   const [searchParams, setSearchParams] = useSearchParams()
   const [tasks, setTasks] = useState<Task[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
@@ -265,7 +270,14 @@ export function TasksPage() {
 
       {!isLoading ? (
         <section className="tasks-visual-section">
-          <WorkloadSphereCanvas tasks={tasks} subjects={subjects} />
+          <WorkloadVisualization
+            tasks={tasks}
+            subjects={subjects}
+            preferencesReady={settings !== null}
+            userReducedMotion={settings?.reduced_motion === true}
+            systemReducedMotion={systemReducedMotion}
+            performanceTier={performanceTier}
+          />
         </section>
       ) : null}
 
