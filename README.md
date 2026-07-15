@@ -25,7 +25,9 @@ calendar, exports, and an optional local Ollama mentor.
 
 ## Product tour
 
-![Dashboard overview](docs/assets/screenshots/dashboard.png)
+| Dashboard | Tasks | Calendar |
+| --- | --- | --- |
+| ![English Dashboard overview](docs/assets/screenshots/dashboard.jpg) | ![English task CRUD and filters](docs/assets/screenshots/tasks.jpg) | ![English deadline Calendar](docs/assets/screenshots/calendar.jpg) |
 
 ## What is included
 

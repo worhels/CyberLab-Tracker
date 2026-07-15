@@ -8,8 +8,8 @@ security, data contracts, and release quality gates ahead of feature expansion.
 Last updated: July 15, 2026.
 
 Status markers reflect the implementation and automated checks in this branch.
-Repository metadata, screenshots, and releases remain incomplete until they are
-actually published on GitHub.
+Repository metadata and product screenshots are published. Tagged releases and
+the optional project board remain incomplete until they exist on GitHub.
 
 ### Beta-readiness baseline
 
@@ -106,8 +106,8 @@ actually published on GitHub.
 - [x] Add Dependabot configuration and stricter dependency review
 - [x] Define a tag-triggered prerelease workflow with frontend artifacts, checksums,
   backend container publishing, and migration validation
-- [ ] Publish product screenshots
-- [ ] Publish GitHub About description and topics
+- [x] Publish English product screenshots
+- [x] Publish GitHub About description and topics
 - [ ] Create the first tagged GitHub prerelease and verify its artifacts
 - [ ] Create a GitHub Project board and prioritized engineering backlog
 

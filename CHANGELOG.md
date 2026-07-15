@@ -21,6 +21,8 @@ All notable changes to CyberLab Tracker are documented here.
 - Dependabot configuration and a tag-triggered prerelease workflow for frontend
   artifacts, checksums, a backend container image, and migration validation.
 - A public-beta checklist covering deployment prerequisites and MIT license limits.
+- English Dashboard, task CRUD, and Calendar screenshots for the repository product tour.
+- GitHub About metadata, topics, security-update automation, and private vulnerability reporting.
 
 ### Changed
 
@@ -56,6 +58,4 @@ All notable changes to CyberLab Tracker are documented here.
 
 ### Pending Publication
 
-- The dashboard screenshot is included; Tasks and Calendar screenshots are still pending.
-- GitHub About metadata and topics have not yet been updated.
 - No tagged prerelease or GitHub release artifact has been published yet.
