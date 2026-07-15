@@ -21,6 +21,24 @@ holder, remove or document the provenance of bundled media, retain dependency
 notices, and review the license of the selected Ollama model. This is an
 engineering assessment, not legal advice.
 
+The recommended local Mentor model is `qwen3-coder:30b`. Its weights are a
+separate dependency and are not relicensed by CyberLab's MIT License. Operators
+must review and retain the upstream model terms for their distribution or
+hosting scenario.
+
+## Mentor artifact boundary
+
+The current beta does not expose a general AI coding agent. Build mode supports
+only `bcrypt-timing-web-v1`: Ollama supplies a strict non-executable
+specification and the backend renders reviewed files into an isolated per-user
+volume. Downloads are attachment-only and CyberLab never previews or executes
+the artifact. Real passwords must not be used.
+
+Before adding more templates or any execution endpoint, require a separate
+rootless worker with no network, secrets, database, Docker socket, host source
+tree, or writable host mounts; pin its image digest and enforce CPU, memory,
+process, output, and time limits.
+
 ## Release artifact contract
 
 Tagged prereleases publish a frontend archive containing `dist/` and the MIT
@@ -75,6 +93,7 @@ In addition to every item above:
 - [ ] password recovery and session revocation strategy
 - [ ] privacy, retention, deletion, and acceptable-use policies
 - [ ] abuse controls and resource quotas for Mentor/SSE
+- [ ] persistent artifact retention/deletion policy and distributed generation quota
 - [ ] legal review for jurisdiction-specific privacy obligations
 
 Until the public internet gate is complete, describe deployments as controlled

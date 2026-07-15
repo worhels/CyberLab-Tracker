@@ -22,6 +22,7 @@ prerelease are published. The optional project board remains incomplete.
 - [x] PostgreSQL migration upgrade/parity/downgrade/upgrade job
 - [x] Dependency audit, dependency review, CodeQL, and release workflow definitions
 - [x] Architecture, API, development, security, threat-model, and beta-release docs
+- [x] Local Qwen3-Coder Mentor with a reviewed, checksummed bcrypt artifact workflow
 
 ## Phase 0: Security And Contract Hardening
 
@@ -70,6 +71,18 @@ prerelease are published. The optional project board remains incomplete.
 - [ ] Consolidate remaining repeated UI primitives and unused styles
 
 ## Phase 2: Daily-use Features
+
+### CyberMentor Reliability And Reviewed Artifacts
+
+- [x] Replace the undersized default model with tested `qwen3-coder:30b`
+- [x] Disable implicit thinking for predictable chat latency and pass the selected UI language
+- [x] Keep chat ownership-scoped and separate from task execution
+- [x] Add Build mode for the reviewed `bcrypt-timing-web-v1` template
+- [x] Validate a closed model specification and prevent model-selected paths or commands
+- [x] Store immutable per-user artifacts with atomic writes, hashes, quotas, and authenticated ZIP download
+- [x] Add mocked regression coverage plus an opt-in real Ollama acceptance test
+- [ ] Add persistent distributed generation quotas before public multi-instance hosting
+- [ ] Design a separate rootless, networkless verifier before supporting additional executable templates
 
 ### Task Workflow
 
@@ -120,6 +133,7 @@ prerelease are published. The optional project board remains incomplete.
 - Bulk operations, task templates, command palette, and keyboard shortcuts
 - Advanced workload charts and accessibility audits
 - Calendar provider integrations after the local Calendar workflow is stable
+- Additional reviewed Mentor templates after sandbox and abuse-control work
 
 ## Deliberately Out Of Scope For The Current Beta
 
@@ -129,6 +143,7 @@ prerelease are published. The optional project board remains incomplete.
 - WebSocket real-time collaboration
 - Native mobile applications
 - External calendar synchronization
+- Arbitrary AI repository editing, shell access, or execution inside the API container
 
 ## Definition Of Done
 

@@ -43,6 +43,9 @@ calendar, exports, and an optional local Ollama mentor.
   filtering for every user-owned resource.
 - **Workspace tools:** JSON/CSV export, persisted theme/language/motion settings,
   and an optional ownership-bounded CyberMentor backed by local Ollama.
+- **Reviewed AI build:** the Mentor Build mode turns a strict Ollama specification
+  into an isolated, checksummed bcrypt timing web prototype and downloadable ZIP.
+  The model never receives a shell or arbitrary filesystem access.
 - **Quality gates:** Ruff, strict Pyright, backend regression tests, strict
   TypeScript, frontend unit tests, ESLint, production build, CodeQL, dependency
   review, and PostgreSQL migration checks.
@@ -55,7 +58,7 @@ calendar, exports, and an optional local Ollama mentor.
 | Data | PostgreSQL 16, SQLAlchemy 2, Alembic |
 | Web | React 19, strict TypeScript, Vite, React Router |
 | UI | Framer Motion, Three.js, React Three Fiber, design tokens |
-| Local AI | Ollama, intent routing, bounded context, SSE |
+| Local AI | Ollama, Qwen3-Coder, bounded context, SSE, reviewed artifacts |
 | Tests and CI | Pytest, Pyright, Ruff, Vitest, Testing Library, GitHub Actions |
 
 ## Quick start
@@ -95,11 +98,26 @@ Useful variants:
 .\scripts\dev.ps1 -ResetDb
 ```
 
-To enable CyberMentor:
+To enable CyberMentor, install the tested default model and keep Ollama running:
 
 ```powershell
-ollama pull qwen2.5-coder:7b
+ollama pull qwen3-coder:30b
+ollama serve
 ```
+
+`qwen3-coder:30b` is an 18 GB sparse coding model. On the development machine
+(RTX 3060 Ti 8 GB, 32 GB RAM) the measured cold load was about 47 seconds and
+warm generation was about 22 tokens/second. Keep one model configured for both
+`OLLAMA_MODEL` and `OLLAMA_ARTIFACT_MODEL` to avoid model swaps. The larger
+`qwen3.6:27b` was also evaluated, but at 1.71 tokens/second on this hardware it
+is an optional quality experiment, not the default. Model weights have their
+own upstream license and are not covered by this repository's MIT License.
+
+Build mode currently supports one intentionally narrow template:
+`bcrypt-timing-web-v1`. It creates a local FastAPI prototype, static UI,
+automated tests, requirements, README, and a hash manifest. Downloaded code is
+never previewed or executed on the CyberLab origin. Use only invented test
+passwords such as `demo-password`; never enter a real credential.
 
 ## Beta packages
 
@@ -123,6 +141,8 @@ flowchart LR
     API -->|"SQLAlchemy"| DB[("PostgreSQL 16")]
     API -->|"bounded owned context"| Mentor["Mentor intent router"]
     Mentor -->|"local chat API"| Ollama["Ollama"]
+    Ollama -->|"strict artifact spec"| Renderer["Reviewed bcrypt template"]
+    Renderer -->|"private checksummed ZIP"| API
     Actions["GitHub Actions"] -->|"tests + migration smoke"| API
 ```
 
@@ -152,6 +172,8 @@ python -m pip install -r backend\requirements-dev.txt
 python -m ruff check backend
 pyright
 python -m pytest -q
+$env:RUN_OLLAMA_TESTS="1"
+python -m pytest -m ollama -q
 npm --prefix frontend ci
 npm --prefix frontend test
 npm --prefix frontend run typecheck
@@ -161,7 +183,9 @@ npm --prefix frontend audit
 ```
 
 CI also applies the full Alembic chain to PostgreSQL 16, checks model/migration
-parity, downgrades to base, and upgrades to head again.
+parity, downgrades to base, and upgrades to head again. The Ollama acceptance
+test is opt-in because it requires the 18 GB local model and suitable hardware;
+normal CI uses deterministic mocked model responses.
 
 ## Documentation
 

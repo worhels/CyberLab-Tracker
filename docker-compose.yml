@@ -30,15 +30,23 @@ services:
       AUTH_RATE_LIMIT_REQUESTS: "${AUTH_RATE_LIMIT_REQUESTS:-5}"
       AUTH_RATE_LIMIT_WINDOW_SECONDS: "${AUTH_RATE_LIMIT_WINDOW_SECONDS:-60}"
       OLLAMA_CHAT_URL: "${OLLAMA_CHAT_URL:-http://host.docker.internal:11434/api/chat}"
-      OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen2.5-coder:7b}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3-coder:30b}"
+      OLLAMA_ARTIFACT_MODEL: "${OLLAMA_ARTIFACT_MODEL:-qwen3-coder:30b}"
       OLLAMA_TIMEOUT_SECONDS: "${OLLAMA_TIMEOUT_SECONDS:-120}"
+      OLLAMA_ARTIFACT_TIMEOUT_SECONDS: "${OLLAMA_ARTIFACT_TIMEOUT_SECONDS:-240}"
+      OLLAMA_CONTEXT_LENGTH: "${OLLAMA_CONTEXT_LENGTH:-8192}"
       OLLAMA_WARMUP_ENABLED: "${OLLAMA_WARMUP_ENABLED:-true}"
+      MENTOR_ARTIFACT_ROOT: /var/lib/cyberlab/artifacts
+      MENTOR_ARTIFACT_MAX_PER_USER: "${MENTOR_ARTIFACT_MAX_PER_USER:-20}"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log
     ports:
       - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - mentor_artifacts:/var/lib/cyberlab/artifacts
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  mentor_artifacts:

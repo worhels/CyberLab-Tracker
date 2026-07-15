@@ -4,7 +4,12 @@ import {
   TOKEN_KEY,
   api,
 } from '../api/client'
-import type { MentorChatRequest, MentorChatResponse } from '../types/mentor'
+import type {
+  MentorArtifact,
+  MentorArtifactCreateRequest,
+  MentorChatRequest,
+  MentorChatResponse,
+} from '../types/mentor'
 
 interface MentorStreamEvent {
   event: 'token' | 'done' | 'error' | string
@@ -70,6 +75,36 @@ async function getResponseError(response: Response): Promise<MentorApiError> {
 export async function sendMentorMessage(payload: MentorChatRequest): Promise<MentorChatResponse> {
   const response = await api.post<MentorChatResponse>('/mentor/chat', payload)
   return response.data
+}
+
+export async function createMentorArtifact(
+  payload: MentorArtifactCreateRequest,
+  signal?: AbortSignal,
+): Promise<MentorArtifact> {
+  const response = await api.post<MentorArtifact>('/mentor/artifacts', payload, { signal })
+  return response.data
+}
+
+export async function getMentorArtifactDownload(artifactId: string): Promise<Blob> {
+  const response = await api.get<Blob>(`/mentor/artifacts/${artifactId}/download`, {
+    responseType: 'blob',
+  })
+  return response.data
+}
+
+export function saveMentorArtifactDownload(blob: Blob, artifactId: string): void {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+
+  link.href = url
+  link.download = `cyberlab-mentor-artifact-${artifactId}.zip`
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  window.setTimeout(() => {
+    link.remove()
+    URL.revokeObjectURL(url)
+  }, 1_000)
 }
 
 export async function streamMentorChat(

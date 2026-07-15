@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Send, X } from 'lucide-react'
-import { MentorApiError, streamMentorChat } from '../../services/mentorApi'
+import { Hammer, Send, X } from 'lucide-react'
+import {
+  createMentorArtifact,
+  getMentorArtifactDownload,
+  MentorApiError,
+  saveMentorArtifactDownload,
+  streamMentorChat,
+} from '../../services/mentorApi'
 import type { Language } from '../../types'
-import type { MentorMode } from '../../types/mentor'
+import type { MentorArtifact, MentorMode } from '../../types/mentor'
 import { getErrorMessage } from '../../utils/errors'
 import { translate } from '../../utils/i18n'
 import type { TranslationKey } from '../../utils/i18n'
+import { MentorArtifactCard } from './MentorArtifactCard'
 
 interface MentorPanelProps {
   isOpen: boolean
@@ -58,6 +65,11 @@ const modes: Array<{
     labelKey: 'mentor.mode.chat',
     descriptionKey: 'mentor.mode.chat.description',
   },
+  {
+    value: 'build',
+    labelKey: 'mentor.mode.build',
+    descriptionKey: 'mentor.mode.build.description',
+  },
 ]
 
 const quickPrompts: TranslationKey[] = [
@@ -82,6 +94,10 @@ export function MentorPanel({
   const [isSending, setIsSending] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<MentorConnectionStatus>('ready')
   const [sessionId, setSessionId] = useState<string>()
+  const [artifact, setArtifact] = useState<MentorArtifact | null>(null)
+  const [buildError, setBuildError] = useState('')
+  const [downloadError, setDownloadError] = useState('')
+  const [isDownloading, setIsDownloading] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -97,7 +113,7 @@ export function MentorPanel({
     : subjectId
       ? `subject #${subjectId}`
       : pageContext.replaceAll('-', ' ')
-  const contextLabel = `auto · ${contextTarget}`
+  const contextLabel = `${language} · ${contextTarget}`
 
   useEffect(() => {
     if (!isOpen) return
@@ -121,6 +137,10 @@ export function MentorPanel({
     abortControllerRef.current = null
     setMessages([])
     setSessionId(undefined)
+    setArtifact(null)
+    setBuildError('')
+    setDownloadError('')
+    setIsDownloading(false)
     setIsSending(false)
     setConnectionStatus('ready')
   }, [contextKey])
@@ -131,7 +151,7 @@ export function MentorPanel({
 
   const sendMessage = async (rawMessage: string) => {
     const message = rawMessage.trim()
-    if (!message || isSending) return
+    if (!message || isSending || mode === 'build') return
 
     const assistantMessageId = crypto.randomUUID()
     const controller = new AbortController()
@@ -176,7 +196,7 @@ export function MentorPanel({
           session_id: sessionId,
           subject_id: subjectId,
           task_id: taskId,
-          language: 'auto',
+          language,
         },
         (token) => {
           bufferedTokens += token
@@ -219,8 +239,61 @@ export function MentorPanel({
     }
   }
 
+  const buildArtifact = async (rawGoal: string) => {
+    const goal = rawGoal.trim()
+    if (!goal || isSending) return
+
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    setIsSending(true)
+    setConnectionStatus('ready')
+    setBuildError('')
+    setDownloadError('')
+
+    try {
+      const nextArtifact = await createMentorArtifact(
+        {
+          template: 'bcrypt-timing-web-v1',
+          goal,
+          language,
+          ...(taskId === undefined ? {} : { task_id: taskId }),
+        },
+        controller.signal,
+      )
+      setArtifact(nextArtifact)
+      setInput('')
+    } catch (error) {
+      if (controller.signal.aborted) return
+      setBuildError(getErrorMessage(error))
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null
+        setIsSending(false)
+      }
+    }
+  }
+
+  const downloadArtifact = async () => {
+    if (!artifact || isDownloading) return
+
+    setIsDownloading(true)
+    setDownloadError('')
+    try {
+      const blob = await getMentorArtifactDownload(artifact.id)
+      saveMentorArtifactDownload(blob, artifact.id)
+    } catch (error) {
+      setDownloadError(getErrorMessage(error))
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
   const submitMessage = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (mode === 'build') {
+      void buildArtifact(input)
+      return
+    }
     void sendMessage(input)
   }
 
@@ -275,7 +348,7 @@ export function MentorPanel({
           </header>
 
           <section className="shrink-0 border-b border-[var(--panel-border)] px-4 py-4">
-            <div className="grid grid-cols-3 gap-1 rounded-[var(--r-sm)] bg-[var(--surface-soft)] p-1 shadow-[var(--shadow-inset-sm)] sm:grid-cols-5">
+            <div className="grid grid-cols-3 gap-1 rounded-[var(--r-sm)] bg-[var(--surface-soft)] p-1 shadow-[var(--shadow-inset-sm)]">
               {modes.map((item) => {
                 const isActive = item.value === mode
                 return (
@@ -307,47 +380,72 @@ export function MentorPanel({
             aria-live="polite"
             aria-busy={isSending}
           >
-            {messages.length === 0 ? (
-              <div className="rounded-[var(--r-md)] border border-dashed border-[var(--panel-border)] bg-[var(--surface-soft)] px-4 py-5 text-sm leading-6 text-[var(--text-muted)]">
-                {t('mentor.empty')}
-              </div>
-            ) : null}
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className="max-w-[88%] whitespace-pre-wrap break-words rounded-[var(--r-md)] px-3.5 py-3 text-sm leading-6"
-                  style={
-                    message.role === 'user'
-                      ? {
-                          color: 'var(--active-text)',
-                          background: 'var(--active)',
-                          boxShadow: 'var(--shadow-sm)',
-                        }
-                      : {
-                          color: message.isError ? 'var(--accent-debt)' : 'var(--text-main)',
-                          background: 'var(--surface-soft)',
-                          border: '1px solid var(--panel-border)',
-                        }
-                  }
-                >
-                  {message.content || (
-                    <span className="flex items-center gap-1.5 py-1" aria-label={t('mentor.status.thinking')}>
-                      {[0, 1, 2].map((index) => (
-                        <motion.span
-                          key={index}
-                          className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)]"
-                          animate={{ opacity: [0.35, 1, 0.35], y: [0, -2, 0] }}
-                          transition={{ duration: 0.9, repeat: Infinity, delay: index * 0.14 }}
-                        />
-                      ))}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+            {mode === 'build' ? (
+              <>
+                {artifact ? (
+                  <MentorArtifactCard
+                    artifact={artifact}
+                    language={language}
+                    isDownloading={isDownloading}
+                    downloadError={downloadError}
+                    onDownload={() => void downloadArtifact()}
+                  />
+                ) : (
+                  <div className="rounded-[var(--r-md)] border border-dashed border-[var(--panel-border)] bg-[var(--surface-soft)] px-4 py-5 text-sm leading-6 text-[var(--text-muted)]">
+                    {t('mentor.build.empty')}
+                  </div>
+                )}
+                {buildError ? (
+                  <p className="rounded-[var(--r-sm)] border border-[var(--panel-border)] bg-[var(--surface-soft)] px-3 py-2 text-xs leading-5 text-[var(--accent-debt)]" role="alert">
+                    {buildError}
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <>
+                {messages.length === 0 ? (
+                  <div className="rounded-[var(--r-md)] border border-dashed border-[var(--panel-border)] bg-[var(--surface-soft)] px-4 py-5 text-sm leading-6 text-[var(--text-muted)]">
+                    {t('mentor.empty')}
+                  </div>
+                ) : null}
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className="max-w-[88%] whitespace-pre-wrap break-words rounded-[var(--r-md)] px-3.5 py-3 text-sm leading-6"
+                      style={
+                        message.role === 'user'
+                          ? {
+                              color: 'var(--active-text)',
+                              background: 'var(--active)',
+                              boxShadow: 'var(--shadow-sm)',
+                            }
+                          : {
+                              color: message.isError ? 'var(--accent-debt)' : 'var(--text-main)',
+                              background: 'var(--surface-soft)',
+                              border: '1px solid var(--panel-border)',
+                            }
+                      }
+                    >
+                      {message.content || (
+                        <span className="flex items-center gap-1.5 py-1" aria-label={t('mentor.status.thinking')}>
+                          {[0, 1, 2].map((index) => (
+                            <motion.span
+                              key={index}
+                              className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)]"
+                              animate={{ opacity: [0.35, 1, 0.35], y: [0, -2, 0] }}
+                              transition={{ duration: 0.9, repeat: Infinity, delay: index * 0.14 }}
+                            />
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -376,8 +474,8 @@ export function MentorPanel({
                 value={input}
                 maxLength={10_000}
                 rows={1}
-                aria-label={t('mentor.placeholder')}
-                placeholder={t('mentor.placeholder')}
+                aria-label={t(mode === 'build' ? 'mentor.placeholder.build' : 'mentor.placeholder')}
+                placeholder={t(mode === 'build' ? 'mentor.placeholder.build' : 'mentor.placeholder')}
                 disabled={isSending}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={(event) => {
@@ -390,16 +488,18 @@ export function MentorPanel({
               />
               <button
                 type="submit"
-                aria-label={t('mentor.action.send')}
+                aria-label={t(mode === 'build' ? 'mentor.action.build' : 'mentor.action.send')}
                 disabled={!input.trim() || isSending}
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--accent-primary)] text-[var(--accent-contrast)] shadow-[var(--shadow-active)] transition hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-primary)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
               >
-                <Send size={17} />
+                {mode === 'build' ? <Hammer size={17} /> : <Send size={17} />}
               </button>
             </div>
             <div className="mt-2 flex items-center justify-between gap-3 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-faint)]">
               <span className="truncate">{t('mentor.context')}: {contextLabel}</span>
-              <span className="shrink-0">{t('mentor.hint.send')}</span>
+              <span className="shrink-0">
+                {t(mode === 'build' ? 'mentor.hint.build' : 'mentor.hint.send')}
+              </span>
             </div>
           </form>
         </motion.aside>

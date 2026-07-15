@@ -94,16 +94,46 @@ configured trusted-proxy chain. Do not trust arbitrary forwarded IP headers.
 
 ## CyberMentor and SSE
 
-Mentor input is untrusted. The model has no SQL or filesystem access and
-receives only bounded, ownership-filtered JSON context. Optional task and subject
-IDs are resolved before the Ollama request. Completed exchanges are persisted;
-interrupted streams are not.
+Mentor input is untrusted. The model has no SQL, repository, shell, or arbitrary
+filesystem access and receives only bounded, ownership-filtered JSON context.
+Optional task and subject IDs are resolved before the Ollama request. Completed
+chat exchanges are persisted; interrupted streams are not.
+
+Build mode does not weaken that boundary. It accepts only the reviewed
+`bcrypt-timing-web-v1` template and a strict request without path, command,
+working-directory, environment, or model fields. Ollama returns a closed JSON
+specification, never executable code. The backend then:
+
+- renders an exact server-owned file set;
+- restricts bcrypt rounds to `10|11|12|13` and one hash per prototype request;
+- writes files atomically under a per-user, server-generated UUID outside the
+  source tree with private directory/file permissions where the platform
+  supports them;
+- records file SHA-256 values, a prompt hash instead of prompt text, policy and
+  model metadata, and the local model digest when Ollama exposes it;
+- enforces per-file/total size limits and a default maximum of 20 immutable
+  artifacts per user;
+- verifies ownership, exact file paths, regular-file status, sizes, and hashes
+  before metadata or ZIP download;
+- sends ZIPs only as authenticated attachments with `no-store` and `nosniff`.
+
+Generated HTML/JavaScript is never rendered on the CyberLab origin. The product
+does not execute artifact code, run package managers, or expose a verification
+shell. The opt-in local acceptance test executes only the reviewed backend
+template, not arbitrary model output.
+
+The bcrypt prototype accepts a password only at runtime, limits it to 72 UTF-8
+bytes, clears the browser field after the request, redacts validation input,
+and returns timing/rounds/verification without returning the password or hash.
+It is a local learning tool; real credentials must never be used.
 
 Remaining model risks include prompt injection inside user-authored task text,
 resource exhaustion from long streams, sensitive text sent to a remotely
 configured Ollama-compatible endpoint, and unsafe reliance on model output.
 Deployments should keep Ollama local/trusted, enforce upstream timeouts and body
-limits, and never execute model output automatically.
+limits, and never execute model output automatically. The artifact limit is
+local filesystem policy, not a distributed abuse-control system; public hosting
+still requires shared quotas and monitoring.
 
 ## Export and privacy
 

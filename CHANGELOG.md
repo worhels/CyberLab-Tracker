@@ -2,6 +2,36 @@
 
 All notable changes to CyberLab Tracker are documented here.
 
+## Unreleased
+
+### Added
+
+- A CyberMentor Build mode for the reviewed `bcrypt-timing-web-v1` artifact.
+- Strict artifact specification validation, trusted template rendering, atomic
+  per-user storage, SHA-256 manifests, ownership checks, quotas, and authenticated
+  attachment-only ZIP downloads.
+- Backend artifact security/functional regressions, frontend Mentor unit tests,
+  and an opt-in real Ollama acceptance test that executes the reviewed bcrypt
+  prototype with `demo-password`.
+
+### Changed
+
+- Replaced `qwen2.5-coder:7b` with the empirically selected
+  `qwen3-coder:30b` default for both chat and artifact planning.
+- Disabled model thinking in chat payloads, made context length configurable,
+  and honored an explicitly selected Mentor language instead of always
+  auto-detecting it.
+- Updated CyberMentor architecture, API, security, threat-model, roadmap, and
+  setup documentation.
+
+### Security
+
+- The model still has no SQL, repository, shell, or arbitrary filesystem access.
+  Artifact HTML/JavaScript is never rendered on the CyberLab origin, and the
+  product does not execute model output.
+- The bcrypt prototype limits input to 72 UTF-8 bytes, restricts rounds to
+  10–13, redacts invalid password input, and returns no password or digest.
+
 ## 0.1.0-beta.1 — July 15, 2026
 
 ### Added

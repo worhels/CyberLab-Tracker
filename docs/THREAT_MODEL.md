@@ -8,6 +8,9 @@ flowchart LR
     Proxy --> API["FastAPI"]
     API --> DB[("PostgreSQL")]
     API -->|"bounded prompts/context"| Ollama["Ollama endpoint"]
+    Ollama -->|"closed JSON spec"| Renderer["Reviewed artifact renderer"]
+    Renderer --> Artifact["Per-user artifact volume"]
+    Artifact -->|"attachment ZIP"| User
     API -->|"JSON/CSV"| Export["User download"]
 ```
 
@@ -24,6 +27,7 @@ and forward client identity only through a trusted configuration.
 | Bearer token | Theft, replay, or XSS exfiltration |
 | Subject/task/settings data | IDOR, injection, or unintended export |
 | Mentor messages | Sensitive-text disclosure or prompt injection |
+| Mentor artifacts | Cross-user download, path escape, tampering, generated XSS |
 | Database credentials/backups | Full data compromise |
 | CI and release credentials | Supply-chain compromise |
 
@@ -68,7 +72,9 @@ both return `404`; ownership regressions cover read/write/delete paths.
 Threat: script execution reads the access token from `localStorage`.
 
 Controls: React escaping, no automatic execution of model/task content, typed
-rendering, and development CSP.
+rendering, and development CSP. Mentor artifacts are downloaded as attachments
+with `no-store`/`nosniff`; their HTML and JavaScript are never previewed on the
+authenticated CyberLab origin.
 
 Residual risk: localStorage remains reachable to successful XSS and the Vite
 development CSP is not a production policy. Public hosting needs a strict proxy
@@ -79,7 +85,8 @@ CSP and a reviewed cookie/token design.
 Threats: repeated auth attempts, expensive bcrypt work, large API bodies, long
 Mentor streams, or WebGL resource pressure.
 
-Controls: auth rate limit, bounded schemas/context, Ollama timeout, user/system
+Controls: auth rate limit, bounded schemas/context, Ollama timeout, artifact
+file/total/count limits, a single artifact-generation semaphore, user/system
 reduced-motion fallback, mobile quality tier, and server-side Crisis limits.
 
 Residual risk: the auth limiter is in-memory and process-local. Distributed
@@ -92,11 +99,36 @@ Threat: task text or user prompts instruct the model to reveal unrelated data or
 perform unsafe actions.
 
 Controls: ownership is enforced before context creation; context is bounded;
-Ollama has no direct database access; output is displayed as text and not
-executed; incomplete streams are not persisted.
+Ollama has no direct database/repository access; chat output is displayed as
+text and not executed; incomplete streams are not persisted. Build mode accepts
+one template and a strict request, asks Ollama only for a closed specification,
+replaces unsupported claims with reviewed copy, and renders code from a trusted
+server template. The model cannot select paths, commands, dependencies, shell
+arguments, or environment variables.
 
 Residual risk: model output can be incorrect or socially persuasive, and a
 remote Ollama-compatible URL would receive prompt data.
+
+### Artifact isolation and integrity
+
+Threats: traversal or symlink escape, overwriting an existing artifact, reading
+another user's UUID, tampering after generation, generated same-origin XSS,
+password disclosure, or using the backend as a code runner.
+
+Controls: per-user directories and server UUIDs; exact paths rather than an
+extension allowlist; private permissions; exclusive file creation and atomic
+directory rename; immutable revisions; strict ownership; exact file-set,
+regular-file, size, and SHA-256 verification before reads; attachment-only ZIP
+delivery; no preview endpoint; no generic executor or package manager. The
+reviewed bcrypt app caps UTF-8 password input at 72 bytes, redacts invalid
+input, permits rounds 10–13, serializes hash work, and never returns the password
+or digest.
+
+Residual risk: filesystem permissions are platform-dependent, the artifact
+quota is local to one deployment, downloaded code can be run unsafely by the
+user, and there is no hardened runner for future generic templates. A generic
+AI coding agent remains out of scope until a separate non-root, networkless,
+resource-limited worker and additional threat review exist.
 
 ### Export/privacy leakage
 
@@ -144,3 +176,4 @@ secrets, secret scanning/push protection, and no production secret defaults.
 - no formal privacy/retention policy;
 - no guarantee that optional third-party assets or local model weights share
   the project's MIT license.
+- no arbitrary AI repository editing or generated-code execution service.

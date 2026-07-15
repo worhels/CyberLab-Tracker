@@ -11,3 +11,6 @@ select = ["E", "F"]
 [tool.pytest.ini_options]
 pythonpath = ["backend"]
 testpaths = ["backend/tests"]
+markers = [
+    "ollama: opt-in acceptance tests that require a running local Ollama model",
+]

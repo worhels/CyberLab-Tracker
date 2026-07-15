@@ -15,6 +15,10 @@ flowchart LR
     ORM --> DB[("PostgreSQL 16")]
     Mentor --> Context["Ownership-bounded context"]
     Context --> Ollama["Local Ollama"]
+    Ollama --> Spec["Strict artifact specification"]
+    Spec --> Renderer["Reviewed bcrypt template"]
+    Renderer --> Store["Per-user immutable artifact store"]
+    Store -->|"attachment ZIP"| Web
 ```
 
 Docker Compose starts PostgreSQL and the API. Vite runs separately for local
@@ -32,6 +36,7 @@ The backend lives in `backend/app`.
 | `models` | SQLAlchemy entities, relationships, and persisted enums |
 | `schemas` | Pydantic request/response contracts |
 | `core` | Settings, JWT, and password hashing |
+| `services` | Reviewed artifact rendering, integrity metadata, private ZIP storage |
 | `db` | Engine, sessions, and declarative metadata |
 | `alembic/versions` | Forward and reverse PostgreSQL schema changes |
 
@@ -127,6 +132,27 @@ The browser sends the current page and optional task/subject hints. The backend:
 
 The model has no database access. Prompt content is untrusted data and does not
 override authorization boundaries.
+
+### Reviewed artifact flow
+
+Build mode is separate from chat and supports only
+`bcrypt-timing-web-v1`. The backend:
+
+1. authenticates the caller and resolves an optional owned task before Ollama;
+2. asks the configured model for a closed JSON specification containing only a
+   title, description, and allowlisted bcrypt rounds;
+3. replaces unsupported model claims with reviewed copy and renders an exact,
+   server-owned file set;
+4. writes the files atomically to a per-user immutable directory outside the
+   source tree and records SHA-256 metadata, prompt hash, model name, and model
+   digest when available;
+5. exposes metadata and a small authenticated ZIP download. Generated HTML and
+   JavaScript are never served inline by CyberLab.
+
+There is no generic file tool, repository write, shell, package installation,
+or model-selected command. The bcrypt prototype is trusted application code,
+not arbitrary model output. Normal CI mocks Ollama; the opt-in `ollama` pytest
+marker exercises the real model-to-spec-to-files-to-bcrypt path locally.
 
 ## Quality and migration gates
 

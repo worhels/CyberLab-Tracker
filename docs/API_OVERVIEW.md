@@ -67,7 +67,8 @@ Application errors use:
 | `404` | Resource does not exist or is not owned by the caller |
 | `409` | Unique subject name or email conflict |
 | `422` | Request validation failure |
-| `429` | Authentication rate limit exceeded |
+| `429` | Authentication rate limit or per-user artifact quota exceeded |
+| `502` | Ollama returned an invalid or incomplete structured response |
 | `503` | Ollama is unavailable |
 
 Foreign resource IDs intentionally use the same `404` response as missing IDs.
@@ -190,9 +191,67 @@ uses a `record_type` column and UTF-8 BOM for spreadsheet compatibility.
 | --- | --- | --- |
 | `POST` | `/mentor/chat` | Return a complete Ollama response |
 | `POST` | `/mentor/chat/stream` | Stream SSE token events and a final done event |
+| `POST` | `/mentor/artifacts` | Create one reviewed bcrypt timing artifact |
+| `GET` | `/mentor/artifacts/{artifact_id}` | Read owned artifact metadata |
+| `GET` | `/mentor/artifacts/{artifact_id}/download` | Download the owned artifact ZIP |
 
 Requests accept mode `lab|code|report|deadline|chat`, language
 `auto|ru|uk|en`, and optional `subject_id` or `task_id`. Optional IDs are
 resolved through the current user's ownership before any model request.
 
 Completed user/assistant exchanges are persisted. Interrupted streams are not.
+
+### Artifact creation
+
+Artifact input is strict (`extra` properties are rejected) and currently
+supports exactly one reviewed template:
+
+```http
+POST /api/v1/mentor/artifacts
+Content-Type: application/json
+
+{
+  "template": "bcrypt-timing-web-v1",
+  "goal": "Create a small local bcrypt timing lab",
+  "language": "en",
+  "task_id": 42
+}
+```
+
+`goal` is required and limited to 2,000 characters. `language` is
+`ru|uk|en`; `task_id` is optional and must belong to the caller. Ownership is
+resolved before Ollama is contacted. Unknown templates, paths, commands,
+environment variables, model names, and extra properties are rejected.
+
+The `201 Created` response contains an opaque UUID and integrity metadata:
+
+```json
+{
+  "id": "b142d6f3-0eb2-4bb6-b24e-63deba30a9a4",
+  "template": "bcrypt-timing-web-v1",
+  "title": "Bcrypt timing prototype",
+  "description": "A local web prototype measures one bcrypt hash operation with the selected cost factor.",
+  "default_rounds": 10,
+  "language": "en",
+  "created_at": "2026-07-15T14:00:00Z",
+  "files": [
+    {
+      "id": "c759c586c2de55d15b554914",
+      "path": "app.py",
+      "size_bytes": 2800,
+      "sha256": "<64 lowercase hex characters>"
+    }
+  ]
+}
+```
+
+The server renders an exact allowlisted project and manifest. Model output
+cannot select file paths or executable code. Artifacts are immutable, limited
+to 20 per user by default, 64 KiB per file, and 256 KiB total. Foreign and
+missing artifact IDs both return `404`; modified files fail integrity checks
+and are also hidden as `404`.
+
+The download response is `application/zip` with
+`Content-Disposition: attachment`, `Cache-Control: no-store`, and
+`X-Content-Type-Options: nosniff`. CyberLab never previews generated HTML or
+JavaScript on its authenticated origin.

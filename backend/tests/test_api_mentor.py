@@ -296,15 +296,15 @@ def test_active_labs_intent_uses_owned_backend_context_and_overrides_chat_mode(
 
     assert response.status_code == 200
     assert response.json()["answer"] == (
-        "Активные лабораторные:\n"
+        "Active labs:\n"
         "1. Active owned lab — Applied Security (not_started)\n\n"
-        "Уже приняты и не активны:\n"
+        "Already accepted and not active:\n"
         "1. Accepted owned lab — Applied Security"
     )
     assert active_labs_calls == [user.id]
     assert '"intent":"active_labs"' in captured_prompt
     assert '"selected_mode":"chat"' in captured_prompt
-    assert '"language":"ru"' in captured_prompt
+    assert '"language":"en"' in captured_prompt
     assert '"active_labs_count":1,"accepted_labs_count":1' in captured_prompt
     assert "Active owned lab" in captured_prompt
     assert "Accepted owned lab" in captured_prompt
@@ -557,8 +557,9 @@ def test_ollama_chat_uses_mode_settings_and_keep_alive(monkeypatch: MonkeyPatch)
     assert captured["timeout"] == 120.0
     request_json = captured["json"]
     assert isinstance(request_json, dict)
-    assert request_json["model"] == "qwen2.5-coder:7b"
+    assert request_json["model"] == "qwen3-coder:30b"
     assert request_json["stream"] is False
+    assert request_json["think"] is False
     assert request_json["keep_alive"] == "30m"
     assert request_json["options"] == {
         "num_ctx": 8192,

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, field_validator
@@ -19,9 +20,14 @@ class Settings(BaseSettings):
     AUTH_RATE_LIMIT_REQUESTS: int = 5
     AUTH_RATE_LIMIT_WINDOW_SECONDS: int = 60
     OLLAMA_CHAT_URL: str = "http://localhost:11434/api/chat"
-    OLLAMA_MODEL: str = "qwen2.5-coder:7b"
+    OLLAMA_MODEL: str = "qwen3-coder:30b"
+    OLLAMA_ARTIFACT_MODEL: str = "qwen3-coder:30b"
     OLLAMA_TIMEOUT_SECONDS: float = 120.0
+    OLLAMA_ARTIFACT_TIMEOUT_SECONDS: float = 240.0
+    OLLAMA_CONTEXT_LENGTH: int = Field(default=8_192, ge=2_048, le=65_536)
     OLLAMA_WARMUP_ENABLED: bool = True
+    MENTOR_ARTIFACT_ROOT: Path = Path.home() / ".cyberlab-tracker" / "mentor-artifacts"
+    MENTOR_ARTIFACT_MAX_PER_USER: int = Field(default=20, ge=1, le=100)
 
     @field_validator("JWT_SECRET_KEY")
     @classmethod

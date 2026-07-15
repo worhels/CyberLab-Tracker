@@ -799,12 +799,13 @@ def build_ollama_payload(
     stream: bool,
 ) -> dict[str, object]:
     return {
-        "model": OLLAMA_MODEL,
+        "model": settings.OLLAMA_MODEL,
         "messages": messages,
         "stream": stream,
+        "think": False,
         "keep_alive": OLLAMA_KEEP_ALIVE,
         "options": {
-            "num_ctx": 8_192,
+            "num_ctx": settings.OLLAMA_CONTEXT_LENGTH,
             "top_p": 0.9,
             "num_predict": answer_profile["num_predict"],
             "temperature": answer_profile["temperature"],
@@ -818,13 +819,13 @@ def chat_with_ollama(
 ) -> str:
     try:
         response = httpx.post(
-            OLLAMA_CHAT_URL,
+            settings.OLLAMA_CHAT_URL,
             json=build_ollama_payload(
                 messages,
                 answer_profile=answer_profile,
                 stream=False,
             ),
-            timeout=OLLAMA_TIMEOUT_SECONDS,
+            timeout=settings.OLLAMA_TIMEOUT_SECONDS,
         )
         response.raise_for_status()
     except (httpx.RequestError, httpx.HTTPStatusError) as exc:
@@ -855,10 +856,10 @@ async def stream_with_ollama(
 ) -> AsyncGenerator[str, None]:
     received_done_event = False
     try:
-        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT_SECONDS) as client:
+        async with httpx.AsyncClient(timeout=settings.OLLAMA_TIMEOUT_SECONDS) as client:
             async with client.stream(
                 "POST",
-                OLLAMA_CHAT_URL,
+                settings.OLLAMA_CHAT_URL,
                 json=build_ollama_payload(
                     messages,
                     answer_profile=answer_profile,
@@ -906,7 +907,7 @@ async def warmup_ollama() -> None:
         return
 
     payload = {
-        "model": OLLAMA_MODEL,
+        "model": settings.OLLAMA_MODEL,
         "messages": [{"role": "user", "content": "ready"}],
         "stream": False,
         "keep_alive": OLLAMA_KEEP_ALIVE,
@@ -915,8 +916,8 @@ async def warmup_ollama() -> None:
         },
     }
     try:
-        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT_SECONDS) as client:
-            response = await client.post(OLLAMA_CHAT_URL, json=payload)
+        async with httpx.AsyncClient(timeout=settings.OLLAMA_TIMEOUT_SECONDS) as client:
+            response = await client.post(settings.OLLAMA_CHAT_URL, json=payload)
             response.raise_for_status()
     except (httpx.RequestError, httpx.HTTPStatusError) as exc:
         logger.warning("Ollama warmup skipped because the local model is unavailable: %s", exc)
@@ -946,7 +947,11 @@ def prepare_mentor_chat(
     subject, task = resolve_context(db, user_id=current_user.id, payload=payload)
     session_id = resolve_session_id(payload, subject=subject, task=task)
     intent = detect_mentor_intent(payload.message)
-    language = detect_language(payload.message)
+    language = (
+        detect_language(payload.message)
+        if payload.language == MentorLanguage.AUTO
+        else payload.language
+    )
     answer_profile = resolve_answer_profile(intent, payload.mode)
     history = crud_mentor.list_session_messages(
         db,

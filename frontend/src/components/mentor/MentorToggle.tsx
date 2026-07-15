@@ -13,7 +13,7 @@ interface MentorToggleProps {
 
 const MENTOR_OPEN_KEY = 'cyberlab_mentor_open'
 const MENTOR_MODE_KEY = 'cyberlab_mentor_mode'
-const mentorModes: MentorMode[] = ['lab', 'code', 'report', 'deadline', 'chat']
+const mentorModes: MentorMode[] = ['lab', 'code', 'report', 'deadline', 'chat', 'build']
 
 function readStoredOpenState(): boolean {
   try {
