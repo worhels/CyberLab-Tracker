@@ -2,7 +2,7 @@
 
 All notable changes to CyberLab Tracker are documented here.
 
-## Unreleased — July 15, 2026
+## 0.1.0-beta.1 — July 15, 2026
 
 ### Added
 
@@ -38,11 +38,15 @@ All notable changes to CyberLab Tracker are documented here.
   components and hooks without changing public API routes.
 - Made Crisis visuals responsive to reduced-motion settings and lower-capability
   mobile devices; reduced motion now avoids mounting the WebGL canvas.
+- Made the Tasks workload visual lazy-loaded and replaced WebGL with an
+  accessible static summary on mobile, low-tier, and reduced-motion clients.
 - Updated vulnerable Python and npm dependencies and removed the obsolete
   Passlib dependency.
 - Refreshed README, roadmap, architecture, API, development, security, threat
   model, contribution, and release documentation for the beta-readiness baseline.
 - Strengthened dependency review so moderate-or-higher findings fail the gate.
+- Prepared release frontend bundles for a same-origin `/api/v1` reverse proxy
+  and included the MIT notice in both frontend and backend distributions.
 
 ### Fixed
 
@@ -50,12 +54,9 @@ All notable changes to CyberLab Tracker are documented here.
 - Task deadlines no longer depend on server-local timezone interpretation.
 - Completed historical Calendar items remain visible without being reported as overdue.
 - Mobile Crisis layouts no longer require the full desktop rendering workload.
+- Mobile and reduced-motion task views no longer load the Three.js workload canvas.
 
 ### Removed
 
 - The unused Crisis visual reference asset with unclear provenance.
 - Passlib and its incompatible bcrypt compatibility layer.
-
-### Pending Publication
-
-- No tagged prerelease or GitHub release artifact has been published yet.

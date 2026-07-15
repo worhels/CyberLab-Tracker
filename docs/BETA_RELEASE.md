@@ -21,6 +21,18 @@ holder, remove or document the provenance of bundled media, retain dependency
 notices, and review the license of the selected Ollama model. This is an
 engineering assessment, not legal advice.
 
+## Release artifact contract
+
+Tagged prereleases publish a frontend archive containing `dist/` and the MIT
+license, plus a versioned API image at
+`ghcr.io/worhels/cyberlab-tracker-api:<tag>`. The packaged frontend uses the
+same-origin `/api/v1` base path, so a network deployment must route `/api/v1`
+to the FastAPI service through its TLS reverse proxy.
+
+GitHub Container Registry packages owned by a personal account are private on
+first publication. Verify the package visibility before advertising anonymous
+pulls; a public GHCR package cannot later be made private again.
+
 ## Repository release gate
 
 - [ ] CI, CodeQL, dependency review, and PostgreSQL migration jobs pass
