@@ -14,7 +14,7 @@ If GitHub CLI is installed and authenticated, run:
 Description:
 
 ```text
-Full-stack local-first academic workload tracker with FastAPI, PostgreSQL, React, Docker, CI, and security hardening roadmap.
+Local-first study workload control center with FastAPI, React, PostgreSQL, Crisis Mode, Calendar, and optional local AI.
 ```
 
 Website:
@@ -39,6 +39,8 @@ github-actions
 portfolio-project
 threejs
 react-three-fiber
+calendar
+vitest
 ```
 
 ## Labels
@@ -82,36 +84,14 @@ Views:
 - UI Polish: filter by `area: frontend` and `area: ui`
 - Roadmap: timeline or roadmap view
 
-## Initial Issues
+## Beta Backlog Candidates
 
-Security:
+The setup script intentionally does not create issues automatically. Create only
+focused, still-actionable backlog items, for example:
 
-- `[Security] Harden JWT validation`
-- `[Security] Add login/register rate limiting`
-- `[Security] Add dummy password verification for missing users`
-- `[Security] Audit IDOR protection for subjects and tasks`
-- `[Security] Remove unsafe Docker defaults`
-- `[Security] Add SECURITY.md and threat model`
-
-Backend:
-
-- `[Backend] Add auth integration tests`
-- `[Backend] Add task ownership tests`
-- `[Backend] Standardize API error responses`
-- `[Backend] Add export endpoint for JSON/CSV`
-
-Frontend:
-
-- `[Frontend] Add loading, empty, and error states`
-- `[Frontend] Redesign Tasks page cards`
-- `[Frontend] Redesign Subjects page cards`
-- `[Frontend] Add quick filters for tasks`
-- `[Frontend] Add deadline severity badges`
-
-Docs:
-
-- `[Docs] Add screenshots to README`
-- `[Docs] Add architecture diagram`
-- `[Docs] Expand local development guide`
-- `[Docs] Add API overview`
-- `[Docs] Add changelog`
+- `[Security] Add distributed rate limiting for multi-instance deployments`
+- `[Security] Add session revocation and account recovery`
+- `[Operations] Add backup/restore drills and monitoring runbooks`
+- `[Frontend] Add end-to-end and visual-regression coverage`
+- `[Performance] Profile Crisis Mode on representative low-end devices`
+- `[Docs] Publish deployment and privacy-policy guidance`

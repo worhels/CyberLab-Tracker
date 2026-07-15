@@ -1,116 +1,142 @@
-# Security Model
+# Security model
 
-## Scope
+## Scope and release posture
 
-CyberLab Tracker is a local-first academic workload tracker. The security model
-focuses on realistic hardening for a full-stack app that handles personal task
-data.
+CyberLab Tracker protects personal study data in a local-first or controlled
+self-hosted environment. The application has a strong portfolio/beta baseline,
+but the repository alone is not a production hosting platform.
 
-## Authentication Flow
+Safe targets:
 
-1. A user registers with email and password.
-2. The backend hashes the password with bcrypt.
-3. A user logs in through `/api/v1/auth/login`.
-4. The backend validates credentials and returns an access token.
-5. Authenticated API calls use `Authorization: Bearer <token>`.
-6. The backend decodes and validates the token before resolving `current_user`.
+- local development;
+- a private network;
+- a controlled beta behind TLS and a trusted reverse proxy.
 
-## JWT Lifecycle
+Before unrestricted public access, add persistent distributed rate limiting,
+centralized monitoring, backups and restore tests, managed secrets, privacy and
+retention policies, and deployment-level security headers.
 
-Access tokens contain:
+## Authentication flow
 
-- `sub`: user identifier
-- `exp`: expiration time
-- `iat`: issued-at time
-- `type`: token type, currently `access`
+1. Registration validates email and password boundaries.
+2. The backend hashes the password directly with bcrypt.
+3. Login performs a real or dummy bcrypt verification and returns one access
+   token.
+4. The browser sends `Authorization: Bearer <token>`.
+5. The backend validates the signature, fixed algorithm, required claims, token
+   type, subject format, and active user before executing owned queries.
 
-Validation rules:
+## Password hashing
 
-- use the configured fixed algorithm
-- require all expected claims
-- reject tokens with a missing or invalid `type`
-- reject invalid or inactive users
+- bcrypt cost is configured with validated `BCRYPT_ROUNDS`;
+- passwords are never logged or stored in plain text;
+- registration rejects values beyond 72 UTF-8 bytes because bcrypt ignores
+  additional bytes;
+- the dummy hash keeps missing-user login work comparable to wrong-password
+  work;
+- existing standard `$2b$` bcrypt hashes remain compatible.
 
-## Password Hashing
+The user-facing password policy is 8 characters minimum and 72 UTF-8 bytes
+maximum. Long unique passphrases are preferred over composition rules.
 
-Passwords are never stored in plain text. Hashing is centralized in
-`backend/app/core/security.py` and uses bcrypt through Passlib with 12 rounds.
+The project does not yet provide email verification, password recovery,
+password change, breached-password checks, or session revocation.
 
-The current local-first password policy is:
+## JWT lifecycle
 
-- 8 to 128 characters, enforced by the registration schema
-- long, unique passphrases are recommended
-- no mandatory uppercase, number, or symbol composition rules
-- demo credentials are development-only and must not be reused elsewhere
+Access tokens contain required `sub`, `exp`, `iat`, and `type="access"`
+claims.
 
-The application does not currently provide password recovery or forced password
-rotation. If the project moves beyond local use, add breached-password checks,
-password-change sessions, and a recovery flow before deployment.
+Security invariants:
 
-## Rate Limiting
+- algorithm is fixed to `HS256` in code and cannot be selected from input or
+  environment;
+- `JWT_SECRET_KEY` is at least 32 characters;
+- expiration is a positive configured duration;
+- decode supplies an explicit algorithm allow-list;
+- missing/wrong claims, malformed subjects, inactive users, and expired tokens
+  all fail authentication.
 
-Authentication endpoints use a small in-memory rate limiter. This is enough for
-local-first hardening and portfolio review, but a public deployment should use a
-persistent limiter backed by a shared store such as Redis. The current limiter
-resets when the backend restarts and is not shared across multiple backend
-processes, so it must not be treated as production-grade abuse prevention.
+Rotating the secret intentionally invalidates every issued access token.
 
-## CORS
+The current frontend stores the bearer token in `localStorage`. This is
+acceptable for the stated local-first scope but makes XSS equivalent to token
+theft. A public deployment should use a reviewed Content Security Policy and
+consider short-lived in-memory access tokens with a secure, `HttpOnly`,
+`SameSite` refresh/session cookie.
 
-CORS is configured through environment settings. The app uses explicit allowed
-origins, methods, and headers instead of wildcard browser access.
+## Authorization and IDOR
 
-## IDOR Rules
+Subjects are filtered directly by `Subject.user_id`. Tasks are filtered
+through their subject owner. Dashboard, export, settings, and Mentor context
+apply the same authenticated-user boundary.
 
-Every endpoint that reads or mutates user-owned data must filter by the current
-authenticated user.
+Foreign IDs return `404`, preventing the API from confirming whether another
+user's object exists. UI checks are convenience only and never authorization.
 
-Subjects are owned directly by `User`.
+## API input contracts
 
-Tasks are owned indirectly through `Subject`, so task queries join `Subject` and
-filter by `Subject.user_id`.
+- offset-aware timestamps are normalized to UTC;
+- explicit `null` is accepted only for nullable fields;
+- required update fields reject `null`;
+- request size and schema validation happen before persistence;
+- CORS uses explicit origins, methods, and headers;
+- API docs are disabled unless `DEBUG=true`.
 
-## Docker Secrets
+## Rate limiting
 
-The Docker Compose file requires `POSTGRES_PASSWORD` and `JWT_SECRET_KEY`. Local
-values are generated by `scripts/dev.ps1` when placeholders are present.
+Login and registration use an in-memory limiter and generic credential errors.
+The limiter is process-local, resets on restart, trusts the directly observed
+client address, and is not sufficient across multiple workers.
 
-Real `.env` files must not be committed.
+A public deployment must use a shared limiter such as Redis and a narrowly
+configured trusted-proxy chain. Do not trust arbitrary forwarded IP headers.
 
-### Local Secret Rotation
+## CyberMentor and SSE
 
-Generate secrets locally and never paste their values into issues, logs, or
-commits. To rotate `JWT_SECRET_KEY`:
+Mentor input is untrusted. The model has no SQL or filesystem access and
+receives only bounded, ownership-filtered JSON context. Optional task and subject
+IDs are resolved before the Ollama request. Completed exchanges are persisted;
+interrupted streams are not.
 
-1. Generate a new long random value, for example:
-   `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
-2. Replace `JWT_SECRET_KEY` in the untracked root `.env`.
-3. Recreate the backend with `docker compose up -d --force-recreate backend`.
-4. Sign in again. Existing access tokens are intentionally invalidated.
+Remaining model risks include prompt injection inside user-authored task text,
+resource exhaustion from long streams, sensitive text sent to a remotely
+configured Ollama-compatible endpoint, and unsafe reliance on model output.
+Deployments should keep Ollama local/trusted, enforce upstream timeouts and body
+limits, and never execute model output automatically.
 
-For the local PostgreSQL password, the safest simple rotation is a development
-database reset:
+## Export and privacy
 
-1. Export or back up any local data that must be kept.
-2. Run `docker compose down -v`. This permanently deletes the local database
-   volume.
-3. Replace `POSTGRES_PASSWORD` in the untracked root `.env`.
-4. Run `.\scripts\dev.ps1` to recreate the database, apply migrations, and seed
-   development data.
+JSON and CSV exports contain the caller's study data and timestamps. Responses
+must not be cached by shared infrastructure. Users are responsible for exported
+files after download. A public beta needs an explicit privacy notice, deletion
+policy, retention policy, and backup handling procedure.
 
-For any environment where data cannot be discarded, change the PostgreSQL role
-password inside the database first, update the secret store, and then recreate
-dependent services. That operational deployment flow is outside this
-local-first project's scope.
+## Secrets and rotation
 
-## Out Of Scope
+Real `.env` files are ignored. Docker Compose requires database and JWT
+secrets. Generate values locally and do not paste them into issues or logs.
 
-Current project scope excludes:
+JWT rotation:
 
-- email verification
-- password reset emails
-- two-factor authentication
-- external OAuth providers
-- role-based access control
-- payment processing
-- public multi-tenant deployment
+1. generate a long random value;
+2. update the deployment secret;
+3. recreate the API;
+4. require users to sign in again.
+
+Database password rotation must update the PostgreSQL role first, then the
+secret store and dependent services. Resetting the Docker volume is acceptable
+only when development data can be discarded.
+
+## Public beta checklist
+
+- [ ] TLS and trusted reverse proxy
+- [ ] production CSP and security headers
+- [ ] persistent rate limiter
+- [ ] centralized logs, metrics, and alerts without sensitive bodies
+- [ ] managed secret rotation
+- [ ] encrypted backups and restore drill
+- [ ] privacy, retention, and deletion policy
+- [ ] dependency and container scanning
+- [ ] private vulnerability reporting contact
+- [ ] review of third-party assets and Ollama model licenses

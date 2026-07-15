@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic.json_schema import SkipJsonSchema
 
 from app.models.user_settings import AccentColor, DashboardView, Language, Theme
 
@@ -21,10 +22,26 @@ class UserSettingsRead(UserSettingsBase):
 
 
 class UserSettingsUpdate(BaseModel):
-    language: Language | None = None
-    theme: Theme | None = None
-    accent_color: AccentColor | None = None
-    dashboard_view: DashboardView | None = None
-    show_crisis_cube: bool | None = None
-    reduced_motion: bool | None = None
-    deadline_reminders: bool | None = None
+    language: Language | SkipJsonSchema[None] = None
+    theme: Theme | SkipJsonSchema[None] = None
+    accent_color: AccentColor | SkipJsonSchema[None] = None
+    dashboard_view: DashboardView | SkipJsonSchema[None] = None
+    show_crisis_cube: bool | SkipJsonSchema[None] = None
+    reduced_motion: bool | SkipJsonSchema[None] = None
+    deadline_reminders: bool | SkipJsonSchema[None] = None
+
+    @field_validator(
+        "language",
+        "theme",
+        "accent_color",
+        "dashboard_view",
+        "show_crisis_cube",
+        "reduced_motion",
+        "deadline_reminders",
+        mode="before",
+    )
+    @classmethod
+    def reject_explicit_nulls(cls, value: object) -> object:
+        if value is None:
+            raise ValueError("Field may be omitted but cannot be null")
+        return value

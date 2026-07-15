@@ -1,124 +1,162 @@
-# API Overview
+# API overview
 
-Base path:
+Base path: `/api/v1`.
 
-```text
-/api/v1
+Authenticated requests use:
+
+```http
+Authorization: Bearer <access-token>
 ```
 
-Authentication uses bearer tokens:
+Interactive OpenAPI, Swagger, and ReDoc are available only when `DEBUG=true`.
 
-```text
-Authorization: Bearer <access_token>
+## Shared contract rules
+
+### Update and nullable fields
+
+Subject and task update routes preserve their existing `PUT` URLs but use
+partial-update semantics:
+
+- omitted property: keep the stored value;
+- nullable property set to `null`: clear the stored value;
+- required property set to `null`: reject with `422 Unprocessable Entity`.
+
+Required update fields include task `title`, `subject_id`, `type`,
+`priority`, and `status`, plus subject `name` and `color`.
+
+Nullable task fields include `description`, `deadline`, `github_url`,
+`moodle_url`, `report_file`, `estimated_hours`, `submitted_at`, and
+`accepted_at`. Nullable subject fields include `teacher`, `semester`, and
+`description`.
+
+Example: clear a deadline while leaving every other field unchanged.
+
+```http
+PUT /api/v1/tasks/42
+Content-Type: application/json
+
+{"deadline": null}
 ```
+
+### Timestamps
+
+Datetime request values must be ISO 8601 values with `Z` or an explicit UTC
+offset. The API normalizes accepted values to UTC.
+
+```json
+{"deadline": "2026-07-15T18:30:00+03:00"}
+```
+
+A naive value such as `2026-07-15T18:30:00` is rejected with `422`.
+Date-only task-list filters are interpreted as UTC day boundaries. The frontend
+calendar groups returned instants in the user's local timezone.
+
+### Errors
+
+FastAPI validation failures use `422` with structured field details.
+Application errors use:
+
+```json
+{"detail": "Task not found"}
+```
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid request state |
+| `401` | Missing, expired, malformed, or otherwise invalid bearer token |
+| `404` | Resource does not exist or is not owned by the caller |
+| `409` | Unique subject name or email conflict |
+| `422` | Request validation failure |
+| `429` | Authentication rate limit exceeded |
+| `503` | Ollama is unavailable |
+
+Foreign resource IDs intentionally use the same `404` response as missing IDs.
 
 ## Auth
 
 | Method | Path | Description |
 | --- | --- | --- |
-| `POST` | `/auth/register` | Create a user |
-| `POST` | `/auth/login` | Exchange credentials for an access token |
-| `GET` | `/auth/me` | Read the current authenticated user |
+| `POST` | `/auth/register` | Create an account |
+| `POST` | `/auth/login` | Exchange form credentials for an access token |
+| `GET` | `/auth/me` | Return the authenticated user |
+
+Registration passwords must be 8 characters or more and at most 72 UTF-8 bytes,
+matching bcrypt's effective input boundary.
+
+Login uses `application/x-www-form-urlencoded` with email in `username`:
+
+```text
+username=user@example.com&password=correct-horse-battery-staple
+```
+
+Token response:
+
+```json
+{"access_token": "<jwt>", "token_type": "bearer"}
+```
 
 ## Subjects
 
 | Method | Path | Description |
 | --- | --- | --- |
-| `GET` | `/subjects` | List current user's subjects |
+| `GET` | `/subjects` | List owned subjects |
 | `POST` | `/subjects` | Create a subject |
-| `GET` | `/subjects/{subject_id}` | Read a subject |
-| `PUT` | `/subjects/{subject_id}` | Update a subject |
-| `DELETE` | `/subjects/{subject_id}` | Delete a subject |
+| `GET` | `/subjects/{subject_id}` | Read an owned subject |
+| `PUT` | `/subjects/{subject_id}` | Partially update an owned subject |
+| `DELETE` | `/subjects/{subject_id}` | Delete a subject and its tasks |
+
+Subject names are unique per user, not globally.
 
 ## Tasks
 
 | Method | Path | Description |
 | --- | --- | --- |
-| `GET` | `/tasks` | List current user's tasks |
-| `POST` | `/tasks` | Create a task |
-| `GET` | `/tasks/{task_id}` | Read a task |
-| `PUT` | `/tasks/{task_id}` | Update a task |
-| `PATCH` | `/tasks/{task_id}/status` | Update only task status |
+| `GET` | `/tasks` | List owned tasks |
+| `POST` | `/tasks` | Create a task under an owned subject |
+| `GET` | `/tasks/{task_id}` | Read an owned task |
+| `PUT` | `/tasks/{task_id}` | Partially update an owned task |
+| `PATCH` | `/tasks/{task_id}/status` | Update only status |
 | `DELETE` | `/tasks/{task_id}` | Delete a task |
 
-Task list filters:
+List filters:
 
-- `status`
-- `active_only` (exclude accepted tasks)
-- `subject_id`
-- `priority`
-- `type`
-- `deadline_before`
-- `deadline_after`
-- `search`
-
-## Export
-
-| Method | Path | Description |
+| Query | Type | Behavior |
 | --- | --- | --- |
-| `GET` | `/export/json` | Download the current user's workspace as structured JSON |
-| `GET` | `/export/csv` | Download the current user's workspace as UTF-8 CSV |
+| `status` | task status | Exact status |
+| `active_only` | boolean | Exclude accepted work |
+| `subject_id` | integer | Owned subject |
+| `priority` | priority enum | Exact priority |
+| `type` | task type enum | Exact type |
+| `deadline_before` | date | Inclusive end of UTC day |
+| `deadline_after` | date | Inclusive start of UTC day |
+| `search` | string | Title/description match |
 
-Both endpoints require bearer authentication and include only subjects and tasks
-owned by the current user. Responses set `Content-Disposition` download
-filenames.
-
-The JSON response contains:
-
-- `exported_at`
-- `subjects`, including `created_at` and `updated_at`
-- `tasks`, including deadline, submission, acceptance, creation, and update
-  timestamps
-
-The CSV response uses one table for both resource types. The `record_type`
-column distinguishes `subject` and `task` rows, and UTF-8 BOM encoding keeps
-non-Latin subject and task names compatible with spreadsheet applications.
-
-## Mentor
-
-| Method | Path | Description |
-| --- | --- | --- |
-| `POST` | `/mentor/chat` | Return a complete local Ollama response |
-| `POST` | `/mentor/chat/stream` | Stream the local Ollama response as SSE events |
-
-Both endpoints require bearer authentication. Requests accept `lab`, `code`,
-`report`, `deadline`, and `chat` modes, plus `language: auto|ru|uk|en`.
-Optional `subject_id` and `task_id` values are resolved through per-user
-ownership checks before any model request.
-
-The streaming endpoint emits `token` events followed by one `done` event with
-the session ID. Completed user and assistant messages are persisted atomically.
-If Ollama is unavailable before streaming starts, the endpoint returns HTTP
-`503` with a user-safe error.
+Task statuses: `not_started`, `in_progress`, `submitted`, `accepted`,
+and `debt`.
 
 ## Dashboard
 
 | Method | Path | Description |
 | --- | --- | --- |
-| `GET` | `/dashboard/summary` | Read dashboard counters and progress |
-| `GET` | `/dashboard/crisis` | Read Crisis Mode metrics and ranked active tasks |
+| `GET` | `/dashboard/summary` | Counters, progress, overdue, nearest deadline |
+| `GET` | `/dashboard/crisis` | Crisis metrics and ranked tasks |
 
-`/dashboard/crisis` query parameters:
-
-- `limit`: result limit from 1 to 100
-- `include_completed`: include `accepted` tasks when `true`
-
-By default, Crisis Mode excludes completed tasks.
-
-Response shape:
+`/dashboard/crisis` accepts `limit=1..100` and
+`include_completed=true|false`. By default it ranks active and debt work and
+excludes accepted tasks.
 
 ```json
 {
   "total_tasks": 5,
-  "accepted_tasks": 3,
-  "active_tasks": 2,
-  "completion_ratio": 0.6,
-  "pressure_score": 0.3375,
-  "cohesion_score": 0.6,
-  "instability_score": 0.2666,
+  "accepted_tasks": 1,
+  "active_tasks": 4,
+  "completion_ratio": 0.2,
+  "pressure_score": 0.5625,
+  "cohesion_score": 0.2,
+  "instability_score": 0.5231,
   "severity_counts": {
-    "critical": 0,
-    "high": 0,
+    "critical": 1,
+    "high": 1,
     "medium": 2,
     "low": 0
   },
@@ -126,13 +164,35 @@ Response shape:
 }
 ```
 
-`tasks` contains the active list for Crisis Mode. The metrics are calculated from
-all tasks so the visual state can represent total completion progress.
+## Settings
 
-## API Docs
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/settings/me` | Read or lazily create user settings |
+| `PATCH` | `/settings/me` | Update provided settings fields |
 
-Interactive API docs are available only when `DEBUG=true`:
+Settings include language, theme, accent, dashboard density, Crisis visual
+visibility, reduced motion, and deadline reminders.
 
-- `/docs`
-- `/redoc`
-- `/openapi.json`
+## Export
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/export/json` | Download owned workspace JSON |
+| `GET` | `/export/csv` | Download owned workspace UTF-8 CSV |
+
+Both exports include only the authenticated user's subjects and tasks. The CSV
+uses a `record_type` column and UTF-8 BOM for spreadsheet compatibility.
+
+## Mentor
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/mentor/chat` | Return a complete Ollama response |
+| `POST` | `/mentor/chat/stream` | Stream SSE token events and a final done event |
+
+Requests accept mode `lab|code|report|deadline|chat`, language
+`auto|ru|uk|en`, and optional `subject_id` or `task_id`. Optional IDs are
+resolved through the current user's ownership before any model request.
+
+Completed user/assistant exchanges are persisted. Interrupted streams are not.

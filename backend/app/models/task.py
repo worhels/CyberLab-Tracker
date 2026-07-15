@@ -8,6 +8,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 
+def enum_values(items: type[Enum]) -> list[str]:
+    return [str(item.value) for item in items]
+
+
 class TaskType(str, Enum):
     LAB = "lab"
     PRACTICE = "practice"
@@ -39,19 +43,19 @@ class Task(Base):
     description: Mapped[str | None] = mapped_column(Text)
     deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     type: Mapped[TaskType] = mapped_column(
-        SAEnum(TaskType, name="task_type", values_callable=lambda items: [item.value for item in items]),
+        SAEnum(TaskType, name="task_type", values_callable=enum_values),
         default=TaskType.OTHER,
         nullable=False,
         index=True,
     )
     status: Mapped[TaskStatus] = mapped_column(
-        SAEnum(TaskStatus, name="task_status", values_callable=lambda items: [item.value for item in items]),
+        SAEnum(TaskStatus, name="task_status", values_callable=enum_values),
         default=TaskStatus.NOT_STARTED,
         nullable=False,
         index=True,
     )
     priority: Mapped[TaskPriority] = mapped_column(
-        SAEnum(TaskPriority, name="task_priority", values_callable=lambda items: [item.value for item in items]),
+        SAEnum(TaskPriority, name="task_priority", values_callable=enum_values),
         default=TaskPriority.MEDIUM,
         nullable=False,
         index=True,

@@ -7,6 +7,8 @@ export type TranslationKey =
   | 'all'
   | 'apiConnected'
   | 'behavior'
+  | 'calendar'
+  | 'calendarSubtitle'
   | 'comfortable'
   | 'compact'
   | 'crisisCube'
@@ -78,6 +80,8 @@ export type TranslationKey =
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ru: {
+    calendar: 'Календарь',
+    calendarSubtitle: 'Задачи по локальной дате: просроченные, сегодняшние, будущие и без срока.',
     dataExport: 'Экспорт данных',
     dataExportDescription: 'Скачать предметы, задачи и временные метки рабочей области.',
     exportCsv: 'Экспорт CSV',
@@ -154,6 +158,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     zerkalo: 'Zerkalo',
   },
   uk: {
+    calendar: 'Календар',
+    calendarSubtitle: 'Завдання за локальною датою: прострочені, сьогоднішні, майбутні та без строку.',
     dataExport: 'Експорт даних',
     dataExportDescription: 'Завантажити предмети, завдання та часові мітки робочого простору.',
     exportCsv: 'Експорт CSV',
@@ -230,6 +236,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     zerkalo: 'Zerkalo',
   },
   en: {
+    calendar: 'Calendar',
+    calendarSubtitle: 'Tasks grouped by local date, with overdue work and unscheduled items separated.',
     dataExport: 'Data export',
     dataExportDescription: 'Download workspace subjects, tasks, and timestamps.',
     exportCsv: 'Export CSV',

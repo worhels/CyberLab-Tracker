@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic import field_validator
+from pydantic.json_schema import SkipJsonSchema
 
 
 class SubjectBase(BaseModel):
@@ -16,11 +18,18 @@ class SubjectCreate(SubjectBase):
 
 
 class SubjectUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=120)
-    color: str | None = Field(default=None, min_length=1, max_length=32)
+    name: str | SkipJsonSchema[None] = Field(default=None, min_length=1, max_length=120)
+    color: str | SkipJsonSchema[None] = Field(default=None, min_length=1, max_length=32)
     teacher: str | None = Field(default=None, max_length=255)
     semester: str | None = Field(default=None, max_length=80)
     description: str | None = None
+
+    @field_validator("name", "color", mode="before")
+    @classmethod
+    def reject_null_for_non_nullable_fields(cls, value: object) -> object:
+        if value is None:
+            raise ValueError("Field may be omitted but cannot be null")
+        return value
 
 
 class SubjectRead(SubjectBase):

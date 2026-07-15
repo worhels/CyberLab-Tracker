@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, TypedDict
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
+from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -10,7 +11,7 @@ from app.db.session import get_db
 from app.models.subject import Subject
 from app.models.task import Task, TaskPriority, TaskStatus, TaskType
 from app.models.user import User
-from app.schemas.dashboard import CrisisDashboard, CrisisTask, DashboardSummary
+from app.schemas.dashboard import CrisisDashboard, CrisisSeverityCounts, CrisisTask, DashboardSummary
 from app.schemas.task import TaskRead
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -19,6 +20,7 @@ ACTIVE_CRISIS_STATUSES = {
     TaskStatus.NOT_STARTED,
     TaskStatus.IN_PROGRESS,
     TaskStatus.SUBMITTED,
+    TaskStatus.DEBT,
 }
 
 PRIORITY_PRESSURE_WEIGHT = {
@@ -32,7 +34,26 @@ STATUS_PRESSURE_WEIGHT = {
     TaskStatus.NOT_STARTED: 1.0,
     TaskStatus.IN_PROGRESS: 0.75,
     TaskStatus.SUBMITTED: 0.35,
+    TaskStatus.DEBT: 1.0,
 }
+
+
+class CrisisSeverityMetrics(TypedDict):
+    critical: int
+    high: int
+    medium: int
+    low: int
+
+
+class CrisisMetrics(TypedDict):
+    total_tasks: int
+    accepted_tasks: int
+    active_tasks: int
+    completion_ratio: float
+    pressure_score: float
+    cohesion_score: float
+    instability_score: float
+    severity_counts: CrisisSeverityMetrics
 
 
 def normalize_dt(value: datetime | None) -> datetime | None:
@@ -60,7 +81,7 @@ def is_active_crisis_task(task: Task) -> bool:
     return task.status in ACTIVE_CRISIS_STATUSES
 
 
-def build_crisis_metrics(tasks: list[Task]) -> dict:
+def build_crisis_metrics(tasks: list[Task]) -> CrisisMetrics:
     total_count = len(tasks)
     active_tasks = [task for task in tasks if is_active_crisis_task(task)]
     accepted_count = sum(1 for task in tasks if task.status == TaskStatus.ACCEPTED)
@@ -76,7 +97,7 @@ def build_crisis_metrics(tasks: list[Task]) -> dict:
     cohesion_score = clamp_score(completion_ratio)
     instability_score = clamp_score(pressure_score * (1 - cohesion_score * 0.35))
 
-    severity_counts = {
+    severity_counts: CrisisSeverityMetrics = {
         "critical": sum(1 for task in active_tasks if task.priority == TaskPriority.CRITICAL),
         "high": sum(1 for task in active_tasks if task.priority == TaskPriority.HIGH),
         "medium": sum(1 for task in active_tasks if task.priority == TaskPriority.MEDIUM),
@@ -147,7 +168,7 @@ def dashboard_summary(db: Session = Depends(get_db), current_user: User = Depend
 
     total_subjects = db.scalar(select(func.count(Subject.id)).where(Subject.user_id == current_user.id)) or 0
 
-    def count_tasks(*filters) -> int:
+    def count_tasks(*filters: ColumnElement[bool]) -> int:
         return (
             db.scalar(
                 select(func.count(Task.id))
@@ -194,7 +215,7 @@ def crisis_dashboard(
     include_completed: bool = False,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> CrisisDashboard:
     now = datetime.now(timezone.utc)
     all_tasks = list(db.scalars(user_tasks_query(current_user.id)))
     task_pool = all_tasks if include_completed else [task for task in all_tasks if is_active_crisis_task(task)]
@@ -214,4 +235,15 @@ def crisis_dashboard(
         data["crisis_score"] = crisis_score(task, now)
         response.append(CrisisTask(**data))
 
-    return {**build_crisis_metrics(all_tasks), "tasks": response}
+    metrics = build_crisis_metrics(all_tasks)
+    return CrisisDashboard(
+        total_tasks=metrics["total_tasks"],
+        accepted_tasks=metrics["accepted_tasks"],
+        active_tasks=metrics["active_tasks"],
+        completion_ratio=metrics["completion_ratio"],
+        pressure_score=metrics["pressure_score"],
+        cohesion_score=metrics["cohesion_score"],
+        instability_score=metrics["instability_score"],
+        severity_counts=CrisisSeverityCounts(**metrics["severity_counts"]),
+        tasks=response,
+    )

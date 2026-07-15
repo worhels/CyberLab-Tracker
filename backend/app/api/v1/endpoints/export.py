@@ -13,6 +13,8 @@ from app.models.subject import Subject
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.export import WorkspaceExportRead
+from app.schemas.subject import SubjectRead
+from app.schemas.task import TaskRead
 
 router = APIRouter(prefix="/export", tags=["export"])
 
@@ -72,8 +74,8 @@ def export_json(
     )
     return WorkspaceExportRead(
         exported_at=exported_at,
-        subjects=subjects,
-        tasks=tasks,
+        subjects=[SubjectRead.model_validate(subject) for subject in subjects],
+        tasks=[TaskRead.model_validate(task) for task in tasks],
     )
 
 

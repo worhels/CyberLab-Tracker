@@ -1,4 +1,6 @@
-from pydantic import Field
+from typing import Literal
+
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,9 +9,10 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = False
     DATABASE_URL: str = Field(default="", min_length=1, validate_default=True)
-    JWT_SECRET_KEY: str = Field(default="", min_length=1, validate_default=True)
-    JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+    JWT_SECRET_KEY: str = Field(default="", min_length=32, validate_default=True)
+    JWT_ALGORITHM: Literal["HS256"] = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60 * 24, gt=0)
+    BCRYPT_ROUNDS: int = Field(default=12, ge=12, le=16)
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     CORS_ALLOW_METHODS: list[str] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     CORS_ALLOW_HEADERS: list[str] = ["Authorization", "Content-Type"]
@@ -19,6 +22,13 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "qwen2.5-coder:7b"
     OLLAMA_TIMEOUT_SECONDS: float = 120.0
     OLLAMA_WARMUP_ENABLED: bool = True
+
+    @field_validator("JWT_SECRET_KEY")
+    @classmethod
+    def reject_placeholder_jwt_secret(cls, value: str) -> str:
+        if value == "replace-with-a-long-random-secret":
+            raise ValueError("JWT_SECRET_KEY must be replaced with a random secret")
+        return value
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

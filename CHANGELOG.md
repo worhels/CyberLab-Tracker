@@ -2,51 +2,60 @@
 
 All notable changes to CyberLab Tracker are documented here.
 
-## Unreleased
+## Unreleased — July 15, 2026
 
 ### Added
 
-- Repository CI workflow.
-- CodeQL workflow.
-- Dependency review workflow.
-- Issue templates and pull request template.
-- Security policy.
-- Threat model.
-- Security model documentation.
-- API overview documentation.
-- Development guide.
-- Repository setup guide for GitHub About, topics, labels, issues, and project board.
-- MIT license.
-- Integration coverage for auth token failures, registration/login, rate limiting,
-  and per-user subject/task ownership.
-- Password policy, persistent rate-limit deployment boundary, and local secret
-  rotation documentation.
-- Accessible confirmation dialogs for task and subject deletion, including
-  cascade warnings for subjects.
-- Task quick filters for due today, this week, overdue, completed, and active
-  work, with one-action filter reset.
-- Task-level deadline badges for overdue, due-today, and three-day warning states.
-- Full subject and task CRUD integration coverage.
-- Selected-subject statistics for active, completed, overdue, critical, and
-  near-deadline work.
-- Authenticated JSON and UTF-8 CSV workspace exports with subjects, tasks, and
-  timestamps.
+- A responsive list-based Calendar page that groups past deadlines, today,
+  upcoming work, and tasks without deadlines.
+- Complete subject and task edit workflows backed by reusable form dialogs and
+  field components.
+- Backend regression coverage for JWT configuration, bcrypt boundaries,
+  timezone-aware task contracts, nullable patch fields, ownership, and Crisis debt.
+- Frontend unit/component coverage for calendar grouping, task filters, date
+  formatting, deadline badges, and nullable form serialization.
+- A PostgreSQL 16 migration CI job that upgrades to head, checks model parity,
+  downgrades to base, and upgrades again.
+- Strict Pyright, TypeScript typecheck, Python/npm dependency audits, frontend
+  tests, and production build gates in CI.
+- Dependabot configuration and a tag-triggered prerelease workflow for frontend
+  artifacts, checksums, a backend container image, and migration validation.
+- A public-beta checklist covering deployment prerequisites and MIT license limits.
 
 ### Changed
 
-- Reworked README for portfolio review.
-- Reworked roadmap into a clean phased engineering plan.
-- Documented Crisis Mode completed-task filtering.
-- Made backend tests use an isolated in-memory database and safe test-only
-  configuration when run outside Docker.
-- Kept task and subject lists synchronized after confirmed subject deletion.
-- Audited roadmap completion markers against the current implementation and
-  visible GitHub repository metadata.
-- Added an `active_only` task query filter so deadline views exclude accepted
-  work.
-- Replaced compressed mobile task-table rows with labeled, readable task cards.
-- Added localized export controls to Settings.
+- Replaced Passlib integration with direct bcrypt usage, configurable rounds,
+  and explicit enforcement of bcrypt's 72-byte input boundary.
+- Hardened JWT configuration to a fixed algorithm and rejected short or known
+  placeholder secrets.
+- Normalized task datetimes to timezone-aware UTC and rejected timezone-naive input.
+- Tightened partial-update schemas so required fields reject explicit `null`
+  while optional fields retain documented clear semantics.
+- Included active overdue workload in Crisis debt calculations.
+- Refactored Subjects, task/subject forms, and Crisis presentation into smaller
+  components and hooks without changing public API routes.
+- Made Crisis visuals responsive to reduced-motion settings and lower-capability
+  mobile devices; reduced motion now avoids mounting the WebGL canvas.
+- Updated vulnerable Python and npm dependencies and removed the obsolete
+  Passlib dependency.
+- Refreshed README, roadmap, architecture, API, development, security, threat
+  model, contribution, and release documentation for the beta-readiness baseline.
+- Strengthened dependency review so moderate-or-higher findings fail the gate.
+
+### Fixed
+
+- Required update fields can no longer be accidentally persisted as `null`.
+- Task deadlines no longer depend on server-local timezone interpretation.
+- Completed historical Calendar items remain visible without being reported as overdue.
+- Mobile Crisis layouts no longer require the full desktop rendering workload.
 
 ### Removed
 
-- Committed local development logs.
+- The unused Crisis visual reference asset with unclear provenance.
+- Passlib and its incompatible bcrypt compatibility layer.
+
+### Pending Publication
+
+- The dashboard screenshot is included; Tasks and Calendar screenshots are still pending.
+- GitHub About metadata and topics have not yet been updated.
+- No tagged prerelease or GitHub release artifact has been published yet.

@@ -1,6 +1,7 @@
 import {
   Activity,
   BookOpen,
+  CalendarDays,
   Gauge,
   ListChecks,
   LogOut,
@@ -24,6 +25,7 @@ const navItems = [
   { to: '/dashboard', labelKey: 'dashboard', icon: Gauge },
   { to: '/subjects', labelKey: 'navSubjects', icon: BookOpen },
   { to: '/tasks', labelKey: 'navTasks', icon: ListChecks },
+  { to: '/calendar', labelKey: 'calendar', icon: CalendarDays },
   { to: '/crisis', labelKey: 'crisisMode', icon: Activity },
   { to: '/settings', labelKey: 'settings', icon: Settings },
 ] satisfies Array<{ to: string; labelKey: TranslationKey; icon: typeof Gauge }>
@@ -32,6 +34,7 @@ const routeBackgrounds: Record<string, { variant: PressureFieldVariant; intensit
   '/dashboard': { variant: 'dashboard', intensity: 0.72, opacity: 0.24, speed: 0.44 },
   '/subjects': { variant: 'subjects', intensity: 0.58, opacity: 0.18, speed: 0.42 },
   '/tasks': { variant: 'tasks', intensity: 0.42, opacity: 0.15, speed: 0.34 },
+  '/calendar': { variant: 'tasks', intensity: 0.36, opacity: 0.13, speed: 0.28 },
   '/crisis': { variant: 'crisis', intensity: 0.72, opacity: 0.22, speed: 0.48 },
   '/settings': { variant: 'settings', intensity: 0.34, opacity: 0.1, speed: 0.24 },
 }

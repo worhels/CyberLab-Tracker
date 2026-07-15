@@ -2,18 +2,18 @@
 
 ## Development Flow
 
-1. Start from an up-to-date `develop` branch for normal feature work.
+1. Start from an up-to-date `main` branch.
 2. Create a focused branch:
 
    ```powershell
-   git switch develop
+   git switch main
    git pull
    git switch -c feature/short-description
    ```
 
 3. Keep commits scoped and readable.
 4. Run the relevant checks before opening a pull request.
-5. Open a pull request into `develop`, unless the change is an urgent production fix.
+5. Open a pull request into `main`.
 
 ## Branch Names
 
@@ -43,6 +43,7 @@ Backend:
 cd backend
 python -m pip install -r requirements-dev.txt
 ruff check .
+pyright
 pytest
 python -m compileall app scripts alembic
 ```
@@ -52,6 +53,7 @@ Frontend:
 ```powershell
 cd frontend
 npm ci
+npm test
 npm run typecheck
 npm run lint
 npm run build
@@ -71,6 +73,10 @@ Every pull request should include:
 - why it changed
 - how it was validated
 - screenshots or recordings when UI behavior changes
+
+Use a short conventional title such as `fix(auth): enforce bcrypt limits` or
+`feat(calendar): group tasks by local date`. The description must include
+Summary, Changed files, Why, How to test, and Risks.
 
 Do not commit local logs, generated build output, personal `.env` files, or editor
 state.

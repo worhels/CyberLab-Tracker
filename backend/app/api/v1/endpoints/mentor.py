@@ -5,7 +5,7 @@ from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, cast
 from uuid import uuid4
 
 import httpx
@@ -636,18 +636,20 @@ def ensure_required_context_facts(
     labs_context = data_context.get("labs")
     if not isinstance(labs_context, dict):
         return answer
-    active_labs = labs_context.get("active_labs")
-    accepted_labs = labs_context.get("accepted_labs")
+    typed_labs_context = cast(dict[str, object], labs_context)
+    active_labs = typed_labs_context.get("active_labs")
+    accepted_labs = typed_labs_context.get("accepted_labs")
     if not isinstance(active_labs, list) or not isinstance(accepted_labs, list):
         return answer
 
     active_items: list[tuple[str, str | None, str | None]] = []
-    for item in active_labs:
+    for item in cast(list[object], active_labs):
         if not isinstance(item, dict):
             continue
-        title = item.get("title")
-        subject = item.get("subject")
-        task_status = item.get("status")
+        typed_item = cast(dict[str, object], item)
+        title = typed_item.get("title")
+        subject = typed_item.get("subject")
+        task_status = typed_item.get("status")
         if not isinstance(title, str):
             continue
         active_items.append(
@@ -659,11 +661,12 @@ def ensure_required_context_facts(
         )
 
     accepted_items: list[tuple[str, str | None]] = []
-    for item in accepted_labs:
+    for item in cast(list[object], accepted_labs):
         if not isinstance(item, dict):
             continue
-        title = item.get("title")
-        subject = item.get("subject")
+        typed_item = cast(dict[str, object], item)
+        title = typed_item.get("title")
+        subject = typed_item.get("subject")
         if not isinstance(title, str):
             continue
         accepted_items.append(
@@ -1031,7 +1034,7 @@ async def generate_mentor_stream(
         await token_stream.aclose()
 
     if upstream_error is not None:
-        detail = upstream_error.detail if isinstance(upstream_error.detail, str) else INVALID_RESPONSE_MESSAGE
+        detail = upstream_error.detail
         yield format_sse_event("error", {"detail": detail})
         return
 

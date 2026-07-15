@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { deleteTask, getTasks, updateTaskStatus } from '../api/tasks'
@@ -8,6 +8,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { DeadlineBadge } from '../components/DeadlineBadge'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
+import { SubjectEditDialog } from '../components/forms/SubjectEditDialog'
+import { TaskEditDialog } from '../components/forms/TaskEditDialog'
 import { WorkloadSphereCanvas } from '../components/visuals/WorkloadSphereCanvas'
 import type { Subject, Task, TaskPriority, TaskStatus, TaskType } from '../types'
 import { getErrorMessage } from '../utils/errors'
@@ -52,8 +54,13 @@ export function TasksPage() {
   const [quickFilter, setQuickFilter] = useState<TaskQuickFilter>('')
   const [listMode, setListMode] = useState<ListMode>('all')
   const [page, setPage] = useState(1)
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
+  const [subjectToEdit, setSubjectToEdit] = useState<Subject | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const pendingTaskIdsRef = useRef<Set<number>>(new Set())
+  const [pendingTaskIds, setPendingTaskIds] = useState<ReadonlySet<number>>(() => new Set())
+  const loadRequestIdRef = useRef(0)
   const [appliedFilters, setAppliedFilters] = useState<AppliedTaskFilters>({
     search: '',
     priority: '',
@@ -76,7 +83,25 @@ export function TasksPage() {
   const showTasks = listMode !== 'subjects'
   const showSubjects = listMode !== 'tasks'
 
+  const beginTaskMutation = useCallback((taskId: number) => {
+    if (pendingTaskIdsRef.current.has(taskId)) return false
+
+    const nextPendingTaskIds = new Set(pendingTaskIdsRef.current)
+    nextPendingTaskIds.add(taskId)
+    pendingTaskIdsRef.current = nextPendingTaskIds
+    setPendingTaskIds(nextPendingTaskIds)
+    return true
+  }, [])
+
+  const endTaskMutation = useCallback((taskId: number) => {
+    const nextPendingTaskIds = new Set(pendingTaskIdsRef.current)
+    nextPendingTaskIds.delete(taskId)
+    pendingTaskIdsRef.current = nextPendingTaskIds
+    setPendingTaskIds(nextPendingTaskIds)
+  }, [])
+
   const loadData = useCallback(async () => {
+    const requestId = ++loadRequestIdRef.current
     setIsLoading(true)
     setError('')
     try {
@@ -89,17 +114,22 @@ export function TasksPage() {
           ...getQuickTaskFilterParams(appliedFilters.quick),
         }),
       ])
+      if (requestId !== loadRequestIdRef.current) return
       setSubjects(subjectsData)
       setTasks(tasksData)
     } catch (err) {
+      if (requestId !== loadRequestIdRef.current) return
       setError(getErrorMessage(err))
     } finally {
-      setIsLoading(false)
+      if (requestId === loadRequestIdRef.current) setIsLoading(false)
     }
   }, [appliedFilters])
 
   useEffect(() => {
-    loadData()
+    void loadData()
+    return () => {
+      loadRequestIdRef.current += 1
+    }
   }, [loadData])
 
   useEffect(() => {
@@ -107,18 +137,37 @@ export function TasksPage() {
   }, [pageCount])
 
   const onStatusChange = async (taskId: number, status: TaskStatus) => {
-    const updated = await updateTaskStatus(taskId, status)
-    const activeQuickFilter =
-      appliedFilters.quick !== '' && appliedFilters.quick !== 'completed'
-    const noLongerMatches =
-      (appliedFilters.quick === 'completed' && updated.status !== 'accepted') ||
-      (activeQuickFilter && updated.status === 'accepted')
+    if (!beginTaskMutation(taskId)) return
 
-    setTasks((current) =>
-      noLongerMatches
-        ? current.filter((task) => task.id !== taskId)
-        : current.map((task) => (task.id === taskId ? updated : task)),
-    )
+    setError('')
+    try {
+      const updated = await updateTaskStatus(taskId, status)
+      const activeQuickFilter =
+        appliedFilters.quick !== '' && appliedFilters.quick !== 'completed'
+      const noLongerMatches =
+        (appliedFilters.quick === 'completed' && updated.status !== 'accepted') ||
+        (activeQuickFilter && updated.status === 'accepted')
+
+      setTasks((current) =>
+        noLongerMatches
+          ? current.filter((task) => task.id !== taskId)
+          : current.map((task) => (task.id === taskId ? updated : task)),
+      )
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      endTaskMutation(taskId)
+    }
+  }
+
+  const onTaskSaved = (updated: Task) => {
+    setTasks((current) => current.map((task) => (task.id === updated.id ? updated : task)))
+    void loadData()
+  }
+
+  const onSubjectSaved = (updated: Subject) => {
+    setSubjects((current) => [...current.filter((subject) => subject.id !== updated.id), updated]
+      .sort((left, right) => left.name.localeCompare(right.name)))
   }
 
   const applyFilters = () => {
@@ -150,6 +199,9 @@ export function TasksPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return
 
+    const taskId = deleteTarget.kind === 'task' ? deleteTarget.id : null
+    if (taskId !== null && !beginTaskMutation(taskId)) return
+
     setIsDeleting(true)
     setError('')
     try {
@@ -178,6 +230,7 @@ export function TasksPage() {
       setError(getErrorMessage(err))
     } finally {
       setIsDeleting(false)
+      if (taskId !== null) endTaskMutation(taskId)
     }
   }
 
@@ -219,7 +272,7 @@ export function TasksPage() {
       <div className="tasks-workspace">
         <section className="tasks-panel">
           <div className="tasks-panel__toolbar">
-            <div className="tasks-view-switch" role="tablist" aria-label="List view">
+            <div className="tasks-view-switch" role="group" aria-label="Visible item types">
               {(['all', 'tasks', 'subjects'] as const).map((mode) => (
                 <button
                   key={mode}
@@ -232,8 +285,8 @@ export function TasksPage() {
                 </button>
               ))}
             </div>
-            <input className="field tasks-filter-search" placeholder="Search tasks" value={search} onChange={(event) => setSearch(event.target.value)} />
-            <select className="field tasks-filter-select" value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as TaskPriority | '')}>
+            <input className="field tasks-filter-search" aria-label="Search tasks" placeholder="Search tasks" value={search} onChange={(event) => setSearch(event.target.value)} />
+            <select className="field tasks-filter-select" aria-label="Filter by priority" value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as TaskPriority | '')}>
               <option value="">All priorities</option>
               {taskPriorities.map((priority) => (
                 <option key={priority} value={priority}>
@@ -241,7 +294,7 @@ export function TasksPage() {
                 </option>
               ))}
             </select>
-            <select className="field tasks-filter-select" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as TaskType | '')}>
+            <select className="field tasks-filter-select" aria-label="Filter by task type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as TaskType | '')}>
               <option value="">All types</option>
               {taskTypes.map((type) => (
                 <option key={type} value={type}>
@@ -258,7 +311,7 @@ export function TasksPage() {
               </button>
             </div>
           </div>
-          <div className="tasks-quick-filter-bar" aria-label="Quick task filters">
+          <div className="tasks-quick-filter-bar" role="group" aria-label="Quick task filters">
             <span className="tasks-quick-filter-label">Quick filters</span>
             <div className="tasks-quick-filter-list">
               {quickFilters.map((filter) => (
@@ -329,8 +382,8 @@ export function TasksPage() {
                                   {task.description ? <p className="app-muted mt-1 max-w-md text-xs">{task.description}</p> : null}
                                   <div className="app-muted mt-2 flex flex-wrap gap-2 text-xs">
                                     {task.estimated_hours ? <span>{task.estimated_hours}h</span> : null}
-                                    {task.github_url ? <a className="app-link" href={task.github_url} target="_blank">GitHub</a> : null}
-                                    {task.moodle_url ? <a className="app-link" href={task.moodle_url} target="_blank">Moodle</a> : null}
+                                    {task.github_url ? <a className="app-link" href={task.github_url} target="_blank" rel="noreferrer">GitHub</a> : null}
+                                    {task.moodle_url ? <a className="app-link" href={task.moodle_url} target="_blank" rel="noreferrer">Moodle</a> : null}
                                   </div>
                                 </td>
                                 <td className="tasks-table__subject-cell" data-label="Subject">
@@ -353,7 +406,13 @@ export function TasksPage() {
                                 <td data-label="Type"><Badge value={task.type} variant="type" /></td>
                                 <td data-label="Priority"><Badge value={task.priority} variant="priority" /></td>
                                 <td className="tasks-table__status-cell" data-label="Status">
-                                  <select className="field task-status-select" value={task.status} onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}>
+                                  <select
+                                    className="field task-status-select"
+                                    value={task.status}
+                                    aria-label={`Status for ${task.title}`}
+                                    disabled={pendingTaskIds.has(task.id)}
+                                    onChange={(event) => void onStatusChange(task.id, event.target.value as TaskStatus)}
+                                  >
                                     {taskStatuses.map((status) => (
                                       <option key={status} value={status}>
                                         {humanize(status)}
@@ -362,14 +421,26 @@ export function TasksPage() {
                                   </select>
                                 </td>
                                 <td className="tasks-table__action-cell" data-label="Actions">
-                                  <button
-                                    className="btn-secondary task-delete-button"
-                                    type="button"
-                                    aria-label={`Delete task ${task.title}`}
-                                    onClick={() => setDeleteTarget({ kind: 'task', id: task.id, name: task.title })}
-                                  >
-                                    Delete
-                                  </button>
+                                  <div className="task-row-actions">
+                                    <button
+                                      className="btn-secondary"
+                                      type="button"
+                                      aria-label={`Edit task ${task.title}`}
+                                      disabled={pendingTaskIds.has(task.id)}
+                                      onClick={() => setTaskToEdit(task)}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      className="btn-secondary task-delete-button"
+                                      type="button"
+                                      aria-label={`Delete task ${task.title}`}
+                                      disabled={pendingTaskIds.has(task.id)}
+                                      onClick={() => setDeleteTarget({ kind: 'task', id: task.id, name: task.title })}
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
                                 </td>
                               </motion.tr>
                             ))}
@@ -444,6 +515,14 @@ export function TasksPage() {
                               {isMentorContext ? 'Mentor selected' : 'Use in Mentor'}
                             </button>
                             <button
+                              className="btn-secondary"
+                              type="button"
+                              aria-label={`Edit subject ${subject.name}`}
+                              onClick={() => setSubjectToEdit(subject)}
+                            >
+                              Edit
+                            </button>
+                            <button
                               className="btn-secondary task-delete-button"
                               type="button"
                               aria-label={`Delete subject ${subject.name}`}
@@ -473,6 +552,19 @@ export function TasksPage() {
           </div>
         </section>
       </div>
+
+      <TaskEditDialog
+        task={taskToEdit}
+        subjects={subjects}
+        onClose={() => setTaskToEdit(null)}
+        onSaved={onTaskSaved}
+      />
+
+      <SubjectEditDialog
+        subject={subjectToEdit}
+        onClose={() => setSubjectToEdit(null)}
+        onSaved={onSubjectSaved}
+      />
 
       <ConfirmDialog
         open={deleteTarget !== null}

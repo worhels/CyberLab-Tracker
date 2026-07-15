@@ -1,5 +1,12 @@
 import { api } from './client'
-import type { Task, TaskPayload, TaskPriority, TaskStatus, TaskType } from '../types'
+import type {
+  Task,
+  TaskCreatePayload,
+  TaskPriority,
+  TaskStatus,
+  TaskType,
+  TaskUpdatePayload,
+} from '../types'
 
 export interface TaskFilters {
   status?: TaskStatus
@@ -17,12 +24,12 @@ export async function getTasks(filters: TaskFilters = {}): Promise<Task[]> {
   return response.data
 }
 
-export async function createTask(payload: TaskPayload): Promise<Task> {
+export async function createTask(payload: TaskCreatePayload): Promise<Task> {
   const response = await api.post<Task>('/tasks', payload)
   return response.data
 }
 
-export async function updateTask(id: number, payload: Partial<TaskPayload>): Promise<Task> {
+export async function updateTask(id: number, payload: TaskUpdatePayload): Promise<Task> {
   const response = await api.put<Task>(`/tasks/${id}`, payload)
   return response.data
 }
