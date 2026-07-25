@@ -9,12 +9,7 @@ import type { AccentColor, DashboardView, Language, Theme, UserSettingsPayload }
 import { getErrorMessage } from '../utils/errors'
 import { translate } from '../utils/i18n'
 import type { TranslationKey } from '../utils/i18n'
-
-const languageOptions: Array<{ value: Language; labelKey: TranslationKey }> = [
-  { value: 'ru', labelKey: 'russian' },
-  { value: 'uk', labelKey: 'ukrainian' },
-  { value: 'en', labelKey: 'english' },
-]
+import { supportedLanguages } from '../utils/languages'
 
 const themeOptions: Array<{ value: Theme; labelKey: TranslationKey }> = [
   { value: 'zerkalo', labelKey: 'zerkalo' },
@@ -139,9 +134,9 @@ export function SettingsPage() {
                   value={settings.language}
                   onChange={(event) => void saveSettings({ language: event.target.value as Language })}
                 >
-                  {languageOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {t(option.labelKey)}
+                  {supportedLanguages.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.nativeName}
                     </option>
                   ))}
                 </select>
