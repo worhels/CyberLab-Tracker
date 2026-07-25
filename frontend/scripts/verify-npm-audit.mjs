@@ -1,9 +1,9 @@
 import { spawnSync } from 'node:child_process'
 
 const allowedAdvisory = 'GHSA-qwww-vcr4-c8h2'
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-const auditResult = spawnSync(npmCommand, ['audit', '--json'], {
+const auditResult = spawnSync('npm', ['audit', '--json'], {
   encoding: 'utf8',
+  shell: process.platform === 'win32',
 })
 
 if (auditResult.error) {
