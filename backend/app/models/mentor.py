@@ -19,7 +19,6 @@ class MentorMessage(Base):
     session_id: Mapped[str] = mapped_column(String(64), nullable=False)
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    mode: Mapped[str] = mapped_column(String(50), default="lab", server_default="lab", nullable=False)
     page: Mapped[str | None] = mapped_column(String(100))
     subject_id: Mapped[int | None] = mapped_column(
         ForeignKey("subjects.id", ondelete="SET NULL"),
