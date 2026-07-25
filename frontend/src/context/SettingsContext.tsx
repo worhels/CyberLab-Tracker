@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { getMySettings, updateMySettings } from '../api/settings'
 import type { UserSettings, UserSettingsPayload } from '../types'
 import { getErrorMessage } from '../utils/errors'
+import { applyDocumentLanguage } from '../utils/languages'
 import { applyAccentColor, applyMotionPreference, applyTheme } from '../utils/theme'
 import { useAuth } from './AuthContext'
 
@@ -23,6 +24,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState('')
 
   const applySettings = useCallback((nextSettings: UserSettings) => {
+    applyDocumentLanguage(nextSettings.language)
     applyTheme(nextSettings.theme)
     applyAccentColor(nextSettings.accent_color)
     applyMotionPreference(nextSettings.reduced_motion)
