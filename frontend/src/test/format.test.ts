@@ -12,12 +12,12 @@ describe('date formatting', () => {
 
   it('uses null-safe fallbacks for optional deadlines', () => {
     expect(toApiDateTime('')).toBeNull()
-    expect(formatDate(null)).toBe('No date')
+    expect(formatDate(null)).toBe('—')
   })
 
   it('formats offset timestamps as the same instant in the current timezone', () => {
     const value = '2026-07-15T12:30:00+03:00'
-    const expected = new Intl.DateTimeFormat('en', {
+    const expected = new Intl.DateTimeFormat(document.documentElement.lang || 'en', {
       month: 'short',
       day: '2-digit',
       hour: '2-digit',
