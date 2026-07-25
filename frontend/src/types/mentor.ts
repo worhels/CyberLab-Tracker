@@ -1,11 +1,9 @@
-export type MentorChatMode = 'lab' | 'code' | 'report' | 'deadline' | 'chat'
-export type MentorMode = MentorChatMode | 'build'
-export type MentorLanguage = 'ru' | 'uk' | 'en'
+export type MentorLanguage = import('./index').Language
+export type MentorArtifactLanguage = 'ru' | 'uk' | 'en'
 export type MentorArtifactTemplate = 'bcrypt-timing-web-v1'
 
 export interface MentorChatRequest {
   message: string
-  mode: MentorChatMode
   page: string
   session_id?: string
   subject_id?: number | null
@@ -21,7 +19,7 @@ export interface MentorChatResponse {
 export interface MentorArtifactCreateRequest {
   template: MentorArtifactTemplate
   goal: string
-  language: MentorLanguage
+  language: MentorArtifactLanguage
   task_id?: number
 }
 
@@ -38,7 +36,7 @@ export interface MentorArtifact {
   title: string
   description: string
   default_rounds: number
-  language: MentorLanguage
+  language: MentorArtifactLanguage
   created_at: string
   files: MentorArtifactFile[]
 }
