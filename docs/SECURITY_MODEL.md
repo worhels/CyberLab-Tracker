@@ -99,7 +99,7 @@ filesystem access and receives only bounded, ownership-filtered JSON context.
 Optional task and subject IDs are resolved before the Ollama request. Completed
 chat exchanges are persisted; interrupted streams are not.
 
-Build mode does not weaken that boundary. It accepts only the reviewed
+The artifact API does not weaken that boundary. It accepts only the reviewed
 `bcrypt-timing-web-v1` template and a strict request without path, command,
 working-directory, environment, or model fields. Ollama returns a closed JSON
 specification, never executable code. The backend then:
