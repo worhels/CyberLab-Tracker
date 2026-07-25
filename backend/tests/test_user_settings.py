@@ -65,6 +65,36 @@ def test_update_user_settings_updates_only_passed_fields(db: Session) -> None:
     assert settings.accent_color == AccentColor.BLUE
 
 
+@pytest.mark.parametrize(
+    "language",
+    [
+        Language.ES,
+        Language.FR,
+        Language.DE,
+        Language.PT,
+        Language.ZH,
+        Language.JA,
+        Language.KO,
+        Language.AR,
+        Language.HI,
+        Language.TR,
+    ],
+)
+def test_update_user_settings_accepts_added_languages(
+    db: Session,
+    language: Language,
+) -> None:
+    user = create_user(db)
+
+    settings = update_user_settings(
+        db,
+        user.id,
+        UserSettingsUpdate(language=language),
+    )
+
+    assert settings.language == language
+
+
 def test_user_settings_model_is_registered() -> None:
     assert Subject.__tablename__ == "subjects"
     assert Task.__tablename__ == "tasks"
