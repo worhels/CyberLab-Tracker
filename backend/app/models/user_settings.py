@@ -11,6 +11,16 @@ class Language(str, Enum):
     RU = "ru"
     UK = "uk"
     EN = "en"
+    ES = "es"
+    FR = "fr"
+    DE = "de"
+    PT = "pt"
+    ZH = "zh"
+    JA = "ja"
+    KO = "ko"
+    AR = "ar"
+    HI = "hi"
+    TR = "tr"
 
 
 class Theme(str, Enum):
