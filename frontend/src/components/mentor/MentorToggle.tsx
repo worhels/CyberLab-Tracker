@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { Language } from '../../types'
-import type { MentorMode } from '../../types/mentor'
 import { MentorPanel } from './MentorPanel'
 
 interface MentorToggleProps {
@@ -12,23 +11,12 @@ interface MentorToggleProps {
 }
 
 const MENTOR_OPEN_KEY = 'cyberlab_mentor_open'
-const MENTOR_MODE_KEY = 'cyberlab_mentor_mode'
-const mentorModes: MentorMode[] = ['lab', 'code', 'report', 'deadline', 'chat', 'build']
 
 function readStoredOpenState(): boolean {
   try {
     return localStorage.getItem(MENTOR_OPEN_KEY) === 'true'
   } catch {
     return false
-  }
-}
-
-function readStoredMode(): MentorMode {
-  try {
-    const storedMode = localStorage.getItem(MENTOR_MODE_KEY)
-    return mentorModes.includes(storedMode as MentorMode) ? (storedMode as MentorMode) : 'lab'
-  } catch {
-    return 'lab'
   }
 }
 
@@ -47,15 +35,10 @@ export function MentorToggle({
   taskId,
 }: MentorToggleProps) {
   const [isOpen, setIsOpen] = useState(readStoredOpenState)
-  const [mode, setMode] = useState<MentorMode>(readStoredMode)
 
   useEffect(() => {
     storeMentorPreference(MENTOR_OPEN_KEY, String(isOpen))
   }, [isOpen])
-
-  useEffect(() => {
-    storeMentorPreference(MENTOR_MODE_KEY, mode)
-  }, [mode])
 
   const closePanel = useCallback(() => setIsOpen(false), [])
 
@@ -64,7 +47,7 @@ export function MentorToggle({
       <motion.div
         className={`fixed bottom-5 z-[60] ${isOpen ? 'max-sm:hidden' : ''}`}
         style={{
-          right: isOpen ? 'calc(clamp(360px, 34vw, 460px) + 24px)' : '20px',
+          right: isOpen ? 'calc(clamp(360px, 36vw, 500px) + 24px)' : '20px',
         }}
         initial={false}
         animate={{ scale: 1 }}
@@ -107,13 +90,11 @@ export function MentorToggle({
 
       <MentorPanel
         isOpen={isOpen}
-        mode={mode}
         page={page}
         language={language}
         subjectId={subjectId}
         taskId={taskId}
         onClose={closePanel}
-        onModeChange={setMode}
       />
     </>
   )
