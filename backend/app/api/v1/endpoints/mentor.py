@@ -1,6 +1,6 @@
-import asyncio
 import json
 import logging
+import re
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -11,7 +11,7 @@ from uuid import uuid4
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -32,7 +32,7 @@ from app.models.user import User
 OLLAMA_CHAT_URL = settings.OLLAMA_CHAT_URL
 OLLAMA_MODEL = settings.OLLAMA_MODEL
 OLLAMA_TIMEOUT_SECONDS = settings.OLLAMA_TIMEOUT_SECONDS
-OLLAMA_KEEP_ALIVE = "30m"
+OLLAMA_KEEP_ALIVE = settings.OLLAMA_KEEP_ALIVE
 HISTORY_MESSAGE_LIMIT = 20
 HISTORY_CHARACTER_LIMIT = 12_000
 OFFLINE_ERROR_MESSAGE = "Локальная AI-модель не отвечает. Проверь, что Ollama запущена."
@@ -42,24 +42,27 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/mentor", tags=["mentor"])
 
 
-class MentorMode(str, Enum):
-    LAB = "lab"
-    CODE = "code"
-    REPORT = "report"
-    DEADLINE = "deadline"
-    CHAT = "chat"
-
-
 class MentorLanguage(str, Enum):
     AUTO = "auto"
     RU = "ru"
     UK = "uk"
     EN = "en"
+    ES = "es"
+    FR = "fr"
+    DE = "de"
+    PT = "pt"
+    ZH = "zh"
+    JA = "ja"
+    KO = "ko"
+    AR = "ar"
+    HI = "hi"
+    TR = "tr"
 
 
 class MentorChatRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     message: str = Field(min_length=1, max_length=10_000)
-    mode: MentorMode
     page: str = Field(default="/dashboard", min_length=1, max_length=100)
     session_id: str | None = Field(default=None, min_length=1, max_length=64)
     subject_id: int | None = Field(default=None, ge=1)
@@ -194,14 +197,6 @@ INTENT_RULES: dict[MentorIntent, str] = {
         "Дай короткий прямой ответ без формального шаблона. "
         "Не превращай ответ в инструкцию по навигации без необходимости."
     ),
-}
-
-MODE_RULES: dict[MentorMode, str] = {
-    MentorMode.CHAT: "Пресет «Чат»: прямой ответ без формального шаблона.",
-    MentorMode.LAB: "Пресет «Лаба»: действия → решение → вывод.",
-    MentorMode.CODE: "Пресет «Код»: проблема → причина → фикс → проверка.",
-    MentorMode.REPORT: "Пресет «Отчёт»: готовый текст для вставки в Word.",
-    MentorMode.DEADLINE: "Пресет «Дедлайн»: минимальный план сдачи.",
 }
 
 STATUS_RULES = {
@@ -348,6 +343,16 @@ def detect_mentor_intent(message: str) -> MentorIntent:
 
 def detect_language(message: str) -> MentorLanguage:
     text = message.casefold()
+    if any("\u3040" <= character <= "\u30ff" for character in text):
+        return MentorLanguage.JA
+    if any("\uac00" <= character <= "\ud7af" for character in text):
+        return MentorLanguage.KO
+    if any("\u0600" <= character <= "\u06ff" for character in text):
+        return MentorLanguage.AR
+    if any("\u0900" <= character <= "\u097f" for character in text):
+        return MentorLanguage.HI
+    if any("\u4e00" <= character <= "\u9fff" for character in text):
+        return MentorLanguage.ZH
     if any(character in text for character in "іїєґ"):
         return MentorLanguage.UK
     if any(character in text for character in "ыэъё"):
@@ -361,13 +366,45 @@ def detect_language(message: str) -> MentorLanguage:
     latin_count = sum("a" <= character <= "z" for character in text)
     if cyrillic_count > latin_count:
         return MentorLanguage.RU
+
+    words = set(re.findall(r"[^\W\d_]+", text, flags=re.UNICODE))
+    language_markers: dict[MentorLanguage, set[str]] = {
+        MentorLanguage.ES: {"hola", "qué", "cómo", "tarea", "informe", "plazo", "ayuda", "archivo", "hazme", "código"},
+        MentorLanguage.FR: {
+            "bonjour",
+            "quoi",
+            "comment",
+            "tâche",
+            "rapport",
+            "échéance",
+            "aide",
+            "fichier",
+            "crée",
+            "code",
+        },
+        MentorLanguage.DE: {"hallo", "was", "wie", "aufgabe", "bericht", "frist", "hilfe", "datei", "erstelle", "code"},
+        MentorLanguage.PT: {
+            "olá",
+            "quê",
+            "como",
+            "tarefa",
+            "relatório",
+            "prazo",
+            "ajuda",
+            "ficheiro",
+            "arquivo",
+            "cria",
+        },
+        MentorLanguage.TR: {"merhaba", "ne", "nasıl", "görev", "rapor", "yardım", "dosya", "oluştur", "kod", "için"},
+    }
+    marker_counts = {language: len(words.intersection(markers)) for language, markers in language_markers.items()}
+    detected_language, marker_count = max(marker_counts.items(), key=lambda item: item[1])
+    if marker_count > 0:
+        return detected_language
     return MentorLanguage.EN
 
 
-def resolve_answer_profile(
-    intent: MentorIntent,
-    selected_mode: MentorMode,
-) -> AnswerProfile:
+def resolve_answer_profile(intent: MentorIntent) -> AnswerProfile:
     if intent == "code_debug":
         return {"num_predict": 768, "temperature": 0.2, "format": "code_debug"}
     if intent in {"write_report", "write_conclusion"}:
@@ -381,14 +418,7 @@ def resolve_answer_profile(
     if intent == "ui_review":
         return {"num_predict": 768, "temperature": 0.3, "format": "ui_review"}
 
-    mode_profiles: dict[MentorMode, AnswerProfile] = {
-        MentorMode.CHAT: {"num_predict": 512, "temperature": 0.4, "format": "chat"},
-        MentorMode.LAB: {"num_predict": 768, "temperature": 0.3, "format": "lab"},
-        MentorMode.CODE: {"num_predict": 768, "temperature": 0.2, "format": "code_debug"},
-        MentorMode.REPORT: {"num_predict": 1_024, "temperature": 0.3, "format": "report"},
-        MentorMode.DEADLINE: {"num_predict": 512, "temperature": 0.25, "format": "deadline"},
-    }
-    return mode_profiles[selected_mode]
+    return {"num_predict": 512, "temperature": 0.4, "format": "chat"}
 
 
 def resolve_context(
@@ -434,10 +464,7 @@ def build_task_list_item(task: Task, now: datetime) -> dict[str, object]:
         "subject": task.subject.name if task.subject is not None else None,
         "type": task.type.value,
         "status": task.status.value,
-        "is_overdue": (
-            task.status in crud_mentor.ACTIVE_TASK_STATUSES
-            and is_overdue(task, now)
-        ),
+        "is_overdue": (task.status in crud_mentor.ACTIVE_TASK_STATUSES and is_overdue(task, now)),
         "deadline": task.deadline.isoformat() if task.deadline is not None else None,
         "priority": task.priority.value,
     }
@@ -470,9 +497,7 @@ def build_tasks_context(tasks: list[Task]) -> dict[str, object]:
     task_items = [build_task_list_item(task, now) for task in tasks]
     return {
         "count": len(task_items),
-        "overdue_count": sum(
-            1 for item in task_items if item["is_overdue"] is True
-        ),
+        "overdue_count": sum(1 for item in task_items if item["is_overdue"] is True),
         "items": task_items,
     }
 
@@ -532,13 +557,9 @@ def build_data_context(
             crud_mentor.get_accepted_labs_for_user(db, user_id),
         )
     elif intent == "active_tasks":
-        context["active_tasks"] = build_tasks_context(
-            crud_mentor.get_active_tasks_for_user(db, user_id)
-        )
+        context["active_tasks"] = build_tasks_context(crud_mentor.get_active_tasks_for_user(db, user_id))
     elif intent == "deadlines":
-        context["deadlines"] = build_deadline_context(
-            crud_mentor.get_deadline_overview_for_user(db, user_id)
-        )
+        context["deadlines"] = build_deadline_context(crud_mentor.get_deadline_overview_for_user(db, user_id))
     elif intent == "task_status":
         context["task_status"] = build_task_status_context(
             crud_mentor.get_active_tasks_for_user(db, user_id),
@@ -561,7 +582,6 @@ def build_system_prompt(
     *,
     page: str,
     intent: MentorIntent,
-    selected_mode: MentorMode,
     language: MentorLanguage,
     data_context: dict[str, object],
     answer_profile: AnswerProfile,
@@ -571,13 +591,23 @@ def build_system_prompt(
         MentorLanguage.RU: "Отвечай по-русски.",
         MentorLanguage.UK: "Відповідай українською.",
         MentorLanguage.EN: "Answer in English.",
+        MentorLanguage.ES: "Responde en español natural.",
+        MentorLanguage.FR: "Réponds dans un français naturel.",
+        MentorLanguage.DE: "Antworte in natürlichem Deutsch.",
+        MentorLanguage.PT: "Responda em português natural.",
+        MentorLanguage.ZH: "请使用自然、地道的简体中文回答。",
+        MentorLanguage.JA: "自然な日本語で回答してください。",
+        MentorLanguage.KO: "자연스러운 한국어로 답변하세요.",
+        MentorLanguage.AR: "أجب باللغة العربية الفصحى الطبيعية.",
+        MentorLanguage.HI: "स्वाभाविक हिन्दी में उत्तर दें।",
+        MentorLanguage.TR: "Doğal Türkçe ile yanıt ver.",
     }[language]
     return f"""Ты CyberMentor внутри CyberLab Tracker.
 
 Язык:
 - {language_rule}
-- Язык последнего сообщения важнее языка интерфейса.
-- Не переходи на английский без запроса.
+- Всегда соблюдай выбранный язык интерфейса, если он передан явно.
+- Используй естественные формулировки носителя языка, а не буквальный перевод.
 
 Стиль:
 - Отвечай прямо, без воды, мотивационных фраз и длинных вступлений.
@@ -597,27 +627,30 @@ def build_system_prompt(
 Приоритет:
 1. Смысл последнего сообщения пользователя и intent.
 2. Backend data_context.
-3. Выбранный режим как пресет.
-4. Текущая страница как вторичный сигнал.
-
-Выбранный пресет:
-{MODE_RULES[selected_mode]}
+3. Текущая страница как вторичный сигнал.
 
 Правило intent (оно перебивает выбранный пресет):
 {INTENT_RULES[intent]}
 
+Downloadable files:
+- When the user explicitly asks you to create, generate, prepare, or send a file, return its complete content.
+- Put `FILE: filename.ext` on its own line immediately before every fenced code block.
+- Use a safe descriptive filename with the correct extension. Never invent a download URL.
+- For multiple requested files, repeat the `FILE:` line and fenced block for each file.
+
 Метаданные запроса:
-{json.dumps(
-    {
-        "intent": intent,
-        "selected_mode": selected_mode.value,
-        "page": page,
-        "language": language.value,
-        "answer_format": answer_profile["format"],
-    },
-    ensure_ascii=False,
-    separators=(",", ":"),
-)}
+{
+        json.dumps(
+            {
+                "intent": intent,
+                "page": page,
+                "language": language.value,
+                "answer_format": answer_profile["format"],
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    }
 
 Backend data_context:
 {json.dumps(data_context, ensure_ascii=False, separators=(",", ":"))}"""
@@ -669,23 +702,98 @@ def ensure_required_context_facts(
         subject = typed_item.get("subject")
         if not isinstance(title, str):
             continue
-        accepted_items.append(
-            (title, subject if isinstance(subject, str) else None)
-        )
+        accepted_items.append((title, subject if isinstance(subject, str) else None))
 
+    localized_lab_copy: dict[MentorLanguage, tuple[str, str, str, str, str]] = {
+        MentorLanguage.AUTO: (
+            "принят",
+            "активных лабораторных нет",
+            "Активные лабораторные:",
+            "Активных лабораторных нет.",
+            "Уже приняты и не активны:",
+        ),
+        MentorLanguage.RU: (
+            "принят",
+            "активных лабораторных нет",
+            "Активные лабораторные:",
+            "Активных лабораторных нет.",
+            "Уже приняты и не активны:",
+        ),
+        MentorLanguage.UK: (
+            "прийнят",
+            "активних лабораторних немає",
+            "Активні лабораторні:",
+            "Активних лабораторних немає.",
+            "Уже прийняті й не активні:",
+        ),
+        MentorLanguage.EN: (
+            "accepted",
+            "no active labs",
+            "Active labs:",
+            "There are no active labs.",
+            "Already accepted and not active:",
+        ),
+        MentorLanguage.ES: (
+            "aceptad",
+            "no hay prácticas activas",
+            "Prácticas activas:",
+            "No hay prácticas activas.",
+            "Ya aceptadas y no activas:",
+        ),
+        MentorLanguage.FR: ("validé", "aucun tp actif", "TP actifs :", "Aucun TP actif.", "Déjà validés et inactifs :"),
+        MentorLanguage.DE: (
+            "abgenommen",
+            "keine aktiven labore",
+            "Aktive Labore:",
+            "Keine aktiven Labore.",
+            "Bereits abgenommen und nicht aktiv:",
+        ),
+        MentorLanguage.PT: (
+            "aceite",
+            "não existem laboratórios ativos",
+            "Laboratórios ativos:",
+            "Não existem laboratórios ativos.",
+            "Já aceites e não ativos:",
+        ),
+        MentorLanguage.ZH: ("已通过", "没有进行中的实验", "进行中的实验：", "没有进行中的实验。", "已通过且不再进行："),
+        MentorLanguage.JA: (
+            "承認済み",
+            "進行中の実験はありません",
+            "進行中の実験：",
+            "進行中の実験はありません。",
+            "承認済みで進行中ではない実験：",
+        ),
+        MentorLanguage.KO: (
+            "승인",
+            "진행 중인 실습이 없습니다",
+            "진행 중인 실습:",
+            "진행 중인 실습이 없습니다.",
+            "승인되어 더 이상 진행 중이 아닌 실습:",
+        ),
+        MentorLanguage.AR: (
+            "مقبول",
+            "لا توجد مختبرات نشطة",
+            "المختبرات النشطة:",
+            "لا توجد مختبرات نشطة.",
+            "مقبولة بالفعل وغير نشطة:",
+        ),
+        MentorLanguage.HI: (
+            "स्वीकार",
+            "कोई सक्रिय लैब नहीं",
+            "सक्रिय लैब:",
+            "कोई सक्रिय लैब नहीं है।",
+            "स्वीकार हो चुकी और अब सक्रिय नहीं:",
+        ),
+        MentorLanguage.TR: (
+            "kabul",
+            "etkin laboratuvar yok",
+            "Etkin laboratuvarlar:",
+            "Etkin laboratuvar yok.",
+            "Kabul edilmiş ve artık etkin olmayanlar:",
+        ),
+    }
+    accepted_marker, no_active_marker, active_heading, no_active_text, accepted_heading = localized_lab_copy[language]
     normalized_answer = answer.casefold()
-    accepted_markers = {
-        MentorLanguage.RU: ("принят", "не актив"),
-        MentorLanguage.UK: ("прийнят", "не актив"),
-        MentorLanguage.EN: ("accepted", "not active"),
-        MentorLanguage.AUTO: ("принят", "не актив"),
-    }[language]
-    no_active_markers = {
-        MentorLanguage.RU: ("активных лабораторных нет", "нет активных лабораторных"),
-        MentorLanguage.UK: ("активних лабораторних немає", "немає активних лабораторних"),
-        MentorLanguage.EN: ("no active labs", "there are no active labs"),
-        MentorLanguage.AUTO: ("активных лабораторных нет", "нет активных лабораторных"),
-    }[language]
     unsupported_global_claims = (
         "все ваши текущие задачи",
         "все задачи уже",
@@ -694,26 +802,11 @@ def ensure_required_context_facts(
         "all your current tasks",
         "all tasks are already",
     )
-    has_all_active_titles = all(
-        title.casefold() in normalized_answer
-        for title, _, _ in active_items
-    )
-    has_all_accepted_titles = all(
-        title.casefold() in normalized_answer
-        for title, _ in accepted_items
-    )
-    has_accepted_meaning = any(
-        marker in normalized_answer
-        for marker in accepted_markers
-    )
-    has_no_active_meaning = bool(active_items) or any(
-        marker in normalized_answer
-        for marker in no_active_markers
-    )
-    has_unsupported_global_claim = any(
-        claim in normalized_answer
-        for claim in unsupported_global_claims
-    )
+    has_all_active_titles = all(title.casefold() in normalized_answer for title, _, _ in active_items)
+    has_all_accepted_titles = all(title.casefold() in normalized_answer for title, _ in accepted_items)
+    has_accepted_meaning = any(marker in normalized_answer for marker in (accepted_marker,))
+    has_no_active_meaning = bool(active_items) or any(marker in normalized_answer for marker in (no_active_marker,))
+    has_unsupported_global_claim = any(claim in normalized_answer for claim in unsupported_global_claims)
     if (
         has_all_active_titles
         and has_all_accepted_titles
@@ -723,24 +816,6 @@ def ensure_required_context_facts(
     ):
         return answer
 
-    active_heading = {
-        MentorLanguage.RU: "Активные лабораторные:",
-        MentorLanguage.UK: "Активні лабораторні:",
-        MentorLanguage.EN: "Active labs:",
-        MentorLanguage.AUTO: "Активные лабораторные:",
-    }[language]
-    no_active_text = {
-        MentorLanguage.RU: "Активных лабораторных нет.",
-        MentorLanguage.UK: "Активних лабораторних немає.",
-        MentorLanguage.EN: "There are no active labs.",
-        MentorLanguage.AUTO: "Активных лабораторных нет.",
-    }[language]
-    accepted_heading = {
-        MentorLanguage.RU: "Уже приняты и не активны:",
-        MentorLanguage.UK: "Уже прийняті й не активні:",
-        MentorLanguage.EN: "Already accepted and not active:",
-        MentorLanguage.AUTO: "Уже приняты и не активны:",
-    }[language]
     active_lines = [
         (
             f"{index}. {title} — {subject} ({task_status})"
@@ -750,20 +825,10 @@ def ensure_required_context_facts(
         for index, (title, subject, task_status) in enumerate(active_items, start=1)
     ]
     accepted_lines = [
-        (
-            f"{index}. {title} — {subject}"
-            if subject is not None
-            else f"{index}. {title}"
-        )
+        (f"{index}. {title} — {subject}" if subject is not None else f"{index}. {title}")
         for index, (title, subject) in enumerate(accepted_items, start=1)
     ]
-    sections = [
-        (
-            f"{active_heading}\n" + "\n".join(active_lines)
-            if active_lines
-            else no_active_text
-        )
-    ]
+    sections = [(f"{active_heading}\n" + "\n".join(active_lines) if active_lines else no_active_text)]
     if accepted_lines:
         sections.append(f"{accepted_heading}\n" + "\n".join(accepted_lines))
     return "\n\n".join(sections)
@@ -947,12 +1012,8 @@ def prepare_mentor_chat(
     subject, task = resolve_context(db, user_id=current_user.id, payload=payload)
     session_id = resolve_session_id(payload, subject=subject, task=task)
     intent = detect_mentor_intent(payload.message)
-    language = (
-        detect_language(payload.message)
-        if payload.language == MentorLanguage.AUTO
-        else payload.language
-    )
-    answer_profile = resolve_answer_profile(intent, payload.mode)
+    language = detect_language(payload.message) if payload.language == MentorLanguage.AUTO else payload.language
+    answer_profile = resolve_answer_profile(intent)
     history = crud_mentor.list_session_messages(
         db,
         user_id=current_user.id,
@@ -970,7 +1031,6 @@ def prepare_mentor_chat(
     system_prompt = build_system_prompt(
         page=payload.page,
         intent=intent,
-        selected_mode=payload.mode,
         language=language,
         data_context=data_context,
         answer_profile=answer_profile,
@@ -1005,7 +1065,6 @@ def save_mentor_exchange(
         session_id=prepared.session_id,
         user_content=payload.message,
         assistant_content=answer,
-        mode=payload.mode.value,
         page=payload.page,
         subject_id=prepared.subject.id if prepared.subject is not None else None,
         task_id=prepared.task.id if prepared.task is not None else None,
@@ -1053,7 +1112,7 @@ async def generate_mentor_stream(
         language=prepared.language,
         data_context=prepared.data_context,
     )
-    appended_facts = complete_answer[len(answer):]
+    appended_facts = complete_answer[len(answer) :]
     if appended_facts:
         yield format_sse_event("token", {"token": appended_facts})
     answer = complete_answer
@@ -1072,11 +1131,6 @@ async def generate_mentor_stream(
         return
 
     yield format_sse_event("done", {"session_id": prepared.session_id})
-
-
-async def empty_token_stream() -> AsyncGenerator[str, None]:
-    if False:
-        yield ""
 
 
 @router.post("/chat", response_model=MentorChatResponse)
@@ -1110,34 +1164,6 @@ async def stream_mentor_chat(
     current_user: User = Depends(get_current_user),
 ) -> StreamingResponse:
     prepared = prepare_mentor_chat(db, current_user=current_user, payload=payload)
-    if prepared.intent == "active_labs":
-        answer = await asyncio.to_thread(
-            chat_with_ollama,
-            prepared.messages,
-            prepared.answer_profile,
-        )
-        answer = ensure_required_context_facts(
-            answer,
-            intent=prepared.intent,
-            language=prepared.language,
-            data_context=prepared.data_context,
-        )
-        return StreamingResponse(
-            generate_mentor_stream(
-                first_token=answer,
-                token_stream=empty_token_stream(),
-                db=db,
-                current_user=current_user,
-                payload=payload,
-                prepared=prepared,
-            ),
-            media_type="text/event-stream",
-            headers={
-                "Cache-Control": "no-cache",
-                "X-Accel-Buffering": "no",
-            },
-        )
-
     token_stream = stream_with_ollama(
         prepared.messages,
         prepared.answer_profile,
