@@ -15,6 +15,16 @@ const localeByLanguage: Record<Language, string> = {
   en: 'en-US',
   ru: 'ru-RU',
   uk: 'uk-UA',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  pt: 'pt-PT',
+  zh: 'zh-CN',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  ar: 'ar',
+  hi: 'hi-IN',
+  tr: 'tr-TR',
 }
 
 export function CalendarPage() {
