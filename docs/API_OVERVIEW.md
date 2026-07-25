@@ -195,8 +195,9 @@ uses a `record_type` column and UTF-8 BOM for spreadsheet compatibility.
 | `GET` | `/mentor/artifacts/{artifact_id}` | Read owned artifact metadata |
 | `GET` | `/mentor/artifacts/{artifact_id}/download` | Download the owned artifact ZIP |
 
-Requests accept mode `lab|code|report|deadline|chat`, language
-`auto|ru|uk|en`, and optional `subject_id` or `task_id`. Optional IDs are
+Chat requests have no mode selector. The backend derives the response shape from
+the message intent. Requests accept language
+`auto|ru|uk|en|es|fr|de|pt|zh|ja|ko|ar|hi|tr` and optional `subject_id` or `task_id`. Optional IDs are
 resolved through the current user's ownership before any model request.
 
 Completed user/assistant exchanges are persisted. Interrupted streams are not.
