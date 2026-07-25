@@ -28,7 +28,7 @@ hosting scenario.
 
 ## Mentor artifact boundary
 
-The current beta does not expose a general AI coding agent. Build mode supports
+The current beta does not expose a general AI coding agent. The reviewed artifact API supports
 only `bcrypt-timing-web-v1`: Ollama supplies a strict non-executable
 specification and the backend renders reviewed files into an isolated per-user
 volume. Downloads are attachment-only and CyberLab never previews or executes
