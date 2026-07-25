@@ -135,7 +135,7 @@ override authorization boundaries.
 
 ### Reviewed artifact flow
 
-Build mode is separate from chat and supports only
+The reviewed artifact endpoint is separate from chat and supports only
 `bcrypt-timing-web-v1`. The backend:
 
 1. authenticates the caller and resolves an optional owned task before Ollama;
