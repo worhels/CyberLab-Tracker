@@ -43,7 +43,7 @@ calendar, exports, and an optional local Ollama mentor.
   filtering for every user-owned resource.
 - **Workspace tools:** JSON/CSV export, persisted theme/language/motion settings,
   and an optional ownership-bounded CyberMentor backed by local Ollama.
-- **Reviewed AI build:** the Mentor Build mode turns a strict Ollama specification
+- **Reviewed AI artifact:** the artifact API turns a strict Ollama specification
   into an isolated, checksummed bcrypt timing web prototype and downloadable ZIP.
   The model never receives a shell or arbitrary filesystem access.
 - **Quality gates:** Ruff, strict Pyright, backend regression tests, strict
@@ -113,11 +113,18 @@ warm generation was about 22 tokens/second. Keep one model configured for both
 is an optional quality experiment, not the default. Model weights have their
 own upstream license and are not covered by this repository's MIT License.
 
-Build mode currently supports one intentionally narrow template:
+`OLLAMA_KEEP_ALIVE` defaults to `2h`, so the chat model remains warm between
+requests. The mentor UI streams text as it is generated.
+
+The artifact API supports one intentionally narrow template:
 `bcrypt-timing-web-v1`. It creates a local FastAPI prototype, static UI,
 automated tests, requirements, README, and a hash manifest. Downloaded code is
 never previewed or executed on the CyberLab origin. Use only invented test
 passwords such as `demo-password`; never enter a real credential.
+
+The unified mentor chat also turns explicitly requested fenced code or text
+responses into browser-local downloadable files. These files are displayed in
+the conversation and are never executed by the application.
 
 ## Beta packages
 
