@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     OLLAMA_TIMEOUT_SECONDS: float = 120.0
     OLLAMA_ARTIFACT_TIMEOUT_SECONDS: float = 240.0
     OLLAMA_CONTEXT_LENGTH: int = Field(default=8_192, ge=2_048, le=65_536)
+    OLLAMA_KEEP_ALIVE: str = "2h"
     OLLAMA_WARMUP_ENABLED: bool = True
     MENTOR_ARTIFACT_ROOT: Path = Path.home() / ".cyberlab-tracker" / "mentor-artifacts"
     MENTOR_ARTIFACT_MAX_PER_USER: int = Field(default=20, ge=1, le=100)
