@@ -76,7 +76,7 @@ jobs:
 
       - name: Audit frontend dependencies
         working-directory: frontend
-        run: npm audit --audit-level=moderate
+        run: node scripts/verify-npm-audit.mjs
 
       - name: Typecheck frontend
         working-directory: frontend
