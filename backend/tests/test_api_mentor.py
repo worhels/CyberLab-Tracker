@@ -80,7 +80,6 @@ def test_mentor_chat_builds_multilingual_context_and_saves_history(
     monkeypatch.setattr(mentor_endpoint, "chat_with_ollama", fake_chat)
     payload = {
         "message": "Що робити з цією лабою?",
-        "mode": "chat",
         "page": "/tasks",
         "subject_id": subject.id,
         "task_id": task.id,
@@ -118,7 +117,6 @@ def test_mentor_chat_builds_multilingual_context_and_saves_history(
         headers=auth_headers(user),
         json={
             "message": "А далі?",
-            "mode": "chat",
             "page": "/tasks",
             "session_id": f"task-{task.id}",
             "language": "auto",
@@ -188,7 +186,6 @@ def test_dashboard_context_uses_current_user_workspace_data(
         headers=auth_headers(user),
         json={
             "message": "Что у нас по закрытым предметам?",
-            "mode": "chat",
             "page": "/dashboard",
             "language": "auto",
         },
@@ -205,7 +202,7 @@ def test_dashboard_context_uses_current_user_workspace_data(
     assert "/closed-subjects" not in captured_prompt
 
 
-def test_active_labs_intent_uses_owned_backend_context_and_overrides_chat_mode(
+def test_active_labs_intent_uses_owned_backend_context(
     client: TestClient,
     db_session: Session,
     monkeypatch: MonkeyPatch,
@@ -276,19 +273,27 @@ def test_active_labs_intent_uses_owned_backend_context_and_overrides_chat_mode(
         }
         return "Активная лабораторная: Active owned lab."
 
+    async def fake_stream(
+        messages: list[mentor_endpoint.OllamaMessagePayload],
+        answer_profile: mentor_endpoint.AnswerProfile,
+    ) -> AsyncIterator[str]:
+        assert answer_profile["format"] == "direct_list"
+        assert messages[-1]["role"] == "user"
+        yield "Active owned lab."
+
     monkeypatch.setattr(
         mentor_endpoint.crud_mentor,
         "get_active_labs_for_user",
         tracked_get_active_labs,
     )
     monkeypatch.setattr(mentor_endpoint, "chat_with_ollama", fake_chat)
+    monkeypatch.setattr(mentor_endpoint, "stream_with_ollama", fake_stream)
 
     response = client.post(
         "/api/v1/mentor/chat",
         headers=auth_headers(user),
         json={
             "message": "Какие активные лабы?",
-            "mode": "chat",
             "page": "/dashboard",
             "language": "en",
         },
@@ -303,7 +308,7 @@ def test_active_labs_intent_uses_owned_backend_context_and_overrides_chat_mode(
     )
     assert active_labs_calls == [user.id]
     assert '"intent":"active_labs"' in captured_prompt
-    assert '"selected_mode":"chat"' in captured_prompt
+    assert "selected_mode" not in captured_prompt
     assert '"language":"en"' in captured_prompt
     assert '"active_labs_count":1,"accepted_labs_count":1' in captured_prompt
     assert "Active owned lab" in captured_prompt
@@ -317,7 +322,6 @@ def test_active_labs_intent_uses_owned_backend_context_and_overrides_chat_mode(
         headers=auth_headers(user),
         json={
             "message": "Покажи активные лабы",
-            "mode": "chat",
             "page": "/dashboard",
         },
     )
@@ -343,10 +347,7 @@ def test_message_intent_overrides_chat_answer_profile(
     expected_format: str,
 ) -> None:
     intent = mentor_endpoint.detect_mentor_intent(message)
-    profile = mentor_endpoint.resolve_answer_profile(
-        intent,
-        mentor_endpoint.MentorMode.CHAT,
-    )
+    profile = mentor_endpoint.resolve_answer_profile(intent)
 
     assert intent == expected_intent
     assert profile["format"] == expected_format
@@ -372,10 +373,7 @@ def test_workspace_context_lists_are_bounded(
     db_session: Session,
 ) -> None:
     user = create_user(db_session, "bounded-context@example.com")
-    subjects = [
-        Subject(name=f"Subject {index:02d}", user_id=user.id)
-        for index in range(25)
-    ]
+    subjects = [Subject(name=f"Subject {index:02d}", user_id=user.id) for index in range(25)]
     db_session.add_all(subjects)
     db_session.commit()
     for subject in subjects:
@@ -455,7 +453,6 @@ def test_mentor_chat_accepts_supported_user_languages(
         headers=auth_headers(user),
         json={
             "message": message,
-            "mode": "chat",
             "page": "/dashboard",
             "language": "auto",
         },
@@ -464,7 +461,52 @@ def test_mentor_chat_accepts_supported_user_languages(
     assert response.status_code == 200
 
 
-def test_mentor_chat_rejects_invalid_mode(
+@pytest.mark.parametrize(
+    "language",
+    ["ru", "uk", "en", "es", "fr", "de", "pt", "zh", "ja", "ko", "ar", "hi", "tr"],
+)
+def test_mentor_request_accepts_every_interface_language(language: str) -> None:
+    payload = mentor_endpoint.MentorChatRequest(
+        message="Language check",
+        page="/dashboard",
+        language=language,
+    )
+
+    assert payload.language.value == language
+    prompt = mentor_endpoint.build_system_prompt(
+        page=payload.page,
+        intent="casual_chat",
+        language=payload.language,
+        data_context={},
+        answer_profile=mentor_endpoint.resolve_answer_profile("casual_chat"),
+    )
+    assert f'"language":"{language}"' in prompt
+    assert "selected_mode" not in prompt
+
+
+@pytest.mark.parametrize(
+    ("message", "language"),
+    [
+        ("Hazme un archivo con código", mentor_endpoint.MentorLanguage.ES),
+        ("Crée un fichier avec du code", mentor_endpoint.MentorLanguage.FR),
+        ("Erstelle eine Datei mit Code", mentor_endpoint.MentorLanguage.DE),
+        ("Cria um ficheiro com código", mentor_endpoint.MentorLanguage.PT),
+        ("请创建一个代码文件", mentor_endpoint.MentorLanguage.ZH),
+        ("コードファイルを作成してください", mentor_endpoint.MentorLanguage.JA),
+        ("코드 파일을 만들어 주세요", mentor_endpoint.MentorLanguage.KO),
+        ("أنشئ ملفاً يحتوي على كود", mentor_endpoint.MentorLanguage.AR),
+        ("कोड वाली फ़ाइल बनाएँ", mentor_endpoint.MentorLanguage.HI),
+        ("Kod içeren bir dosya oluştur", mentor_endpoint.MentorLanguage.TR),
+    ],
+)
+def test_detect_language_supports_added_languages(
+    message: str,
+    language: mentor_endpoint.MentorLanguage,
+) -> None:
+    assert mentor_endpoint.detect_language(message) == language
+
+
+def test_mentor_chat_rejects_legacy_mode_field(
     client: TestClient,
     db_session: Session,
 ) -> None:
@@ -475,7 +517,7 @@ def test_mentor_chat_rejects_invalid_mode(
         headers=auth_headers(user),
         json={
             "message": "Hello",
-            "mode": "unsupported",
+            "mode": "chat",
             "page": "/dashboard",
         },
     )
@@ -498,23 +540,16 @@ def test_mentor_chat_rejects_context_owned_by_another_user(
         messages: list[mentor_endpoint.OllamaMessagePayload],
         answer_profile: mentor_endpoint.AnswerProfile,
     ) -> str:
-        raise AssertionError(
-            f"Ollama must not be called for foreign context: {messages}, {answer_profile}"
-        )
+        raise AssertionError(f"Ollama must not be called for foreign context: {messages}, {answer_profile}")
 
     monkeypatch.setattr(mentor_endpoint, "chat_with_ollama", unexpected_chat)
-    context = (
-        {"subject_id": other_subject.id}
-        if context_kind == "subject"
-        else {"task_id": other_task.id}
-    )
+    context = {"subject_id": other_subject.id} if context_kind == "subject" else {"task_id": other_task.id}
 
     response = client.post(
         "/api/v1/mentor/chat",
         headers=auth_headers(user),
         json={
             "message": "Show this context",
-            "mode": "lab",
             "page": "/tasks",
             **context,
         },
@@ -523,7 +558,7 @@ def test_mentor_chat_rejects_context_owned_by_another_user(
     assert response.status_code == 404
 
 
-def test_ollama_chat_uses_mode_settings_and_keep_alive(monkeypatch: MonkeyPatch) -> None:
+def test_ollama_chat_uses_intent_settings_and_keep_alive(monkeypatch: MonkeyPatch) -> None:
     captured: dict[str, object] = {}
 
     class FakeResponse:
@@ -546,10 +581,7 @@ def test_ollama_chat_uses_mode_settings_and_keep_alive(monkeypatch: MonkeyPatch)
 
     answer = mentor_endpoint.chat_with_ollama(
         [{"role": "user", "content": "Explain this error"}],
-        mentor_endpoint.resolve_answer_profile(
-            "code_debug",
-            mentor_endpoint.MentorMode.CHAT,
-        ),
+        mentor_endpoint.resolve_answer_profile("code_debug"),
     )
 
     assert answer == "Ready"
@@ -560,7 +592,7 @@ def test_ollama_chat_uses_mode_settings_and_keep_alive(monkeypatch: MonkeyPatch)
     assert request_json["model"] == "qwen3-coder:30b"
     assert request_json["stream"] is False
     assert request_json["think"] is False
-    assert request_json["keep_alive"] == "30m"
+    assert request_json["keep_alive"] == mentor_endpoint.OLLAMA_KEEP_ALIVE
     assert request_json["options"] == {
         "num_ctx": 8192,
         "top_p": 0.9,
@@ -570,28 +602,28 @@ def test_ollama_chat_uses_mode_settings_and_keep_alive(monkeypatch: MonkeyPatch)
 
 
 @pytest.mark.parametrize(
-    ("mode", "num_predict", "temperature"),
+    ("intent", "num_predict", "temperature"),
     [
-        (mentor_endpoint.MentorMode.CHAT, 512, 0.4),
-        (mentor_endpoint.MentorMode.DEADLINE, 512, 0.25),
-        (mentor_endpoint.MentorMode.CODE, 768, 0.2),
-        (mentor_endpoint.MentorMode.LAB, 768, 0.3),
-        (mentor_endpoint.MentorMode.REPORT, 1_024, 0.3),
+        ("casual_chat", 512, 0.4),
+        ("deadlines", 512, 0.2),
+        ("code_debug", 768, 0.2),
+        ("current_task_help", 768, 0.3),
+        ("write_report", 1_024, 0.3),
     ],
 )
-def test_ollama_stream_payload_uses_mode_generation_limits(
-    mode: mentor_endpoint.MentorMode,
+def test_ollama_stream_payload_uses_intent_generation_limits(
+    intent: mentor_endpoint.MentorIntent,
     num_predict: int,
     temperature: float,
 ) -> None:
     payload = mentor_endpoint.build_ollama_payload(
         [{"role": "user", "content": "Hello"}],
-        answer_profile=mentor_endpoint.resolve_answer_profile("casual_chat", mode),
+        answer_profile=mentor_endpoint.resolve_answer_profile(intent),
         stream=True,
     )
 
     assert payload["stream"] is True
-    assert payload["keep_alive"] == "30m"
+    assert payload["keep_alive"] == mentor_endpoint.OLLAMA_KEEP_ALIVE
     options = payload["options"]
     assert isinstance(options, dict)
     assert options["num_predict"] == num_predict
@@ -609,10 +641,7 @@ def test_ollama_offline_returns_503(monkeypatch: MonkeyPatch) -> None:
     with pytest.raises(HTTPException) as exc_info:
         mentor_endpoint.chat_with_ollama(
             [{"role": "user", "content": "Hello"}],
-            mentor_endpoint.resolve_answer_profile(
-                "casual_chat",
-                mentor_endpoint.MentorMode.CHAT,
-            ),
+            mentor_endpoint.resolve_answer_profile("casual_chat"),
         )
 
     assert exc_info.value.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
@@ -632,7 +661,7 @@ def test_mentor_stream_returns_chunks_and_saves_exchange(
         answer_profile: mentor_endpoint.AnswerProfile,
     ) -> AsyncIterator[str]:
         assert messages[-1]["content"] == "Покажи план"
-        assert answer_profile["format"] == "deadline"
+        assert answer_profile["format"] == "chat"
         yield "Крок 1. "
         yield "Запусти тести."
 
@@ -643,7 +672,6 @@ def test_mentor_stream_returns_chunks_and_saves_exchange(
         headers=auth_headers(user),
         json={
             "message": "Покажи план",
-            "mode": "deadline",
             "page": "/tasks",
             "subject_id": subject.id,
             "task_id": task.id,
@@ -690,7 +718,6 @@ def test_mentor_stream_offline_returns_503_before_stream_starts(
         headers=auth_headers(user),
         json={
             "message": "Hello",
-            "mode": "chat",
             "page": "/dashboard",
         },
     )
