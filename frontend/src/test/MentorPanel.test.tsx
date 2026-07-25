@@ -1,24 +1,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MentorPanel } from '../components/mentor/MentorPanel'
-import type { MentorArtifact } from '../types/mentor'
 
-const {
-  createArtifact,
-  getArtifactDownload,
-  saveArtifactDownload,
-  streamChat,
-} = vi.hoisted(() => ({
-  createArtifact: vi.fn(),
-  getArtifactDownload: vi.fn(),
-  saveArtifactDownload: vi.fn(),
+const { streamChat } = vi.hoisted(() => ({
   streamChat: vi.fn(),
 }))
 
 vi.mock('../services/mentorApi', () => ({
-  createMentorArtifact: createArtifact,
-  getMentorArtifactDownload: getArtifactDownload,
-  saveMentorArtifactDownload: saveArtifactDownload,
   streamMentorChat: streamChat,
   MentorApiError: class MentorApiError extends Error {
     readonly status: number
@@ -30,31 +18,12 @@ vi.mock('../services/mentorApi', () => ({
   },
 }))
 
-const artifact: MentorArtifact = {
-  id: '00000000-0000-4000-8000-000000000042',
-  template: 'bcrypt-timing-web-v1',
-  title: 'Bcrypt timing lab',
-  description: 'Безпечна локальна лабораторна для порівняння work factor.',
-  default_rounds: 12,
-  language: 'uk',
-  created_at: '2026-07-15T12:00:00Z',
-  files: [
-    {
-      id: 'readme-file',
-      path: 'README.md',
-      size_bytes: 2_048,
-      sha256: 'a'.repeat(64),
-    },
-  ],
-}
-
 const defaultProps = {
   isOpen: true,
   page: '/tasks',
   subjectId: undefined,
   taskId: undefined,
   onClose: vi.fn(),
-  onModeChange: vi.fn(),
 }
 
 beforeAll(() => {
@@ -66,85 +35,61 @@ beforeAll(() => {
 
 describe('MentorPanel', () => {
   beforeEach(() => {
-    createArtifact.mockReset()
-    getArtifactDownload.mockReset()
-    saveArtifactDownload.mockReset()
     streamChat.mockReset()
   })
 
-  it('builds an artifact without sending the build mode to SSE and downloads its ZIP', async () => {
-    const blob = new Blob(['zip'], { type: 'application/zip' })
-    createArtifact.mockResolvedValue(artifact)
-    getArtifactDownload.mockResolvedValue(blob)
+  it('uses one automatic chat and exposes generated code as a downloadable file', async () => {
+    const answer = 'FILE: calculator.py\n```python\nprint(2 + 2)\n```'
+    streamChat.mockImplementation(async (
+      _payload: unknown,
+      onToken: (token: string) => void,
+    ) => {
+      onToken(answer)
+      return { answer, session_id: 'session-1' }
+    })
 
-    render(
-      <MentorPanel
-        {...defaultProps}
-        language="uk"
-        mode="build"
-        taskId={17}
-      />,
-    )
+    render(<MentorPanel {...defaultProps} language="en" taskId={17} />)
 
     fireEvent.change(
-      screen.getByLabelText('Опиши мету для bcrypt timing web-проєкту...'),
-      { target: { value: 'Порівняти безпечні bcrypt work factors' } },
+      screen.getByLabelText('Ask about tasks, code, reports, deadlines, or the project...'),
+      { target: { value: 'Create a file with calculator code' } },
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Зібрати' }))
-
-    await waitFor(() => {
-      expect(createArtifact).toHaveBeenCalledWith(
-        {
-          template: 'bcrypt-timing-web-v1',
-          goal: 'Порівняти безпечні bcrypt work factors',
-          language: 'uk',
-          task_id: 17,
-        },
-        expect.any(AbortSignal),
-      )
-    })
-    expect(streamChat).not.toHaveBeenCalled()
-    expect(await screen.findByText('Bcrypt timing lab')).toBeInTheDocument()
-    expect(screen.getByText('README.md')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Завантажити ZIP' }))
-    await waitFor(() => {
-      expect(getArtifactDownload).toHaveBeenCalledWith('00000000-0000-4000-8000-000000000042')
-      expect(saveArtifactDownload).toHaveBeenCalledWith(
-        blob,
-        '00000000-0000-4000-8000-000000000042',
-      )
-    })
-  })
-
-  it('passes the interface language to normal chat requests', async () => {
-    streamChat.mockResolvedValue({ answer: 'Готово', session_id: 'session-1' })
-
-    render(
-      <MentorPanel
-        {...defaultProps}
-        language="ru"
-        mode="chat"
-      />,
-    )
-
-    fireEvent.change(
-      screen.getByLabelText('Спроси про задачи, код, отчёт, дедлайны или проект...'),
-      { target: { value: 'Проверь план' } },
-    )
-    fireEvent.click(screen.getByRole('button', { name: 'Отправить сообщение' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Send message' }))
 
     await waitFor(() => {
       expect(streamChat).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: 'Проверь план',
-          mode: 'chat',
-          language: 'ru',
+          message: 'Create a file with calculator code',
+          language: 'en',
+          task_id: 17,
         }),
         expect.any(Function),
         expect.any(AbortSignal),
       )
     })
-    expect(createArtifact).not.toHaveBeenCalled()
+    expect(await screen.findByText('calculator.py')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Download calculator.py' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Build' })).not.toBeInTheDocument()
+  })
+
+  it('streams ordinary text through the same chat endpoint', async () => {
+    streamChat.mockImplementation(async (
+      _payload: unknown,
+      onToken: (token: string) => void,
+    ) => {
+      onToken('Ready')
+      return { answer: 'Ready', session_id: 'session-2' }
+    })
+
+    render(<MentorPanel {...defaultProps} language="en" />)
+
+    fireEvent.change(
+      screen.getByLabelText('Ask about tasks, code, reports, deadlines, or the project...'),
+      { target: { value: 'Review the plan' } },
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Send message' }))
+
+    expect(await screen.findByText('Ready')).toBeInTheDocument()
+    expect(screen.queryByText('mentor-response.txt')).not.toBeInTheDocument()
   })
 })
