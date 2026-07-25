@@ -1,6 +1,7 @@
 export function formatDate(value: string | null): string {
-  if (!value) return 'No date'
-  return new Intl.DateTimeFormat('en', {
+  if (!value) return '—'
+  const locale = document.documentElement.lang || 'en'
+  return new Intl.DateTimeFormat(locale, {
     month: 'short',
     day: '2-digit',
     hour: '2-digit',
