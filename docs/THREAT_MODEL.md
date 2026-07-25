@@ -100,7 +100,7 @@ perform unsafe actions.
 
 Controls: ownership is enforced before context creation; context is bounded;
 Ollama has no direct database/repository access; chat output is displayed as
-text and not executed; incomplete streams are not persisted. Build mode accepts
+text and not executed; incomplete streams are not persisted. The artifact API accepts
 one template and a strict request, asks Ollama only for a closed specification,
 replaces unsupported claims with reviewed copy, and renders code from a trusted
 server template. The model cannot select paths, commands, dependencies, shell
