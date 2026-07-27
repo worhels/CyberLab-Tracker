@@ -62,7 +62,20 @@ calendar, exports, and an optional local Ollama mentor.
 ## Quick start
 
 Requirements: Docker Desktop, Node.js 20+, npm, PowerShell, and optionally
-Ollama for CyberMentor.
+Ollama for CyberMentor (use `-NoOllama` when it is not installed).
+
+On Windows, double-click `Launch CyberLab.cmd` in the project root. The launcher
+starts Docker Desktop when needed, PostgreSQL, the API, Ollama, and Vite; opens
+the web app; and keeps a compact health dashboard in one console. Runtime logs
+are written to `.dev/logs`. Press `Ctrl+C` to stop the stack.
+
+To create a branded `Launch CyberLab` shortcut in the project root:
+
+```powershell
+.\scripts\create-launcher-shortcut.ps1
+```
+
+The equivalent terminal command is:
 
 ```powershell
 git clone https://github.com/worhels/CyberLab-Tracker.git
@@ -71,8 +84,9 @@ Set-Location CyberLab-Tracker
 ```
 
 The script creates ignored local environment files, generates development
-secrets, starts PostgreSQL and the API, applies Alembic migrations, seeds demo
-data, installs frontend packages, and starts Vite.
+secrets, starts and checks the full local stack, applies Alembic migrations,
+seeds demo data, and installs frontend packages only when `package-lock.json`
+changes.
 
 | Service | Address |
 | --- | --- |
@@ -94,13 +108,15 @@ Useful variants:
 .\scripts\dev.ps1 -SkipInstall
 .\scripts\dev.ps1 -BackendOnly
 .\scripts\dev.ps1 -ResetDb
+.\scripts\dev.ps1 -NoOllama
+.\scripts\dev.ps1 -KeepServices
 ```
 
-To enable CyberMentor, install the tested default model and keep Ollama running:
+The launcher starts Ollama automatically, but it does not download large models
+without explicit confirmation. Install the tested default model once:
 
 ```powershell
 ollama pull qwen3-coder:30b
-ollama serve
 ```
 
 `qwen3-coder:30b` is an 18 GB sparse coding model. On the development machine

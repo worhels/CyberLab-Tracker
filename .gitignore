@@ -9,6 +9,8 @@ __pycache__/
 *.log
 postgres_data/
 output/playwright/
+.dev/
+/*.lnk
 
 # Local generated database workbench files
 .vscode/db-schema-live.sql
