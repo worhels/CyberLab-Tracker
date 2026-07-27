@@ -10,6 +10,7 @@ import type {
   MentorChatRequest,
   MentorChatResponse,
 } from '../types/mentor'
+import { getApiErrorMessage } from '../utils/errors'
 
 interface MentorStreamEvent {
   event: 'token' | 'done' | 'error' | string
@@ -20,6 +21,9 @@ interface MentorStreamPayload {
   token?: string
   session_id?: string
   detail?: string
+  error?: {
+    message?: string
+  }
 }
 
 export class MentorApiError extends Error {
@@ -58,14 +62,7 @@ async function getResponseError(response: Response): Promise<MentorApiError> {
   let detail = `Mentor request failed with status ${response.status}.`
   try {
     const body = await response.json() as unknown
-    if (
-      typeof body === 'object'
-      && body !== null
-      && 'detail' in body
-      && typeof body.detail === 'string'
-    ) {
-      detail = body.detail
-    }
+    detail = getApiErrorMessage(body) ?? detail
   } catch {
     // Keep the status-based fallback when the body is not JSON.
   }
@@ -155,9 +152,8 @@ export async function streamMentorChat(
       return
     }
     if (streamEvent.event === 'error') {
-      const detail = typeof streamEvent.data.detail === 'string'
-        ? streamEvent.data.detail
-        : 'Mentor could not complete the response.'
+      const detail = getApiErrorMessage(streamEvent.data)
+        ?? 'Mentor could not complete the response.'
       throw new MentorApiError(detail, 502)
     }
   }

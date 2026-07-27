@@ -850,6 +850,12 @@ def read_artifact(user_id: int, artifact_id: UUID) -> MentorArtifactResponse:
     )
 
 
+def get_verified_artifact_directory(user_id: int, artifact_id: UUID) -> tuple[Path, str]:
+    _, verified_files = _load_verified_artifact(user_id, artifact_id)
+    manifest_sha256 = hashlib.sha256(verified_files[ARTIFACT_MANIFEST_PATH]).hexdigest()
+    return _owned_artifact_directory(user_id, artifact_id), manifest_sha256
+
+
 def build_artifact_archive(user_id: int, artifact_id: UUID) -> bytes:
     _, verified_files = _load_verified_artifact(user_id, artifact_id)
     archive_buffer = io.BytesIO()

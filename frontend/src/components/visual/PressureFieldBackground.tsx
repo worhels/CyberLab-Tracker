@@ -2,8 +2,18 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import * as THREE from 'three'
+import {
+  PRESSURE_FIELD_MAX_DPR,
+  PRESSURE_FIELD_TARGET_FPS,
+  PRESSURE_FIELD_VARIANTS,
+  PRESSURE_FIELD_Y_BIAS,
+} from './pressureFieldConfig'
+import type {
+  PressureFieldVariant,
+  PressureFieldVariantSettings,
+} from './pressureFieldConfig'
 
-export type PressureFieldVariant = 'tasks' | 'dashboard' | 'subjects' | 'crisis' | 'stats' | 'settings'
+export type { PressureFieldVariant } from './pressureFieldConfig'
 
 interface PressureFieldBackgroundProps {
   intensity?: number
@@ -12,70 +22,6 @@ interface PressureFieldBackgroundProps {
   variant?: PressureFieldVariant
   className?: string
 }
-
-interface VariantSettings {
-  seed: number
-  speed: number
-  dpr: number
-  shaderBias: number
-  lineCount: number
-  dustCount: number
-}
-
-const VARIANT_SETTINGS = {
-  tasks: {
-    seed: 1409,
-    speed: 0.58,
-    dpr: 0.75,
-    shaderBias: 0.1,
-    lineCount: 28,
-    dustCount: 70,
-  },
-  dashboard: {
-    seed: 2617,
-    speed: 0.48,
-    dpr: 0.75,
-    shaderBias: -0.08,
-    lineCount: 26,
-    dustCount: 64,
-  },
-  subjects: {
-    seed: 3167,
-    speed: 0.52,
-    dpr: 0.75,
-    shaderBias: -0.02,
-    lineCount: 26,
-    dustCount: 66,
-  },
-  crisis: {
-    seed: 3821,
-    speed: 0.68,
-    dpr: 0.75,
-    shaderBias: 0.24,
-    lineCount: 34,
-    dustCount: 84,
-  },
-  stats: {
-    seed: 4721,
-    speed: 0.42,
-    dpr: 0.75,
-    shaderBias: -0.12,
-    lineCount: 24,
-    dustCount: 56,
-  },
-  settings: {
-    seed: 5923,
-    speed: 0.32,
-    dpr: 0.75,
-    shaderBias: -0.18,
-    lineCount: 18,
-    dustCount: 44,
-  },
-} satisfies Record<PressureFieldVariant, VariantSettings>
-
-const FIELD_Y_BIAS = 0.38
-const MAX_RENDER_DPR = 0.75
-const TARGET_FPS = 60
 
 const FIELD_VERTEX = `
 varying vec2 vUv;
@@ -312,7 +258,7 @@ function createShaderMaterial(
   })
 }
 
-function buildFiberGeometry(settings: VariantSettings, reducedMotion: boolean) {
+function buildFiberGeometry(settings: PressureFieldVariantSettings, reducedMotion: boolean) {
   const random = createRandom(settings.seed)
   const lineCount = reducedMotion ? Math.floor(settings.lineCount * 0.52) : settings.lineCount
   const segments = reducedMotion ? 42 : 68
@@ -343,7 +289,7 @@ function buildFiberGeometry(settings: VariantSettings, reducedMotion: boolean) {
       const center = Math.sin(along * 1.42 + phase) * 0.08 + Math.sin(along * 3.1 - phase * 0.6) * 0.024
       const cross = lane * 0.42 + center + Math.sin(along * (4.0 + seed * 2.3) + phase) * waveAmp
       const point = dir.clone().multiplyScalar(along).add(normal.clone().multiplyScalar(cross))
-      point.y += FIELD_Y_BIAS
+      point.y += PRESSURE_FIELD_Y_BIAS
       const edgeFade = smoothstep(0.03, 0.22, progress) * (1 - smoothstep(0.78, 0.98, progress))
       const verticalFade = 1 - smoothstep(0.72, 1.08, Math.abs(point.y))
       const pointFade = edgeFade * verticalFade
@@ -368,7 +314,7 @@ function buildFiberGeometry(settings: VariantSettings, reducedMotion: boolean) {
   return geometry
 }
 
-function buildDustGeometry(settings: VariantSettings, reducedMotion: boolean) {
+function buildDustGeometry(settings: PressureFieldVariantSettings, reducedMotion: boolean) {
   const random = createRandom(settings.seed + 101)
   const count = reducedMotion ? Math.floor(settings.dustCount * 0.44) : settings.dustCount
   const dir = new THREE.Vector2(1, 0.36 + settings.shaderBias * 0.08).normalize()
@@ -386,7 +332,7 @@ function buildDustGeometry(settings: VariantSettings, reducedMotion: boolean) {
     const center = Math.sin(along * 1.3 + seed * 6.0) * 0.08
     const cross = lane + center + (random() - 0.5) * 0.12
     const point = dir.clone().multiplyScalar(along).add(normal.clone().multiplyScalar(cross))
-    point.y += FIELD_Y_BIAS
+    point.y += PRESSURE_FIELD_Y_BIAS
     const band = Math.exp(-(lane * lane) * 2.5)
     const edgeFade = 1 - smoothstep(0.74, 1.18, Math.abs(point.y))
 
@@ -434,7 +380,7 @@ function FieldPlane({
 }: {
   intensity: number
   reducedMotion: boolean
-  settings: VariantSettings
+  settings: PressureFieldVariantSettings
   speed: number
 }) {
   const size = useThree((state) => state.size)
@@ -480,7 +426,7 @@ function FiberLines({
 }: {
   intensity: number
   reducedMotion: boolean
-  settings: VariantSettings
+  settings: PressureFieldVariantSettings
   speed: number
 }) {
   const timeRef = useRef(reducedMotion ? 9 : 0)
@@ -525,7 +471,7 @@ function DustPoints({
 }: {
   intensity: number
   reducedMotion: boolean
-  settings: VariantSettings
+  settings: PressureFieldVariantSettings
   speed: number
 }) {
   const viewport = useThree((state) => state.viewport)
@@ -538,7 +484,7 @@ function DustPoints({
         DUST_FRAGMENT,
         {
           uTime: { value: reducedMotion ? 11 : 0 },
-          uDpr: { value: Math.min(viewport.dpr, settings.dpr, MAX_RENDER_DPR) },
+          uDpr: { value: Math.min(viewport.dpr, settings.dpr, PRESSURE_FIELD_MAX_DPR) },
           uIntensity: { value: intensity },
           uReducedMotion: { value: reducedMotion ? 1 : 0 },
           uVariant: { value: settings.shaderBias },
@@ -549,7 +495,11 @@ function DustPoints({
   )
 
   useEffect(() => {
-    material.uniforms.uDpr.value = Math.min(viewport.dpr, settings.dpr, MAX_RENDER_DPR)
+    material.uniforms.uDpr.value = Math.min(
+      viewport.dpr,
+      settings.dpr,
+      PRESSURE_FIELD_MAX_DPR,
+    )
   }, [material, settings.dpr, viewport.dpr])
 
   useEffect(() => () => geometry.dispose(), [geometry])
@@ -586,7 +536,7 @@ function PressureFieldScene({
 }: {
   intensity: number
   reducedMotion: boolean
-  settings: VariantSettings
+  settings: PressureFieldVariantSettings
   speed: number
 }) {
   return (
@@ -607,18 +557,23 @@ export function PressureFieldBackground({
 }: PressureFieldBackgroundProps) {
   const reducedMotion = usePrefersReducedMotion()
   const [tick, setTick] = useState(0)
-  const settings = VARIANT_SETTINGS[variant]
+  const settings = PRESSURE_FIELD_VARIANTS[variant]
   const clampedIntensity = clamp(intensity, 0.2, 1.35)
   const clampedOpacity = clamp(opacity, 0.05, 0.75)
   const resolvedSpeed = speed ?? settings.speed
   const devicePixelRatio = typeof window === 'undefined' ? settings.dpr : window.devicePixelRatio || settings.dpr
-  const dprMax = reducedMotion ? 1 : Math.min(settings.dpr, devicePixelRatio, MAX_RENDER_DPR)
+  const dprMax = reducedMotion
+    ? 1
+    : Math.min(settings.dpr, devicePixelRatio, PRESSURE_FIELD_MAX_DPR)
   const classes = ['pressure-field-background', `pressure-field-background--${variant}`, className].filter(Boolean).join(' ')
   const style = { '--pressure-field-opacity': clampedOpacity } as CSSProperties
 
   useEffect(() => {
     if (reducedMotion) return
-    const id = setInterval(() => setTick((value) => value + 1), 1000 / TARGET_FPS)
+    const id = setInterval(
+      () => setTick((value) => value + 1),
+      1000 / PRESSURE_FIELD_TARGET_FPS,
+    )
     return () => clearInterval(id)
   }, [reducedMotion])
 
@@ -633,7 +588,7 @@ export function PressureFieldBackground({
           frameloop="demand"
           gl={{ alpha: false, antialias: false, powerPreference: 'default' }}
           onCreated={({ gl }) => {
-            gl.setPixelRatio(Math.min(gl.getPixelRatio(), MAX_RENDER_DPR))
+            gl.setPixelRatio(Math.min(gl.getPixelRatio(), PRESSURE_FIELD_MAX_DPR))
             gl.setClearColor('#050505', 1)
             gl.outputColorSpace = THREE.SRGBColorSpace
           }}

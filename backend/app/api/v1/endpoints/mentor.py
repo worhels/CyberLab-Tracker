@@ -15,6 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.api.errors import build_error_payload
 from app.core.config import settings
 from app.crud import crud_mentor
 from app.crud.mentor_context import (
@@ -1071,7 +1072,7 @@ def save_mentor_exchange(
     )
 
 
-def format_sse_event(event: str, data: dict[str, str]) -> str:
+def format_sse_event(event: str, data: dict[str, object]) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, separators=(',', ':'))}\n\n"
 
 
@@ -1099,12 +1100,21 @@ async def generate_mentor_stream(
 
     if upstream_error is not None:
         detail = upstream_error.detail
-        yield format_sse_event("error", {"detail": detail})
+        yield format_sse_event(
+            "error",
+            build_error_payload(status_code=upstream_error.status_code, detail=detail),
+        )
         return
 
     answer = "".join(answer_parts).strip()
     if not answer:
-        yield format_sse_event("error", {"detail": "Локальная AI-модель вернула пустой ответ."})
+        yield format_sse_event(
+            "error",
+            build_error_payload(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Локальная AI-модель вернула пустой ответ.",
+            ),
+        )
         return
     complete_answer = ensure_required_context_facts(
         answer,
@@ -1127,7 +1137,13 @@ async def generate_mentor_stream(
         )
     except Exception:
         logger.exception("Failed to save a completed Mentor exchange")
-        yield format_sse_event("error", {"detail": "Не удалось сохранить ответ Mentor."})
+        yield format_sse_event(
+            "error",
+            build_error_payload(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Не удалось сохранить ответ Mentor.",
+            ),
+        )
         return
 
     yield format_sse_event("done", {"session_id": prepared.session_id})

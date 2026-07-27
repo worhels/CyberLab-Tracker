@@ -6,6 +6,14 @@ All notable changes to CyberLab Tracker are documented here.
 
 ### Added
 
+- A shared, backward-compatible API error envelope for HTTP and Mentor SSE
+  errors, with stable machine codes and structured validation details.
+- Local Playwright E2E coverage for authentication, registration, subject/task
+  creation, Calendar visibility, Settings, and light/dark visual baselines,
+  backed by a disposable PostgreSQL 16 database with the full Alembic chain.
+- A fail-closed Mentor artifact verifier that runs the reviewed bcrypt tests in
+  an attested non-root, networkless, read-only, resource-limited container.
+- A dependency-free, typed browser router for the application routes.
 - A CyberMentor Build mode for the reviewed `bcrypt-timing-web-v1` artifact.
 - Strict artifact specification validation, trusted template rendering, atomic
   per-user storage, SHA-256 manifests, ownership checks, quotas, and authenticated
@@ -16,6 +24,12 @@ All notable changes to CyberLab Tracker are documented here.
 
 ### Changed
 
+- Frontend error parsing now understands the shared API envelope while keeping
+  field-level validation messages and legacy `detail` support.
+- Split WebGL variant/performance configuration from renderer modules and
+  removed obsolete selectors without changing the established UI.
+- Removed React Router and its inapplicable RSC advisory from the dependency
+  graph; the direct npm audit now has no known vulnerabilities.
 - Replaced `qwen2.5-coder:7b` with the empirically selected
   `qwen3-coder:30b` default for both chat and artifact planning.
 - Disabled model thinking in chat payloads, made context length configurable,

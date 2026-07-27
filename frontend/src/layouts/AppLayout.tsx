@@ -8,15 +8,15 @@ import {
   Settings,
   Shield,
 } from 'lucide-react'
-import { type CSSProperties, useEffect, useState } from 'react'
+import { type CSSProperties, type ReactNode, useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { PageTransition } from '../components/PageTransition'
 import { MentorToggle } from '../components/mentor/MentorToggle'
 import { PressureFieldBackground } from '../components/visual/PressureFieldBackground'
 import type { PressureFieldVariant } from '../components/visual/PressureFieldBackground'
 import { useAuth } from '../context/AuthContext'
 import { useSettings } from '../context/SettingsContext'
+import { NavLink, useLocation } from '../router'
 import { translate } from '../utils/i18n'
 import type { TranslationKey } from '../utils/i18n'
 import { getMentorPageContext } from '../utils/mentorContext'
@@ -52,7 +52,7 @@ function getIsCompactViewport() {
   return typeof window !== 'undefined' && window.matchMedia(COMPACT_VIEWPORT_QUERY).matches
 }
 
-export function AppLayout() {
+export function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth()
   const { settings } = useSettings()
   const location = useLocation()
@@ -293,7 +293,7 @@ export function AppLayout() {
         <main className="app-main relative z-10">
           <AnimatePresence mode="wait" initial={false}>
             <PageTransition key={location.pathname}>
-              <Outlet />
+              {children}
             </PageTransition>
           </AnimatePresence>
         </main>

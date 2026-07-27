@@ -53,12 +53,24 @@ calendar groups returned instants in the user's local timezone.
 
 ### Errors
 
-FastAPI validation failures use `422` with structured field details.
-Application errors use:
+Every HTTP error uses the same envelope. The legacy `detail` property remains
+available for existing clients; new clients should read `error.code` and
+`error.message`.
 
 ```json
-{"detail": "Task not found"}
+{
+  "detail": "Task not found",
+  "error": {
+    "code": "not_found",
+    "message": "Task not found"
+  }
+}
 ```
+
+Validation failures use `422`, the code `validation_error`, and copy the
+structured field list to both `detail` and `error.details`. Unhandled failures
+return the generic code `internal_server_error` without exposing exception
+text. Mentor SSE `error` events use the same payload.
 
 | Status | Meaning |
 | --- | --- |

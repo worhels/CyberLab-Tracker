@@ -154,6 +154,12 @@ or model-selected command. The bcrypt prototype is trusted application code,
 not arbitrary model output. Normal CI mocks Ollama; the opt-in `ollama` pytest
 marker exercises the real model-to-spec-to-files-to-bcrypt path locally.
 
+Reviewed executable checks use the separate, fail-closed worker specified in
+[the Mentor verifier design](MENTOR_VERIFIER_DESIGN.md). The current local CLI
+revalidates artifact ownership and hashes, attests the Docker sandbox, and runs
+only the fixed bcrypt test recipe. The API still does not expose a generic
+execution endpoint or accept user/model-selected commands.
+
 ## Quality and migration gates
 
 Pull requests run:
@@ -163,13 +169,11 @@ Pull requests run:
 - PostgreSQL 16 Alembic upgrade, model parity check, downgrade, and re-upgrade;
 - CodeQL and dependency review.
 
-SQLite remains useful for fast API regression tests, but it is not considered a
-substitute for the PostgreSQL migration job.
+SQLite remains useful for fast API unit/regression tests. Browser E2E uses a
+disposable PostgreSQL 16 container and applies the full Alembic chain, while the
+separate migration job still checks upgrade/parity/downgrade/upgrade behavior.
 
-## Deployment boundary
+## Runtime boundary
 
-The repository is ready for local use and controlled beta evaluation. A public
-internet deployment requires infrastructure not provided here: TLS termination,
-trusted proxy configuration, persistent distributed rate limiting, centralized
-logs/metrics, backups and restore testing, secret management, and a privacy/data
-retention policy.
+The repository is intended for local use. Hosted-service and public internet
+deployment concerns are deliberately outside the architecture scope.

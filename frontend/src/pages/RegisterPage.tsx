@@ -1,8 +1,8 @@
 import { lazy, Suspense, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, Navigate } from 'react-router-dom'
 import { AuthShell } from '../components/auth/AuthShell'
 import { useAuth } from '../context/AuthContext'
+import { Link, Navigate } from '../router'
 import { getErrorMessage } from '../utils/errors'
 
 const AuthGenerativeVisual = lazy(() =>

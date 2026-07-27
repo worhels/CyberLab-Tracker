@@ -8,6 +8,7 @@ __pycache__/
 .DS_Store
 *.log
 postgres_data/
+output/playwright/
 
 # Local generated database workbench files
 .vscode/db-schema-live.sql
