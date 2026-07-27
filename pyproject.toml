@@ -13,4 +13,5 @@ pythonpath = ["backend"]
 testpaths = ["backend/tests"]
 markers = [
     "ollama: opt-in acceptance tests that require a running local Ollama model",
+    "verifier: opt-in acceptance tests that build and run the isolated Docker verifier",
 ]
