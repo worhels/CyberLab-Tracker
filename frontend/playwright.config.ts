@@ -18,7 +18,7 @@ export default defineConfig({
   testDir: './e2e',
   globalTeardown: './e2e/global-teardown.ts',
   outputDir: '../output/playwright/test-results',
-  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}{ext}',
+  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}-{platform}{ext}',
   fullyParallel: false,
   workers: 1,
   retries: 0,

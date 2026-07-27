@@ -104,6 +104,17 @@ jobs:
         working-directory: frontend
         run: npm run test:e2e
 
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-failures-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            frontend/e2e/**/*-linux.png
+            output/playwright/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Lint frontend
         working-directory: frontend
         run: npm run lint
