@@ -8,49 +8,19 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import type { MutableRefObject } from 'react'
 import type { VisualPerformanceTier } from '../hooks/useVisualPreferences'
 import type { CrisisSeverityCounts } from '../types'
-
-const TARGET_FPS = 60
-const BLOOM_SIZE = 256
-const MAX_DPR = 1.5
-const CUBE_SCALE = 1.35
-
-const COUNT_EDGE = 16000
-const COUNT_MID = 12000
-const COUNT_CORE = 22000
-const MIN_CORE = 300
-
-const PERFORMANCE_PROFILES = {
-  high: {
-    targetFps: TARGET_FPS,
-    dpr: MAX_DPR,
-    edgeCount: COUNT_EDGE,
-    midCount: COUNT_MID,
-    coreCount: COUNT_CORE,
-    bloom: true,
-  },
-  low: {
-    targetFps: 24,
-    dpr: 1,
-    edgeCount: 5000,
-    midCount: 3500,
-    coreCount: 7000,
-    bloom: false,
-  },
-} as const satisfies Record<VisualPerformanceTier, {
-  targetFps: number
-  dpr: number
-  edgeCount: number
-  midCount: number
-  coreCount: number
-  bloom: boolean
-}>
-
-const START_ROTATION_X = -0.18
-const START_ROTATION_Y = 0.62
-const START_ROTATION_Z = 0.03
-const AUTO_ROTATION_SPEED = 0.08
-const DRAG_YAW_SPEED = 0.006
-const DRAG_PITCH_SPEED = 0.004
+import {
+  CRISIS_AUTO_ROTATION_SPEED,
+  CRISIS_BLOOM_SIZE,
+  CRISIS_CUBE_SCALE,
+  CRISIS_DRAG_PITCH_SPEED,
+  CRISIS_DRAG_YAW_SPEED,
+  CRISIS_MAX_DPR,
+  CRISIS_MIN_CORE,
+  CRISIS_PERFORMANCE_PROFILES,
+  CRISIS_START_ROTATION_X,
+  CRISIS_START_ROTATION_Y,
+  CRISIS_START_ROTATION_Z,
+} from './crisisVolumeConfig'
 
 const CUBE_CORNERS = [
   [-0.5, -0.5, -0.5],
@@ -475,13 +445,18 @@ function BloomComposer({ assemblyRef, pressureRef }: BloomComposerProps) {
 
   useEffect(() => {
     const composer = new EffectComposer(gl)
-    const bloom = new UnrealBloomPass(new THREE.Vector2(BLOOM_SIZE, BLOOM_SIZE), 0.28, 0.28, 0.82)
+    const bloom = new UnrealBloomPass(
+      new THREE.Vector2(CRISIS_BLOOM_SIZE, CRISIS_BLOOM_SIZE),
+      0.28,
+      0.28,
+      0.82,
+    )
 
-    bloom.setSize(BLOOM_SIZE, BLOOM_SIZE)
+    bloom.setSize(CRISIS_BLOOM_SIZE, CRISIS_BLOOM_SIZE)
     composer.addPass(new RenderPass(scene, camera))
     composer.addPass(bloom)
     composer.addPass(new OutputPass())
-    composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_DPR))
+    composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CRISIS_MAX_DPR))
     composer.setSize(size.width, size.height)
     composerRef.current = composer
     bloomRef.current = bloom
@@ -521,8 +496,12 @@ function CubeScene({
   const pressureRef = useRef(params.pressure)
   const pointerTarget = useRef(new THREE.Vector2(0, 0))
   const pointerSmooth = useRef(new THREE.Vector2(0, 0))
-  const rotationTarget = useRef(new THREE.Vector2(START_ROTATION_Y, START_ROTATION_X))
-  const rotationSmooth = useRef(new THREE.Vector2(START_ROTATION_Y, START_ROTATION_X))
+  const rotationTarget = useRef(
+    new THREE.Vector2(CRISIS_START_ROTATION_Y, CRISIS_START_ROTATION_X),
+  )
+  const rotationSmooth = useRef(
+    new THREE.Vector2(CRISIS_START_ROTATION_Y, CRISIS_START_ROTATION_X),
+  )
   const dragRef = useRef({ active: false, lastX: 0, lastY: 0, pointerId: -1 })
 
   const sharedRef = useRef<UniformBundle>({
@@ -573,9 +552,9 @@ function CubeScene({
 
       const deltaX = event.clientX - dragRef.current.lastX
       const deltaY = event.clientY - dragRef.current.lastY
-      rotationTarget.current.x += deltaX * DRAG_YAW_SPEED
+      rotationTarget.current.x += deltaX * CRISIS_DRAG_YAW_SPEED
       rotationTarget.current.y = clamp(
-        rotationTarget.current.y + deltaY * DRAG_PITCH_SPEED,
+        rotationTarget.current.y + deltaY * CRISIS_DRAG_PITCH_SPEED,
         -0.95,
         0.55,
       )
@@ -634,7 +613,7 @@ function CubeScene({
     coreFillRef.current.value = params.coreFill
 
     if (!dragRef.current.active) {
-      rotationTarget.current.x += dt * AUTO_ROTATION_SPEED
+      rotationTarget.current.x += dt * CRISIS_AUTO_ROTATION_SPEED
     }
 
     rotationSmooth.current.x += (rotationTarget.current.x - rotationSmooth.current.x) * (1 - Math.exp(-dt * 8))
@@ -643,13 +622,20 @@ function CubeScene({
     if (groupRef.current) {
       groupRef.current.rotation.y = rotationSmooth.current.x
       groupRef.current.rotation.x = rotationSmooth.current.y + Math.sin(timeRef.current * 0.06) * 0.04
-      groupRef.current.rotation.z = START_ROTATION_Z
+      groupRef.current.rotation.z = CRISIS_START_ROTATION_Z
     }
   })
 
   return (
     <>
-      <group ref={groupRef} rotation={[START_ROTATION_X, START_ROTATION_Y, START_ROTATION_Z]}>
+      <group
+        ref={groupRef}
+        rotation={[
+          CRISIS_START_ROTATION_X,
+          CRISIS_START_ROTATION_Y,
+          CRISIS_START_ROTATION_Z,
+        ]}
+      >
         <ParticleLayer
           geometry={edgeGeo}
           color={colors.edge}
@@ -698,7 +684,7 @@ export function CrisisVolumeCube({
     [cohesionScore, completionRatio, instabilityScore, pressureScore],
   )
   const seed = useMemo(() => stableSeed(totalTasks, activeTasks, acceptedTasks), [acceptedTasks, activeTasks, totalTasks])
-  const profile = PERFORMANCE_PROFILES[performanceTier]
+  const profile = CRISIS_PERFORMANCE_PROFILES[performanceTier]
   const dprMax = Math.min(profile.dpr, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
   const colors = isLightTheme
     ? { edge: '#141414', mid: '#4d4a43', core: '#161616' }
@@ -716,7 +702,7 @@ export function CrisisVolumeCube({
       edgeGeo: buildLayerGeometry(
         profile.edgeCount,
         (layerRandom) => (layerRandom() < 0.25 ? sampleCorner(layerRandom) : sampleEdge(layerRandom)),
-        CUBE_SCALE,
+        CRISIS_CUBE_SCALE,
         (random() * 0xfffff) | 0,
         0.72,
         1.55,
@@ -724,15 +710,15 @@ export function CrisisVolumeCube({
       midGeo: buildLayerGeometry(
         profile.midCount,
         sampleFace,
-        CUBE_SCALE * 0.97,
+        CRISIS_CUBE_SCALE * 0.97,
         (random() * 0xfffff) | 0,
         0.34,
         1.05,
       ),
       coreGeo: buildLayerGeometry(
-        Math.max(profile.coreCount, MIN_CORE),
+        Math.max(profile.coreCount, CRISIS_MIN_CORE),
         sampleInterior,
-        CUBE_SCALE * 0.75,
+        CRISIS_CUBE_SCALE * 0.75,
         (random() * 0xfffff) | 0,
         0.52,
         1.8,
