@@ -16,11 +16,20 @@ const backendPython = existsSync(path.resolve(backendDirectory, localBackendPyth
 
 export default defineConfig({
   testDir: './e2e',
+  globalTeardown: './e2e/global-teardown.ts',
   outputDir: '../output/playwright/test-results',
+  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}{ext}',
   fullyParallel: false,
   workers: 1,
   retries: 0,
   reporter: 'list',
+  expect: {
+    toHaveScreenshot: {
+      animations: 'disabled',
+      caret: 'hide',
+      maxDiffPixelRatio: 0.02,
+    },
+  },
   use: {
     ...devices['Desktop Chrome'],
     baseURL: 'http://127.0.0.1:4173',
@@ -36,7 +45,7 @@ export default defineConfig({
       cwd: backendDirectory,
       url: 'http://127.0.0.1:8001/health',
       reuseExistingServer: false,
-      timeout: 30_000,
+      timeout: 60_000,
     },
     {
       command: 'npm run dev -- --host 127.0.0.1 --port 4173',
