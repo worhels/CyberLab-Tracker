@@ -1,12 +1,12 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { PageTransition } from './components/PageTransition'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { Navigate, useLocation } from './router'
 
 const AppLayout = lazy(() => import('./layouts/AppLayout').then((module) => ({ default: module.AppLayout })))
 const CalendarPage = lazy(() => import('./pages/CalendarPage').then((module) => ({ default: module.CalendarPage })))
@@ -26,28 +26,51 @@ function RouteFallback() {
 
 export function App() {
   const location = useLocation()
-  const routeKey = location.pathname === '/login' || location.pathname === '/register' ? location.pathname : 'app'
+  let route: ReactNode
+
+  if (location.pathname === '/login') {
+    route = <PageTransition key="/login"><LoginPage /></PageTransition>
+  } else if (location.pathname === '/register') {
+    route = <PageTransition key="/register"><RegisterPage /></PageTransition>
+  } else {
+    let page: ReactNode
+    switch (location.pathname) {
+      case '/dashboard':
+        page = <DashboardPage />
+        break
+      case '/subjects':
+        page = <SubjectsPage />
+        break
+      case '/tasks':
+        page = <TasksPage />
+        break
+      case '/calendar':
+        page = <CalendarPage />
+        break
+      case '/crisis':
+        page = <CrisisPage />
+        break
+      case '/settings':
+        page = <SettingsPage />
+        break
+      default:
+        page = <Navigate to="/dashboard" replace />
+    }
+
+    route = (
+      <ProtectedRoute key="app">
+        <SettingsProvider>
+          <AppLayout>{page}</AppLayout>
+        </SettingsProvider>
+      </ProtectedRoute>
+    )
+  }
 
   return (
     <AuthProvider>
       <Suspense fallback={<RouteFallback />}>
         <AnimatePresence mode="wait" initial={false}>
-          <Routes location={location} key={routeKey}>
-            <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
-            <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
-            <Route element={<ProtectedRoute />}>
-              <Route element={<SettingsProvider><AppLayout /></SettingsProvider>}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/subjects" element={<SubjectsPage />} />
-                <Route path="/tasks" element={<TasksPage />} />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="/crisis" element={<CrisisPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-              </Route>
-            </Route>
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
+          {route}
         </AnimatePresence>
       </Suspense>
     </AuthProvider>

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { deleteSubject, getSubjects } from '../api/subjects'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
@@ -7,6 +6,7 @@ import { PageHeader } from '../components/PageHeader'
 import { SubjectEditDialog } from '../components/forms/SubjectEditDialog'
 import { WorkspaceItemForm } from '../components/forms/WorkspaceItemForm'
 import type { Subject } from '../types'
+import { useSearchParams } from '../router'
 import { getErrorMessage } from '../utils/errors'
 import {
   buildMentorContextSearchParams,
