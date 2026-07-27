@@ -65,8 +65,8 @@ Status markers reflect the implementation and automated checks in this branch.
 - [x] Add reduced-motion behavior that avoids mounting the Crisis WebGL canvas
 - [x] Add mobile-safe Crisis layouts and lower-cost visual quality tiers
 - [x] Refactor the largest Subjects and Crisis page responsibilities into components/hooks
-- [ ] Continue splitting remaining large WebGL renderer modules
-- [ ] Consolidate remaining repeated UI primitives and unused styles
+- [x] Split WebGL performance/variant configuration from the renderer modules
+- [x] Remove obsolete UI selectors without changing the current visual design
 
 ## Phase 2: Daily-use Features
 
@@ -79,7 +79,7 @@ Status markers reflect the implementation and automated checks in this branch.
 - [x] Validate a closed model specification and prevent model-selected paths or commands
 - [x] Store immutable per-user artifacts with atomic writes, hashes, quotas, and authenticated ZIP download
 - [x] Add mocked regression coverage plus an opt-in real Ollama acceptance test
-- [x] Design a separate rootless, networkless verifier before supporting additional executable templates
+- [x] Implement a fail-closed, non-root, networkless verifier for the reviewed bcrypt template
 
 ### Task Workflow
 
@@ -112,7 +112,7 @@ Status markers reflect the implementation and automated checks in this branch.
 
 ## Local Development Backlog
 
-- Visual regression coverage
+- [x] Visual regression coverage for authentication and light/dark workspace states
 - Import from JSON/CSV and archived completed work
 - Bulk operations, task templates, command palette, and keyboard shortcuts
 - Advanced workload charts and accessibility audits

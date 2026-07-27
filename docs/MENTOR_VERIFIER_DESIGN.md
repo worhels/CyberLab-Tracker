@@ -1,6 +1,7 @@
 # Mentor verifier design
 
-Status: design baseline. The verifier is not implemented or enabled.
+Status: implemented for the reviewed `bcrypt-timing-web-v1` template through a
+local CLI. It is not exposed as a generic API endpoint.
 
 ## Purpose and scope
 
@@ -8,10 +9,10 @@ The verifier is a separate local worker for future reviewed CyberMentor
 templates that need executable checks. It must never turn the API process into
 a general code runner.
 
-The existing `bcrypt-timing-web-v1` template remains render-only and does not
-need this worker. A new executable template can be enabled only after its fixed
-verification recipe and expected outputs are reviewed and added to a
-server-owned registry.
+The existing `bcrypt-timing-web-v1` template can be checked by the worker using
+its fixed `/input/tests/test_app.py` recipe. A new executable template can be
+enabled only after its fixed verification recipe and expected outputs are
+reviewed and added to a server-owned registry.
 
 The verifier accepts an artifact identity, not a command supplied by a user or
 model. It returns bounded test results and never returns arbitrary files.
@@ -61,7 +62,21 @@ process with no database or JWT secret. The sandbox receives no credentials,
 Docker socket, repository checkout, user home directory, Ollama endpoint, or
 host-writable mount.
 
-## Request contract
+## Current invocation contract
+
+The current implementation is invoked locally with authenticated storage
+identifiers:
+
+```powershell
+python -m scripts.verify_artifact --user-id 42 --artifact-id <artifact-uuid>
+```
+
+Before starting Docker, the supervisor reuses the artifact service's ownership,
+path, allowlist, size, and SHA-256 validation. It resolves the configured image
+tag to an immutable image ID and rejects an image whose configured user is not
+`65532:65532`.
+
+## Future queued request contract
 
 The API writes a versioned request over a length-bounded local IPC channel:
 
@@ -122,7 +137,8 @@ filesystem output are not returned to the browser.
 
 ## Sandbox profile
 
-The reference implementation is a rootless OCI runtime on Linux. Each run
+The implementation accepts rootless Docker on Linux or Docker Desktop's
+Linux VM on Windows/macOS after in-container attestation. Each run
 uses:
 
 - a pinned image digest with no package manager or shell when the recipe does
@@ -182,7 +198,10 @@ unavailable. Artifact creation and download remain usable.
 
 ## Acceptance tests
 
-Implementation is not complete until automated tests prove:
+The committed unit tests verify fixed sandbox arguments and fail-closed runtime
+selection. The opt-in live test builds the pinned runner, creates a real
+reviewed artifact, attests the container, and runs its tests. The broader
+hardening backlog for any future template or queued API integration must prove:
 
 - an unknown template, command, argument, path, environment key, or image is
   rejected before execution;

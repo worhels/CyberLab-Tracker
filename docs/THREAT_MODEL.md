@@ -125,15 +125,14 @@ input, permits rounds 10–13, serializes hash work, and never returns the passw
 or digest.
 
 Residual risk: filesystem permissions are platform-dependent, the artifact
-quota is local to one deployment, downloaded code can be run unsafely by the
-user, and there is no hardened runner for future generic templates. A generic
-AI coding agent remains out of scope until a separate non-root, networkless,
-resource-limited worker and additional threat review exist.
+quota is local to one installation, downloaded code can be run unsafely by the
+user, and the verifier supports only the reviewed bcrypt template. A generic AI
+coding agent remains out of scope.
 
-The required worker boundary, fail-closed platform policy, IPC contract,
-resource controls, and acceptance tests are specified in
-[the Mentor verifier design](MENTOR_VERIFIER_DESIGN.md). The design does not
-mean that executable verification is currently implemented or enabled.
+The implemented local verifier follows the worker boundary, fail-closed
+platform policy, resource controls, and runtime attestation described in
+[the Mentor verifier design](MENTOR_VERIFIER_DESIGN.md). It is a local CLI,
+not a generic API execution facility.
 
 ### Export/privacy leakage
 

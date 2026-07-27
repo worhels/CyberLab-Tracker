@@ -19,10 +19,8 @@ deadlines, lab debt, and submission progress. It combines an ownership-safe
 FastAPI API with a responsive React interface, a ranked Crisis Mode, a list
 calendar, exports, and an optional local Ollama mentor.
 
-> **Beta status:** suitable for local use and controlled self-hosted testing.
-> Public internet deployment still requires TLS, a trusted reverse proxy,
-> persistent distributed rate limiting, monitoring, backups, and an explicit
-> privacy policy. See the [security model](docs/SECURITY_MODEL.md).
+> **Local-first status:** intended for local use. Public internet deployment
+> and hosted-service operation are outside the project scope.
 
 ## Product tour
 
@@ -56,10 +54,10 @@ calendar, exports, and an optional local Ollama mentor.
 | --- | --- |
 | API | FastAPI, Pydantic, PyJWT, bcrypt |
 | Data | PostgreSQL 16, SQLAlchemy 2, Alembic |
-| Web | React 19, strict TypeScript, Vite, React Router |
+| Web | React 19, strict TypeScript, Vite, typed History API router |
 | UI | Framer Motion, Three.js, React Three Fiber, design tokens |
 | Local AI | Ollama, Qwen3-Coder, bounded context, SSE, reviewed artifacts |
-| Tests and CI | Pytest, Pyright, Ruff, Vitest, Testing Library, GitHub Actions |
+| Tests and CI | Pytest, Pyright, Ruff, Vitest, Playwright, PostgreSQL E2E, GitHub Actions |
 
 ## Quick start
 
