@@ -7,6 +7,7 @@
 - npm
 - Python 3.12+
 - PowerShell
+- Ollama with the configured local model (optional with `-NoOllama`)
 
 ## One-command Setup
 
@@ -16,8 +17,21 @@ From the project root:
 .\scripts\dev.ps1
 ```
 
-This command creates local env files, starts Docker services, applies migrations,
-seeds demo data, installs frontend dependencies, and starts Vite.
+On Windows, `Launch CyberLab.cmd` provides the same full-stack startup by double
+click and opens the app automatically.
+
+The launcher starts Docker Desktop when needed, PostgreSQL, the API, Ollama, and
+Vite. It applies migrations, seeds demo data, and installs frontend dependencies
+only when the lockfile changes. Service output is stored under `.dev/logs`
+instead of flooding the console. Press `Ctrl+C` to stop the supervised stack.
+
+Useful variants:
+
+```powershell
+.\scripts\dev.ps1 -NoOllama
+.\scripts\dev.ps1 -KeepServices
+.\scripts\dev.ps1 -BackendOnly
+```
 
 ## Environment Files
 
