@@ -9,6 +9,7 @@ on:
       - "feature/**"
       - "fix/**"
       - "chore/**"
+      - "agent/**"
 
 permissions:
   contents: read

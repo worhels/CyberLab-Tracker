@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - develop
+      - "agent/**"
   schedule:
     - cron: "24 3 * * 1"
 
