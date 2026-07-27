@@ -154,6 +154,10 @@ or model-selected command. The bcrypt prototype is trusted application code,
 not arbitrary model output. Normal CI mocks Ollama; the opt-in `ollama` pytest
 marker exercises the real model-to-spec-to-files-to-bcrypt path locally.
 
+Future executable checks require the separate, fail-closed worker specified in
+[the Mentor verifier design](MENTOR_VERIFIER_DESIGN.md). The current API does
+not start a runner or execute generated artifacts.
+
 ## Quality and migration gates
 
 Pull requests run:

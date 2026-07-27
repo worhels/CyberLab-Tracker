@@ -45,7 +45,8 @@ def test_auth_me_rejects_expired_token(client: TestClient, db_session: Session) 
     response = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Could not validate credentials"}
+    assert response.json()["detail"] == "Could not validate credentials"
+    assert response.json()["error"]["code"] == "unauthorized"
     assert response.headers["www-authenticate"] == "Bearer"
 
 
@@ -56,7 +57,8 @@ def test_auth_me_rejects_malformed_token(client: TestClient) -> None:
     )
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Could not validate credentials"}
+    assert response.json()["detail"] == "Could not validate credentials"
+    assert response.json()["error"]["code"] == "unauthorized"
     assert response.headers["www-authenticate"] == "Bearer"
 
 
@@ -101,7 +103,8 @@ def test_login_rate_limit_returns_429(
     response = client.post("/api/v1/auth/login", data=payload)
 
     assert response.status_code == 429
-    assert response.json() == {"detail": "Too many authentication attempts"}
+    assert response.json()["detail"] == "Too many authentication attempts"
+    assert response.json()["error"]["code"] == "rate_limited"
 
 
 def test_register_rate_limit_returns_429(
@@ -121,7 +124,8 @@ def test_register_rate_limit_returns_429(
 
     assert first_response.status_code == 201
     assert response.status_code == 429
-    assert response.json() == {"detail": "Too many authentication attempts"}
+    assert response.json()["detail"] == "Too many authentication attempts"
+    assert response.json()["error"]["code"] == "rate_limited"
 
 
 def test_subject_endpoints_hide_another_users_subject(

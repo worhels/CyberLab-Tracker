@@ -130,6 +130,11 @@ user, and there is no hardened runner for future generic templates. A generic
 AI coding agent remains out of scope until a separate non-root, networkless,
 resource-limited worker and additional threat review exist.
 
+The required worker boundary, fail-closed platform policy, IPC contract,
+resource controls, and acceptance tests are specified in
+[the Mentor verifier design](MENTOR_VERIFIER_DESIGN.md). The design does not
+mean that executable verification is currently implemented or enabled.
+
 ### Export/privacy leakage
 
 Threat: another user's data appears in an export, a shared proxy caches it, or a

@@ -19,6 +19,7 @@ vi.mock('../api/client', () => ({
 import {
   createMentorArtifact,
   getMentorArtifactDownload,
+  streamMentorChat,
 } from '../services/mentorApi'
 
 const payload: MentorArtifactCreateRequest = {
@@ -66,5 +67,36 @@ describe('mentor artifact API', () => {
       responseType: 'blob',
       },
     )
+  })
+
+  it('reads the standardized message from a Mentor SSE error event', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(
+      [
+        'event: error',
+        'data: {"detail":"Mentor is unavailable","error":{"code":"service_unavailable","message":"Mentor is unavailable"}}',
+        '',
+        '',
+      ].join('\n'),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'text/event-stream' },
+      },
+    ))
+
+    try {
+      await expect(streamMentorChat(
+        {
+          message: 'Help with this task',
+          page: '/tasks',
+          language: 'en',
+        },
+        vi.fn(),
+      )).rejects.toMatchObject({
+        message: 'Mentor is unavailable',
+        status: 502,
+      })
+    } finally {
+      fetchMock.mockRestore()
+    }
   })
 })

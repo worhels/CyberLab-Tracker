@@ -126,6 +126,27 @@ The API accepts only offset-aware task timestamps. Use `Z` or an explicit
 offset in direct API calls; the frontend converts `datetime-local` values to an
 ISO 8601 instant before submission.
 
+## Local End-to-End Tests
+
+Install the Chromium test browser once, then run the suite:
+
+```powershell
+cd frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
+The Playwright configuration starts a dedicated FastAPI process on port `8001`
+and Vite on port `4173`. The backend uses a temporary SQLite database under
+`output/playwright/`; it does not read, migrate, or reset the normal PostgreSQL
+database. Ollama warmup is disabled. Failure screenshots and traces are also
+kept under `output/playwright/`, which is ignored by Git.
+
+The local E2E suite covers authentication protection and error display,
+registration, subject/task creation, Calendar visibility, and account Settings
+visibility. It uses reduced motion to avoid depending on WebGL rendering and
+does not assert or modify visual styling.
+
 ## Troubleshooting
 
 ### `POSTGRES_PASSWORD is required`

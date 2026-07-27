@@ -1,17 +1,17 @@
 # Roadmap
 
-CyberLab Tracker is a local-first academic workload tracker. The roadmap keeps
-security, data contracts, and release quality gates ahead of feature expansion.
+CyberLab Tracker is a local-first academic workload tracker. It is intended to
+run locally; public internet deployment and hosted-service work are out of
+scope. The roadmap keeps security, data contracts, and quality gates ahead of
+feature expansion.
 
 ## Current Status
 
-Last updated: July 15, 2026.
+Last updated: July 27, 2026.
 
 Status markers reflect the implementation and automated checks in this branch.
-Repository metadata, English product screenshots, and the first tagged
-prerelease are published. The optional project board remains incomplete.
 
-### Beta-readiness baseline
+### Local-use baseline
 
 - [x] FastAPI, PostgreSQL, SQLAlchemy, Alembic, React, and TypeScript stack
 - [x] Authentication, Dashboard, Subjects, Tasks, Calendar, Settings, and Crisis Mode
@@ -20,8 +20,8 @@ prerelease are published. The optional project board remains incomplete.
 - [x] Backend regression suite and frontend unit/component tests
 - [x] Strict Pyright and TypeScript checks in CI
 - [x] PostgreSQL migration upgrade/parity/downgrade/upgrade job
-- [x] Dependency audit, dependency review, CodeQL, and release workflow definitions
-- [x] Architecture, API, development, security, threat-model, and beta-release docs
+- [x] Dependency audit, dependency review, and CodeQL
+- [x] Architecture, API, development, security, and threat-model docs
 - [x] Local Qwen3-Coder Mentor with a reviewed, checksummed bcrypt artifact workflow
 
 ## Phase 0: Security And Contract Hardening
@@ -36,7 +36,6 @@ prerelease are published. The optional project board remains incomplete.
 - [x] Enforce bcrypt's 72-byte password boundary at registration and verification
 - [x] Use dummy password verification and generic authentication errors
 - [x] Rate-limit registration and login with regression coverage
-- [ ] Replace the in-process rate limiter before multi-instance public deployment
 
 ### API Contracts And Data Isolation
 
@@ -46,7 +45,7 @@ prerelease are published. The optional project board remains incomplete.
 - [x] Keep subject, task, dashboard, export, and mentor queries user-scoped
 - [x] Cover cross-user subject and task access with regression tests
 - [x] Include active overdue workload in Crisis debt calculations
-- [ ] Standardize the response envelope for all API errors
+- [x] Standardize the response envelope for all API errors
 
 ### Runtime Security
 
@@ -54,8 +53,7 @@ prerelease are published. The optional project board remains incomplete.
 - [x] Disable OpenAPI UI and schema endpoints unless `DEBUG=true`
 - [x] Require database and JWT secrets through deployment configuration
 - [x] Keep PostgreSQL off the host port by default
-- [x] Document secret rotation and the public-beta deployment boundary
-- [ ] Add session revocation and account recovery before a broader hosted beta
+- [x] Document secret rotation and the local-only deployment boundary
 
 ## Phase 1: UI Completion
 
@@ -81,8 +79,7 @@ prerelease are published. The optional project board remains incomplete.
 - [x] Validate a closed model specification and prevent model-selected paths or commands
 - [x] Store immutable per-user artifacts with atomic writes, hashes, quotas, and authenticated ZIP download
 - [x] Add mocked regression coverage plus an opt-in real Ollama acceptance test
-- [ ] Add persistent distributed generation quotas before public multi-instance hosting
-- [ ] Design a separate rootless, networkless verifier before supporting additional executable templates
+- [x] Design a separate rootless, networkless verifier before supporting additional executable templates
 
 ### Task Workflow
 
@@ -100,7 +97,7 @@ prerelease are published. The optional project board remains incomplete.
 - [x] Keep completed historical tasks visible without counting them as overdue
 - [x] Add localized responsive Calendar cards
 
-## Phase 3: Quality Gates And Packaging
+## Phase 3: Quality Gates
 
 ### Automated Quality
 
@@ -109,33 +106,19 @@ prerelease are published. The optional project board remains incomplete.
   deadline badges, and nullable form serialization
 - [x] Enable strict TypeScript across application and test configurations
 - [x] Run strict Pyright, Ruff, pytest, frontend tests, lint, typecheck, and build in CI
+- [x] Add local browser E2E coverage for authentication and core workspace workflows
 - [x] Audit Python and npm dependencies and update vulnerable packages
 - [x] Validate the full Alembic chain against PostgreSQL 16 in CI
 
-### Repository And Release Preparation
+## Local Development Backlog
 
-- [x] Refresh README, architecture, API, development, security, and threat-model docs
-- [x] Add a public-beta release checklist and MIT license assessment
-- [x] Add Dependabot configuration and stricter dependency review
-- [x] Define a tag-triggered prerelease workflow with frontend artifacts, checksums,
-  backend container publishing, and migration validation
-- [x] Publish English product screenshots
-- [x] Publish GitHub About description and topics
-- [x] Create the first tagged GitHub prerelease and verify its artifacts
-- [ ] Create a GitHub Project board and prioritized engineering backlog
-
-## Post-beta Backlog
-
-- Persistent distributed rate limiting and trusted-proxy handling
-- Account recovery, email verification, session revocation, and optional 2FA
-- End-to-end browser tests and visual regression coverage
+- Visual regression coverage
 - Import from JSON/CSV and archived completed work
 - Bulk operations, task templates, command palette, and keyboard shortcuts
 - Advanced workload charts and accessibility audits
-- Calendar provider integrations after the local Calendar workflow is stable
 - Additional reviewed Mentor templates after sandbox and abuse-control work
 
-## Deliberately Out Of Scope For The Current Beta
+## Deliberately Out Of Scope For The Local Version
 
 - Enterprise multi-tenancy
 - Payment processing
@@ -154,5 +137,4 @@ A roadmap item is done only when:
 - loading, empty, error, responsive, and motion states are considered where applicable;
 - data ownership and nullable API semantics remain explicit;
 - sensitive data is not committed;
-- documentation matches the shipped behavior; and
-- external GitHub or release work is marked complete only after publication.
+- documentation matches the shipped behavior.

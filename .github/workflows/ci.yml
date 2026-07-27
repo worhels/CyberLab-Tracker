@@ -63,6 +63,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -73,6 +78,14 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: Install E2E backend dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Install E2E browser
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
 
       - name: Audit frontend dependencies
         working-directory: frontend
@@ -85,6 +98,10 @@ jobs:
       - name: Test frontend
         working-directory: frontend
         run: npm test
+
+      - name: Test local browser workflows
+        working-directory: frontend
+        run: npm run test:e2e
 
       - name: Lint frontend
         working-directory: frontend
